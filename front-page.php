@@ -8,19 +8,19 @@ defined('ABSPATH') || exit;
 get_header();
 
 /**
- * Latest Have Room listings
+ * Latest room listings
  */
-$have_room_query = new WP_Query(array(
-    'post_type'      => 'have_room',
+$room_query = new WP_Query(array(
+    'post_type'      => 'room',
     'post_status'    => 'publish',
     'posts_per_page' => 6,
 ));
 
 /**
- * Latest Need Room profiles
+ * Latest roommate profiles
  */
-$need_room_query = new WP_Query(array(
-    'post_type'      => 'need_room',
+$roommate_query = new WP_Query(array(
+    'post_type'      => 'roommate',
     'post_status'    => 'publish',
     'posts_per_page' => 6,
 ));
@@ -34,27 +34,27 @@ $need_room_query = new WP_Query(array(
                 <div class="hero-content">
                     <h1 class="hero-title">Find a Room. Find a Roommate.</h1>
                     <p class="hero-description">
-                        Connect people who already have a room with people who need one.
+                        Browse available rooms or connect with people who are still looking.
                         Match by budget, location, lifestyle, and personality.
                     </p>
 
                     <div class="hero-actions">
-                        <a href="<?php echo esc_url(get_post_type_archive_link('have_room')); ?>" class="btn btn-primary">
-                            Explore Have Room
+                        <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn btn-primary">
+                            Roommates
                         </a>
-                        <a href="<?php echo esc_url(get_post_type_archive_link('need_room')); ?>" class="btn btn-secondary">
-                            Explore Need Room
+                        <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary">
+                            Rooms
                         </a>
                     </div>
 
                     <div class="hero-stats">
                         <div class="hero-stat">
-                            <strong><?php echo esc_html(wp_count_posts('have_room')->publish ?? 0); ?></strong>
-                            <span>Have Room Listings</span>
+                            <strong><?php echo esc_html(wp_count_posts('room')->publish ?? 0); ?></strong>
+                            <span>Rooms</span>
                         </div>
                         <div class="hero-stat">
-                            <strong><?php echo esc_html(wp_count_posts('need_room')->publish ?? 0); ?></strong>
-                            <span>Need Room Profiles</span>
+                            <strong><?php echo esc_html(wp_count_posts('roommate')->publish ?? 0); ?></strong>
+                            <span>Roommates</span>
                         </div>
                     </div>
                 </div>
@@ -65,14 +65,14 @@ $need_room_query = new WP_Query(array(
                         <p>Choose the option that fits your situation.</p>
 
                         <div class="hero-card__options">
-                            <a href="<?php echo esc_url(get_post_type_archive_link('have_room')); ?>" class="hero-option">
-                                <h3>I Have a Room</h3>
-                                <p>I already have a place and want to find a compatible roommate.</p>
+                            <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="hero-option">
+                                <h3>Roommates</h3>
+                                <p>Show me people who are looking for a room or roommate.</p>
                             </a>
 
-                            <a href="<?php echo esc_url(get_post_type_archive_link('need_room')); ?>" class="hero-option">
-                                <h3>I Need a Room</h3>
-                                <p>I am looking for a room, a roommate, or both.</p>
+                            <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="hero-option">
+                                <h3>Rooms</h3>
+                                <p>Show me available rooms and people who already have a place.</p>
                             </a>
                         </div>
                     </div>
@@ -81,59 +81,25 @@ $need_room_query = new WP_Query(array(
         </div>
     </section>
 
-    <!-- <section class="quick-search-section">
+    <section class="listing-section listing-section--room">
         <div class="container">
-            <div class="section-heading">
-                <span class="section-badge">Quick Search</span>
-                <h2>Browse by what matters most</h2>
-                <p>Use simple entry points to help users find a better match faster.</p>
-            </div>
+            <span class="section-badge">Rooms</span>
+            <h2>Latest available rooms</h2>
+            <p>Browse room listings posted by people who already have a place and are looking for a compatible roommate.</p>
 
-            <div class="quick-search-grid">
-                <a class="quick-search-card" href="<?php echo esc_url(get_post_type_archive_link('have_room')); ?>">
-                    <h3>By Location</h3>
-                    <p>Search listings by area, neighborhood, BTS, university, or nearby landmarks.</p>
-                </a>
-
-                <a class="quick-search-card" href="<?php echo esc_url(get_post_type_archive_link('have_room')); ?>">
-                    <h3>By Budget</h3>
-                    <p>Compare room options by monthly rent and deposit range.</p>
-                </a>
-
-                <a class="quick-search-card" href="<?php echo esc_url(get_post_type_archive_link('need_room')); ?>">
-                    <h3>By Lifestyle</h3>
-                    <p>Match people with similar habits, cleanliness, sleep schedule, and social level.</p>
-                </a>
-
-                <a class="quick-search-card" href="<?php echo esc_url(get_post_type_archive_link('need_room')); ?>">
-                    <h3>By Move-in Time</h3>
-                    <p>Find people and rooms that fit your move-in date and lease timing.</p>
-                </a>
-            </div>
-        </div>
-    </section> -->
-
-    <section class="listing-section listing-section--have-room">
-        <div class="container">
-            <div class="section-heading">
-                <span class="section-badge">Have Room</span>
-                <h2>Latest rooms available</h2>
-                <p>People who already have a room and are looking for the right roommate.</p>
-            </div>
-
-            <?php if ($have_room_query->have_posts()) : ?>
+            <?php if ($room_query->have_posts()) : ?>
                 <div class="listing-grid">
-                    <?php while ($have_room_query->have_posts()) : $have_room_query->the_post(); ?>
+                    <?php while ($room_query->have_posts()) : $room_query->the_post(); ?>
                         <?php
-                        $rent              = rmt_get_meta(get_the_ID(), '_rent');
-                        $available_date    = rmt_get_meta(get_the_ID(), '_available_date');
-                        $address           = rmt_get_meta(get_the_ID(), '_address');
-                        $nickname          = rmt_get_meta(get_the_ID(), '_nickname');
-                        $occupation        = rmt_get_meta(get_the_ID(), '_occupation');
-                        $cleanliness       = rmt_get_meta(get_the_ID(), '_cleanliness');
-                        $sleep_schedule    = rmt_get_meta(get_the_ID(), '_sleep_schedule');
+                        $rent            = rmt_get_meta(get_the_ID(), '_rent');
+                        $available_date  = rmt_get_meta(get_the_ID(), '_available_date');
+                        $address         = rmt_get_meta(get_the_ID(), '_address');
+                        $nickname        = rmt_get_meta(get_the_ID(), '_nickname');
+                        $occupation      = rmt_get_meta(get_the_ID(), '_occupation');
+                        $cleanliness     = rmt_get_meta(get_the_ID(), '_cleanliness');
+                        $sleep_schedule  = rmt_get_meta(get_the_ID(), '_sleep_schedule');
 
-                        $location_terms = get_the_terms(get_the_ID(), 'location_area');
+                        $location_terms  = get_the_terms(get_the_ID(), 'location_area');
                         $room_type_terms = get_the_terms(get_the_ID(), 'room_type');
                         ?>
                         <article class="listing-card">
@@ -179,12 +145,12 @@ $need_room_query = new WP_Query(array(
                                 </div>
 
                                 <div class="listing-card__person">
-                                    <strong>About roommate</strong>
+                                    <strong>About Current Roommate</strong>
                                     <ul>
                                         <?php if ($nickname) : ?><li>Name: <?php echo esc_html($nickname); ?></li><?php endif; ?>
                                         <?php if ($occupation) : ?><li>Occupation: <?php echo esc_html($occupation); ?></li><?php endif; ?>
                                         <?php if ($cleanliness) : ?><li>Cleanliness: <?php echo esc_html($cleanliness); ?></li><?php endif; ?>
-                                        <?php if ($sleep_schedule) : ?><li>Sleep: <?php echo esc_html($sleep_schedule); ?></li><?php endif; ?>
+                                        <?php if ($sleep_schedule) : ?><li>Sleep Schedule: <?php echo esc_html($sleep_schedule); ?></li><?php endif; ?>
                                     </ul>
                                 </div>
 
@@ -196,42 +162,42 @@ $need_room_query = new WP_Query(array(
                 <?php wp_reset_postdata(); ?>
 
                 <div class="section-actions">
-                    <a href="<?php echo esc_url(get_post_type_archive_link('have_room')); ?>" class="btn btn-secondary">
-                        View All Have Room Listings
+                    <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary">
+                        View All Rooms
                     </a>
                 </div>
             <?php else : ?>
                 <div class="empty-state">
-                    <h3>No Have Room listings yet</h3>
+                    <h3>No Room Listings Yet</h3>
                     <p>Be the first to post a room and find a roommate.</p>
                 </div>
             <?php endif; ?>
         </div>
     </section>
 
-    <section class="listing-section listing-section--need-room">
+    <section class="listing-section listing-section--roommate">
         <div class="container">
             <div class="section-heading">
-                <span class="section-badge">Need Room</span>
-                <h2>Latest people looking for a room</h2>
-                <p>Profiles from people searching for a room, a roommate, or both.</p>
+                <span class="section-badge">Roommates</span>
+                <h2>Latest roommate profiles</h2>
+                <p>Browse profiles from people who need a room or want to team up with a roommate.</p>
             </div>
 
-            <?php if ($need_room_query->have_posts()) : ?>
+            <?php if ($roommate_query->have_posts()) : ?>
                 <div class="listing-grid">
-                    <?php while ($need_room_query->have_posts()) : $need_room_query->the_post(); ?>
+                    <?php while ($roommate_query->have_posts()) : $roommate_query->the_post(); ?>
                         <?php
-                        $budget_min       = rmt_get_meta(get_the_ID(), '_budget_min');
-                        $budget_max       = rmt_get_meta(get_the_ID(), '_budget_max');
-                        $move_in_date     = rmt_get_meta(get_the_ID(), '_move_in_date');
-                        $preferred_area   = rmt_get_meta(get_the_ID(), '_preferred_area_text');
-                        $nickname         = rmt_get_meta(get_the_ID(), '_nickname');
-                        $occupation       = rmt_get_meta(get_the_ID(), '_occupation');
-                        $cleanliness      = rmt_get_meta(get_the_ID(), '_cleanliness');
-                        $sleep_schedule   = rmt_get_meta(get_the_ID(), '_sleep_schedule');
-                        $teamup_ok        = rmt_get_meta(get_the_ID(), '_teamup_ok');
+                        $budget_min      = rmt_get_meta(get_the_ID(), '_budget_min');
+                        $budget_max      = rmt_get_meta(get_the_ID(), '_budget_max');
+                        $move_in_date    = rmt_get_meta(get_the_ID(), '_move_in_date');
+                        $preferred_area  = rmt_get_meta(get_the_ID(), '_preferred_area_text');
+                        $nickname        = rmt_get_meta(get_the_ID(), '_nickname');
+                        $occupation      = rmt_get_meta(get_the_ID(), '_occupation');
+                        $cleanliness     = rmt_get_meta(get_the_ID(), '_cleanliness');
+                        $sleep_schedule  = rmt_get_meta(get_the_ID(), '_sleep_schedule');
+                        $teamup_ok       = rmt_get_meta(get_the_ID(), '_teamup_ok');
 
-                        $location_terms = get_the_terms(get_the_ID(), 'location_area');
+                        $location_terms  = get_the_terms(get_the_ID(), 'location_area');
                         $room_type_terms = get_the_terms(get_the_ID(), 'room_type');
                         ?>
                         <article class="listing-card">
@@ -249,15 +215,22 @@ $need_room_query = new WP_Query(array(
 
                             <div class="listing-card__content">
                                 <div class="listing-card__top">
-                                    <div class="listing-card__price">
-                                        Budget:
-                                        <?php if ($budget_min) : ?>
-                                            <?php echo esc_html(rmt_format_price($budget_min)); ?>
-                                        <?php endif; ?>
-                                        <?php if ($budget_max) : ?>
-                                            - <?php echo esc_html(rmt_format_price($budget_max)); ?>
-                                        <?php endif; ?>
-                                    </div>
+                                    <?php if ($budget_min || $budget_max) : ?>
+                                        <div class="listing-card__price">
+                                            Budget:
+                                            <?php if ($budget_min) : ?>
+                                                <?php echo esc_html(rmt_format_price($budget_min)); ?>
+                                            <?php endif; ?>
+
+                                            <?php if ($budget_min && $budget_max) : ?>
+                                                -
+                                            <?php endif; ?>
+
+                                            <?php if ($budget_max) : ?>
+                                                <?php echo esc_html(rmt_format_price($budget_max)); ?>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
 
                                     <?php if ($move_in_date) : ?>
                                         <div class="listing-card__available">Move-in: <?php echo esc_html($move_in_date); ?></div>
@@ -287,12 +260,12 @@ $need_room_query = new WP_Query(array(
                                 </div>
 
                                 <div class="listing-card__person">
-                                    <strong>About this person</strong>
+                                    <strong>About This Person</strong>
                                     <ul>
                                         <?php if ($nickname) : ?><li>Name: <?php echo esc_html($nickname); ?></li><?php endif; ?>
                                         <?php if ($occupation) : ?><li>Occupation: <?php echo esc_html($occupation); ?></li><?php endif; ?>
                                         <?php if ($cleanliness) : ?><li>Cleanliness: <?php echo esc_html($cleanliness); ?></li><?php endif; ?>
-                                        <?php if ($sleep_schedule) : ?><li>Sleep: <?php echo esc_html($sleep_schedule); ?></li><?php endif; ?>
+                                        <?php if ($sleep_schedule) : ?><li>Sleep Schedule: <?php echo esc_html($sleep_schedule); ?></li><?php endif; ?>
                                     </ul>
                                 </div>
 
@@ -304,13 +277,13 @@ $need_room_query = new WP_Query(array(
                 <?php wp_reset_postdata(); ?>
 
                 <div class="section-actions">
-                    <a href="<?php echo esc_url(get_post_type_archive_link('need_room')); ?>" class="btn btn-secondary">
-                        View All Need Room Profiles
+                    <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn btn-secondary">
+                        View All Roommates
                     </a>
                 </div>
             <?php else : ?>
                 <div class="empty-state">
-                    <h3>No Need Room profiles yet</h3>
+                    <h3>No Roommate Profiles Yet</h3>
                     <p>Be the first to create a profile and start matching.</p>
                 </div>
             <?php endif; ?>
@@ -329,7 +302,7 @@ $need_room_query = new WP_Query(array(
                 <div class="step-card">
                     <span class="step-number">01</span>
                     <h3>Create your listing</h3>
-                    <p>Choose whether you have a room or need a room, then fill in your details.</p>
+                    <p>Choose whether you want to post a room or create a roommate profile, then fill in your details.</p>
                 </div>
 
                 <div class="step-card">
@@ -357,7 +330,6 @@ $need_room_query = new WP_Query(array(
         <div class="container">
             <div class="cta-box">
                 <div class="cta-content">
-                    
                     <h2>Ready to find your next roommate?</h2>
                     <p>
                         Whether you already have a room or are still searching,
@@ -366,11 +338,11 @@ $need_room_query = new WP_Query(array(
                 </div>
 
                 <div class="cta-actions">
-                    <a href="<?php echo esc_url(get_post_type_archive_link('have_room')); ?>" class="btn btn-primary">
-                        I Have a Room
+                    <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn btn-primary">
+                        Roommates
                     </a>
-                    <a href="<?php echo esc_url(get_post_type_archive_link('need_room')); ?>" class="btn btn-secondary">
-                        I Need a Room
+                    <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary">
+                        Rooms
                     </a>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Archive Template: Have Room
+ * Archive Template: Show Room
  */
 
 defined('ABSPATH') || exit;
@@ -8,11 +8,11 @@ defined('ABSPATH') || exit;
 get_header();
 ?>
 
-<main id="primary" class="site-main archive-page archive-have-room">
+<main id="primary" class="site-main archive-page archive-show-room">
     <section class="archive-hero">
         <div class="container">
             <div class="archive-hero__content">
-                <span class="archive-badge">Have Room</span>
+                <span class="archive-badge">Room</span>
                 <h1 class="archive-title"><?php post_type_archive_title(); ?></h1>
                 <p class="archive-description">
                     Browse listings from people who already have a room and are looking for a compatible roommate.
@@ -89,7 +89,7 @@ get_header();
 
                     <div class="filter-actions">
                         <button type="submit" class="btn btn-primary">Apply Filters</button>
-                        <a href="<?php echo esc_url(get_post_type_archive_link('have_room')); ?>" class="btn btn-secondary">Reset</a>
+                        <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary">Reset</a>
                     </div>
                 </div>
             </form>
@@ -138,7 +138,7 @@ get_header();
             }
 
             $args = array(
-                'post_type'      => 'have_room',
+                'post_type'      => 'room',
                 'post_status'    => 'publish',
                 'posts_per_page' => 9,
                 'paged'          => $paged,
@@ -152,12 +152,12 @@ get_header();
                 $args['meta_query'] = $meta_query;
             }
 
-            $have_room_query = new WP_Query($args);
+            $show_room_query = new WP_Query($args);
             ?>
 
-            <?php if ($have_room_query->have_posts()) : ?>
+            <?php if ($show_room_query->have_posts()) : ?>
                 <div class="listing-grid">
-                    <?php while ($have_room_query->have_posts()) : $have_room_query->the_post(); ?>
+                    <?php while ($show_room_query->have_posts()) : $show_room_query->the_post(); ?>
                         <?php
                         $rent               = rmt_get_meta(get_the_ID(), '_rent');
                         $available_date     = rmt_get_meta(get_the_ID(), '_available_date');
@@ -172,7 +172,7 @@ get_header();
                         $location_terms = get_the_terms(get_the_ID(), 'location_area');
                         $room_type_terms = get_the_terms(get_the_ID(), 'room_type');
                         ?>
-                        <article class="listing-card have-room-card">
+                        <article class="listing-card show-room-card">
                             <a href="<?php the_permalink(); ?>" class="listing-card__image-link">
                                 <?php if (has_post_thumbnail()) : ?>
                                     <div class="listing-card__image">
@@ -267,7 +267,7 @@ get_header();
                 <div class="pagination-wrap">
                     <?php
                     echo paginate_links(array(
-                        'total'   => $have_room_query->max_num_pages,
+                        'total'   => $show_room_query->max_num_pages,
                         'current' => $paged,
                     ));
                     ?>
@@ -276,7 +276,7 @@ get_header();
                 <?php wp_reset_postdata(); ?>
             <?php else : ?>
                 <div class="empty-state">
-                    <h2>No Have Room listings found</h2>
+                    <h2>No Show Room listings found</h2>
                     <p>Try changing your filters or check back later for new listings.</p>
                 </div>
             <?php endif; ?>

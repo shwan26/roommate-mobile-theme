@@ -1,6 +1,6 @@
 <?php
 /**
- * Single Template: Have Room
+ * Single Template: Room
  */
 
 defined('ABSPATH') || exit;
@@ -43,13 +43,13 @@ if (have_posts()) :
         $room_types     = get_the_terms(get_the_ID(), 'room_type');
         ?>
 
-        <main id="primary" class="site-main single-page single-have-room">
+        <main id="primary" class="site-main single-page single-room">
             <div class="container">
                 <article <?php post_class('single-listing'); ?>>
 
                     <header class="single-listing__header">
                         <div class="single-listing__header-text">
-                            <span class="archive-badge">Have Room</span>
+                            <span class="archive-badge">Room</span>
                             <h1><?php the_title(); ?></h1>
 
                             <div class="single-listing__chips">
@@ -89,7 +89,7 @@ if (have_posts()) :
                                     <?php if ($available_date) : ?><li><strong>Available Date:</strong> <?php echo esc_html($available_date); ?></li><?php endif; ?>
                                     <?php if ($property_type) : ?><li><strong>Property Type:</strong> <?php echo esc_html($property_type); ?></li><?php endif; ?>
                                     <?php if ($address) : ?><li><strong>Address:</strong> <?php echo esc_html($address); ?></li><?php endif; ?>
-                                    <?php if ($nearby_landmark) : ?><li><strong>Nearby:</strong> <?php echo esc_html($nearby_landmark); ?></li><?php endif; ?>
+                                    <?php if ($nearby_landmark) : ?><li><strong>Nearby Landmark:</strong> <?php echo esc_html($nearby_landmark); ?></li><?php endif; ?>
                                     <?php if ($utilities) : ?><li><strong>Utilities:</strong> <?php echo esc_html($utilities); ?></li><?php endif; ?>
                                     <?php if ($min_stay) : ?><li><strong>Minimum Stay:</strong> <?php echo esc_html($min_stay); ?></li><?php endif; ?>
                                     <?php if ($pet_policy) : ?><li><strong>Pet Policy:</strong> <?php echo esc_html($pet_policy); ?></li><?php endif; ?>
@@ -118,14 +118,18 @@ if (have_posts()) :
                             <?php if ($map_url) : ?>
                                 <section class="single-card">
                                     <h2>Map</h2>
-                                    <p><a class="btn btn-secondary" href="<?php echo esc_url($map_url); ?>" target="_blank" rel="noopener noreferrer">Open Location Map</a></p>
+                                    <p>
+                                        <a class="btn btn-secondary" href="<?php echo esc_url($map_url); ?>" target="_blank" rel="noopener noreferrer">
+                                            Open Location Map
+                                        </a>
+                                    </p>
                                 </section>
                             <?php endif; ?>
                         </div>
 
                         <aside class="single-listing__sidebar">
                             <section class="single-card">
-                                <h2>About the roommate</h2>
+                                <h2>About the Current Roommate</h2>
                                 <ul class="detail-list">
                                     <?php if ($nickname) : ?><li><strong>Name:</strong> <?php echo esc_html($nickname); ?></li><?php endif; ?>
                                     <?php if ($age) : ?><li><strong>Age:</strong> <?php echo esc_html($age); ?></li><?php endif; ?>
@@ -133,7 +137,7 @@ if (have_posts()) :
                                     <?php if ($occupation) : ?><li><strong>Occupation:</strong> <?php echo esc_html($occupation); ?></li><?php endif; ?>
                                     <?php if ($languages) : ?><li><strong>Languages:</strong> <?php echo esc_html($languages); ?></li><?php endif; ?>
                                     <?php if ($cleanliness) : ?><li><strong>Cleanliness:</strong> <?php echo esc_html($cleanliness); ?></li><?php endif; ?>
-                                    <?php if ($sleep_schedule) : ?><li><strong>Sleep:</strong> <?php echo esc_html($sleep_schedule); ?></li><?php endif; ?>
+                                    <?php if ($sleep_schedule) : ?><li><strong>Sleep Schedule:</strong> <?php echo esc_html($sleep_schedule); ?></li><?php endif; ?>
                                     <?php if ($smoker) : ?><li><strong>Smoker:</strong> <?php echo esc_html($smoker); ?></li><?php endif; ?>
                                     <?php if ($has_pets) : ?><li><strong>Has Pets:</strong> <?php echo esc_html($has_pets); ?></li><?php endif; ?>
                                     <?php if ($social_level) : ?><li><strong>Social Level:</strong> <?php echo esc_html($social_level); ?></li><?php endif; ?>

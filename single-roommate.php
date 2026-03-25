@@ -1,6 +1,6 @@
 <?php
 /**
- * Single Template: Need Room
+ * Single Template: Roommate
  */
 
 defined('ABSPATH') || exit;
@@ -42,13 +42,13 @@ if (have_posts()) :
         $room_types     = get_the_terms(get_the_ID(), 'room_type');
         ?>
 
-        <main id="primary" class="site-main single-page single-need-room">
+        <main id="primary" class="site-main single-page single-roommate">
             <div class="container">
                 <article <?php post_class('single-listing'); ?>>
 
                     <header class="single-listing__header">
                         <div class="single-listing__header-text">
-                            <span class="archive-badge">Need Room</span>
+                            <span class="archive-badge">Roommate</span>
                             <h1><?php the_title(); ?></h1>
 
                             <div class="single-listing__chips">
@@ -66,15 +66,22 @@ if (have_posts()) :
                             </div>
                         </div>
 
-                        <div class="single-listing__price">
-                            <?php if ($budget_min || $budget_max) : ?>
+                        <?php if ($budget_min || $budget_max) : ?>
+                            <div class="single-listing__price">
                                 Budget:
-                                <?php echo esc_html(rmt_format_price($budget_min)); ?>
-                                <?php if ($budget_max) : ?>
-                                    - <?php echo esc_html(rmt_format_price($budget_max)); ?>
+                                <?php if ($budget_min) : ?>
+                                    <?php echo esc_html(rmt_format_price($budget_min)); ?>
                                 <?php endif; ?>
-                            <?php endif; ?>
-                        </div>
+
+                                <?php if ($budget_min && $budget_max) : ?>
+                                    - 
+                                <?php endif; ?>
+
+                                <?php if ($budget_max) : ?>
+                                    <?php echo esc_html(rmt_format_price($budget_max)); ?>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
                     </header>
 
                     <div class="single-listing__media">
@@ -93,7 +100,7 @@ if (have_posts()) :
                                     <?php if ($preferred_room_type) : ?><li><strong>Preferred Room Type:</strong> <?php echo esc_html($preferred_room_type); ?></li><?php endif; ?>
                                     <?php if ($lease_duration) : ?><li><strong>Lease Duration:</strong> <?php echo esc_html($lease_duration); ?></li><?php endif; ?>
                                     <?php if ($preferred_area_text) : ?><li><strong>Preferred Area:</strong> <?php echo esc_html($preferred_area_text); ?></li><?php endif; ?>
-                                    <?php if ($private_or_shared) : ?><li><strong>Private/Shared:</strong> <?php echo esc_html($private_or_shared); ?></li><?php endif; ?>
+                                    <?php if ($private_or_shared) : ?><li><strong>Private or Shared:</strong> <?php echo esc_html($private_or_shared); ?></li><?php endif; ?>
                                     <?php if ($gender_preference) : ?><li><strong>Gender Preference:</strong> <?php echo esc_html($gender_preference); ?></li><?php endif; ?>
                                     <?php if ($pets_ok) : ?><li><strong>Pets OK:</strong> <?php echo esc_html($pets_ok); ?></li><?php endif; ?>
                                     <?php if ($smokers_ok) : ?><li><strong>Smokers OK:</strong> <?php echo esc_html($smokers_ok); ?></li><?php endif; ?>
@@ -110,7 +117,7 @@ if (have_posts()) :
 
                         <aside class="single-listing__sidebar">
                             <section class="single-card">
-                                <h2>About this person</h2>
+                                <h2>About This Person</h2>
                                 <ul class="detail-list">
                                     <?php if ($nickname) : ?><li><strong>Name:</strong> <?php echo esc_html($nickname); ?></li><?php endif; ?>
                                     <?php if ($age) : ?><li><strong>Age:</strong> <?php echo esc_html($age); ?></li><?php endif; ?>
@@ -118,7 +125,7 @@ if (have_posts()) :
                                     <?php if ($occupation) : ?><li><strong>Occupation:</strong> <?php echo esc_html($occupation); ?></li><?php endif; ?>
                                     <?php if ($languages) : ?><li><strong>Languages:</strong> <?php echo esc_html($languages); ?></li><?php endif; ?>
                                     <?php if ($cleanliness) : ?><li><strong>Cleanliness:</strong> <?php echo esc_html($cleanliness); ?></li><?php endif; ?>
-                                    <?php if ($sleep_schedule) : ?><li><strong>Sleep:</strong> <?php echo esc_html($sleep_schedule); ?></li><?php endif; ?>
+                                    <?php if ($sleep_schedule) : ?><li><strong>Sleep Schedule:</strong> <?php echo esc_html($sleep_schedule); ?></li><?php endif; ?>
                                     <?php if ($smoker) : ?><li><strong>Smoker:</strong> <?php echo esc_html($smoker); ?></li><?php endif; ?>
                                     <?php if ($has_pets) : ?><li><strong>Has Pets:</strong> <?php echo esc_html($has_pets); ?></li><?php endif; ?>
                                     <?php if ($social_level) : ?><li><strong>Social Level:</strong> <?php echo esc_html($social_level); ?></li><?php endif; ?>

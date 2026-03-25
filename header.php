@@ -46,11 +46,11 @@ defined('ABSPATH') || exit;
             </nav>
 
             <div class="site-header__actions">
-                <a href="<?php echo esc_url(get_post_type_archive_link('have_room')); ?>" class="btn btn-secondary header-btn">
-                    Have Room
+                <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary header-btn">
+                    Rooms
                 </a>
-                <a href="<?php echo esc_url(get_post_type_archive_link('need_room')); ?>" class="btn btn-primary header-btn">
-                    Need Room
+                <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn btn-primary header-btn">
+                    Roommates
                 </a>
 
                 <button
@@ -82,11 +82,11 @@ defined('ABSPATH') || exit;
                 ?>
 
                 <div class="mobile-menu-actions">
-                    <a href="<?php echo esc_url(get_post_type_archive_link('have_room')); ?>" class="btn btn-secondary mobile-menu-btn">
-                        Explore Have Room
+                    <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary mobile-menu-btn">
+                        Explore Rooms
                     </a>
-                    <a href="<?php echo esc_url(get_post_type_archive_link('need_room')); ?>" class="btn btn-primary mobile-menu-btn">
-                        Explore Need Room
+                    <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn btn-primary mobile-menu-btn">
+                        Explore Roommates
                     </a>
                 </div>
             </nav>

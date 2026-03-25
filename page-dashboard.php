@@ -38,20 +38,15 @@ if (
     }
 }
 
-/**
- * Handle simple status update request (optional placeholder)
- * You can expand this later.
- */
-
-$have_room_posts = new WP_Query(array(
-    'post_type'      => 'have_room',
+$room_posts = new WP_Query(array(
+    'post_type'      => 'room',
     'author'         => $current_user->ID,
     'post_status'    => array('publish', 'pending', 'draft'),
     'posts_per_page' => -1,
 ));
 
-$need_room_posts = new WP_Query(array(
-    'post_type'      => 'need_room',
+$roommate_posts = new WP_Query(array(
+    'post_type'      => 'roommate',
     'author'         => $current_user->ID,
     'post_status'    => array('publish', 'pending', 'draft'),
     'posts_per_page' => -1,
@@ -66,7 +61,7 @@ get_header();
             <span class="archive-badge">Dashboard</span>
             <h1 class="archive-title">Welcome, <?php echo esc_html($current_user->display_name); ?></h1>
             <p class="archive-description">
-                Manage your roommate listings, check their status, and keep your profile up to date.
+                Manage your room and roommate listings, check their status, and keep your profile up to date.
             </p>
         </div>
     </section>
@@ -91,8 +86,8 @@ get_header();
                     <ul class="detail-list">
                         <li><strong>Name:</strong> <?php echo esc_html($current_user->display_name); ?></li>
                         <li><strong>Email:</strong> <?php echo esc_html($current_user->user_email); ?></li>
-                        <li><strong>Have Room Listings:</strong> <?php echo esc_html($have_room_posts->found_posts); ?></li>
-                        <li><strong>Need Room Profiles:</strong> <?php echo esc_html($need_room_posts->found_posts); ?></li>
+                        <li><strong>Room Listings:</strong> <?php echo esc_html($room_posts->found_posts); ?></li>
+                        <li><strong>Roommate Profiles:</strong> <?php echo esc_html($roommate_posts->found_posts); ?></li>
                     </ul>
                 </div>
 
@@ -117,14 +112,14 @@ get_header();
     <section class="listing-section">
         <div class="container">
             <div class="section-heading">
-                <span class="section-badge">My Have Room</span>
-                <h2>Your Have Room listings</h2>
+                <span class="section-badge">My Rooms</span>
+                <h2>Your Room listings</h2>
                 <p>These are the room listings you have submitted.</p>
             </div>
 
-            <?php if ($have_room_posts->have_posts()) : ?>
+            <?php if ($room_posts->have_posts()) : ?>
                 <div class="listing-grid">
-                    <?php while ($have_room_posts->have_posts()) : $have_room_posts->the_post(); ?>
+                    <?php while ($room_posts->have_posts()) : $room_posts->the_post(); ?>
                         <?php
                         $rent           = rmt_get_meta(get_the_ID(), '_rent');
                         $available_date = rmt_get_meta(get_the_ID(), '_available_date');
@@ -178,8 +173,8 @@ get_header();
                 <?php wp_reset_postdata(); ?>
             <?php else : ?>
                 <div class="empty-state">
-                    <h3>No Have Room listings yet</h3>
-                    <p>You have not submitted any Have Room listings.</p>
+                    <h3>No Room listings yet</h3>
+                    <p>You have not submitted any room listings.</p>
                 </div>
             <?php endif; ?>
         </div>
@@ -188,18 +183,18 @@ get_header();
     <section class="listing-section">
         <div class="container">
             <div class="section-heading">
-                <span class="section-badge">My Need Room</span>
-                <h2>Your Need Room profiles</h2>
-                <p>These are the room search profiles you have submitted.</p>
+                <span class="section-badge">My Roommates</span>
+                <h2>Your Roommate profiles</h2>
+                <p>These are the roommate profiles you have submitted.</p>
             </div>
 
-            <?php if ($need_room_posts->have_posts()) : ?>
+            <?php if ($roommate_posts->have_posts()) : ?>
                 <div class="listing-grid">
-                    <?php while ($need_room_posts->have_posts()) : $need_room_posts->the_post(); ?>
+                    <?php while ($roommate_posts->have_posts()) : $roommate_posts->the_post(); ?>
                         <?php
-                        $budget_min   = rmt_get_meta(get_the_ID(), '_budget_min');
-                        $budget_max   = rmt_get_meta(get_the_ID(), '_budget_max');
-                        $move_in_date = rmt_get_meta(get_the_ID(), '_move_in_date');
+                        $budget_min     = rmt_get_meta(get_the_ID(), '_budget_min');
+                        $budget_max     = rmt_get_meta(get_the_ID(), '_budget_max');
+                        $move_in_date   = rmt_get_meta(get_the_ID(), '_move_in_date');
                         $preferred_area = rmt_get_meta(get_the_ID(), '_preferred_area_text');
                         ?>
                         <article class="listing-card">
@@ -218,8 +213,11 @@ get_header();
                                         <?php if ($budget_min) : ?>
                                             <?php echo esc_html(rmt_format_price($budget_min)); ?>
                                         <?php endif; ?>
+                                        <?php if ($budget_min && $budget_max) : ?>
+                                            -
+                                        <?php endif; ?>
                                         <?php if ($budget_max) : ?>
-                                            - <?php echo esc_html(rmt_format_price($budget_max)); ?>
+                                            <?php echo esc_html(rmt_format_price($budget_max)); ?>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -255,8 +253,8 @@ get_header();
                 <?php wp_reset_postdata(); ?>
             <?php else : ?>
                 <div class="empty-state">
-                    <h3>No Need Room profiles yet</h3>
-                    <p>You have not submitted any Need Room profiles.</p>
+                    <h3>No Roommate profiles yet</h3>
+                    <p>You have not submitted any roommate profiles.</p>
                 </div>
             <?php endif; ?>
         </div>

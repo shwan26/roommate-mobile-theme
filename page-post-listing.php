@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_front_submit'])) 
     } else {
         $listing_type = isset($_POST['listing_type']) ? sanitize_text_field($_POST['listing_type']) : '';
 
-        if (!in_array($listing_type, array('have_room', 'need_room'), true)) {
+        if (!in_array($listing_type, array('room', 'roommate'), true)) {
             $error_message = 'Please choose a valid listing type.';
         } else {
             $post_title   = isset($_POST['post_title']) ? sanitize_text_field($_POST['post_title']) : '';
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_front_submit'])) 
                 ));
 
                 if ($post_id && !is_wp_error($post_id)) {
-                    if ($listing_type === 'have_room') {
+                    if ($listing_type === 'room') {
                         update_post_meta($post_id, '_rent', isset($_POST['_rent']) ? sanitize_text_field($_POST['_rent']) : '');
                         update_post_meta($post_id, '_deposit', isset($_POST['_deposit']) ? sanitize_text_field($_POST['_deposit']) : '');
                         update_post_meta($post_id, '_available_date', isset($_POST['_available_date']) ? sanitize_text_field($_POST['_available_date']) : '');
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_front_submit'])) 
                         update_post_meta($post_id, '_roommate_preference', isset($_POST['_roommate_preference']) ? sanitize_textarea_field($_POST['_roommate_preference']) : '');
                     }
 
-                    if ($listing_type === 'need_room') {
+                    if ($listing_type === 'roommate') {
                         update_post_meta($post_id, '_budget_min', isset($_POST['_budget_min']) ? sanitize_text_field($_POST['_budget_min']) : '');
                         update_post_meta($post_id, '_budget_max', isset($_POST['_budget_max']) ? sanitize_text_field($_POST['_budget_max']) : '');
                         update_post_meta($post_id, '_move_in_date', isset($_POST['_move_in_date']) ? sanitize_text_field($_POST['_move_in_date']) : '');
@@ -108,10 +108,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_front_submit'])) 
                         <label for="listing_type">Listing Type</label>
                         <select name="listing_type" id="listing_type" required>
                             <option value="">Select one</option>
-                            <option value="have_room" <?php selected(isset($_POST['listing_type']) ? $_POST['listing_type'] : '', 'have_room'); ?>>
+                            <option value="room" <?php selected(isset($_POST['listing_type']) ? $_POST['listing_type'] : '', 'room'); ?>>
                                 I Have a Room
                             </option>
-                            <option value="need_room" <?php selected(isset($_POST['listing_type']) ? $_POST['listing_type'] : '', 'need_room'); ?>>
+                            <option value="roommate" <?php selected(isset($_POST['listing_type']) ? $_POST['listing_type'] : '', 'roommate'); ?>>
                                 I Need a Room
                             </option>
                         </select>
@@ -141,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_front_submit'])) 
                     </div>
                 </div>
 
-                <div id="have-room-fields" class="single-card" style="margin-top: 1.5rem;">
+                <div id="room-fields" class="single-card" style="margin-top: 1.5rem;">
                     <h2>Have Room Details</h2>
                     <div class="filter-grid">
                         <div class="filter-group">
@@ -201,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_front_submit'])) 
                     </div>
                 </div>
 
-                <div id="need-room-fields" class="single-card" style="margin-top: 1.5rem;">
+                <div id="roommate-fields" class="single-card" style="margin-top: 1.5rem;">
                     <h2>Need Room Details</h2>
                     <div class="filter-grid">
                         <div class="filter-group">
@@ -279,18 +279,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_front_submit'])) 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const listingType = document.getElementById('listing_type');
-    const haveRoomFields = document.getElementById('have-room-fields');
-    const needRoomFields = document.getElementById('need-room-fields');
+    const haveRoomFields = document.getElementById('room-fields');
+    const needRoomFields = document.getElementById('roommate-fields');
 
     function toggleListingFields() {
         const value = listingType ? listingType.value : '';
 
         if (haveRoomFields) {
-            haveRoomFields.style.display = value === 'have_room' ? 'block' : 'none';
+            haveRoomFields.style.display = value === 'room' ? 'block' : 'none';
         }
 
         if (needRoomFields) {
-            needRoomFields.style.display = value === 'need_room' ? 'block' : 'none';
+            needRoomFields.style.display = value === 'roommate' ? 'block' : 'none';
         }
     }
 

@@ -1,26 +1,18 @@
 # roommate-mobile-theme
 
 roommate-mobile-theme/
-├── style.css
-├── functions.php
-├── index.php
-├── header.php
-├── footer.php
-├── front-page.php
-├── archive-have_room.php
-├── single-have_room.php
-├── archive-need_room.php
-├── single-need_room.php
-├── page-post-listing.php
-├── page-dashboard.php
-├── assets/
+│── style.css
+│── functions.php
+│── front-page.php
+│── archive-room.php
+│── single-room.php
+│── archive-roommate.php
+│── single-roommate.php
+│── header.php
+│── footer.php
+│── index.php
+│── page.php
+│── assets/
 │   ├── css/
 │   ├── js/
 │   └── images/
-└── inc/
-    ├── setup.php
-    ├── post-types.php
-    ├── taxonomies.php
-    ├── meta-boxes.php
-    ├── helpers.php
-    └── ajax.php
