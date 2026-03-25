@@ -5,6 +5,16 @@
 
 defined('ABSPATH') || exit;
 
+/**
+ * Hero stats
+ */
+$room_count      = wp_count_posts('room')->publish ?? 0;
+$roommate_count  = wp_count_posts('roommate')->publish ?? 0;
+$total_listings  = $room_count + $roommate_count;
+
+$total_users   = count_users();
+$member_count  = $total_users['total_users'] ?? 0;
+
 get_header();
 
 /**
@@ -28,56 +38,132 @@ $roommate_query = new WP_Query(array(
 
 <main id="primary" class="site-main front-page">
 
-    <section class="hero-section">
+    <!-- ═══════════════════════════════════════════════════════════
+         HERO SECTION
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="hero-section rmt-hero" aria-label="<?php esc_attr_e('Find a room or roommate', 'roommate-mobile-theme'); ?>">
         <div class="container">
-            <div class="hero-grid">
-                <div class="hero-content">
-                    <h1 class="hero-title">Find a Room. Find a Roommate.</h1>
-                    <p class="hero-description">
-                        Browse available rooms or connect with people who are still looking.
-                        Match by budget, location, lifestyle, and personality.
+
+            <div class="rmt-hero__eyebrow" aria-hidden="true">
+                <span class="rmt-hero__eyebrow-dot"></span>
+                <?php esc_html_e("Bangkok's Roommate Platform", 'roommate-mobile-theme'); ?>
+            </div>
+
+            <h1 class="rmt-hero__headline">
+                <?php esc_html_e('Find your perfect', 'roommate-mobile-theme'); ?><br>
+                <mark><?php esc_html_e('room', 'roommate-mobile-theme'); ?></mark>
+                <?php esc_html_e('or', 'roommate-mobile-theme'); ?>
+                <mark><?php esc_html_e('roommate', 'roommate-mobile-theme'); ?></mark>.
+            </h1>
+
+            <p class="rmt-hero__sub">
+                <?php esc_html_e('Browse real listings from real people. Filter by budget, neighbourhood, and lifestyle — no spam, no bots.', 'roommate-mobile-theme'); ?>
+            </p>
+
+            <div class="rmt-hero__grid">
+
+                <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>"
+                   class="rmt-card rmt-card--dark"
+                   aria-label="<?php esc_attr_e('Browse available rooms', 'roommate-mobile-theme'); ?>">
+
+                    <div class="rmt-card__icon rmt-card__icon--dark" aria-hidden="true">🔑</div>
+
+                    <div class="rmt-card__meta">
+                        <span class="rmt-card__label rmt-card__label--dark">
+                            <?php esc_html_e('Need a room', 'roommate-mobile-theme'); ?>
+                        </span>
+                        <h2 class="rmt-card__title rmt-card__title--dark">
+                            <?php esc_html_e('Find a Room', 'roommate-mobile-theme'); ?>
+                        </h2>
+                    </div>
+
+                    <p class="rmt-card__desc rmt-card__desc--dark">
+                        <?php esc_html_e('Browse available rooms with photos, prices, and details from people who already have a place.', 'roommate-mobile-theme'); ?>
                     </p>
 
-                    <div class="hero-actions">
-                        <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn btn-primary">
-                            Roommates
-                        </a>
-                        <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary">
-                            Rooms
-                        </a>
+                    <span class="rmt-card__cta rmt-card__cta--dark" aria-hidden="true">
+                        <?php
+                        printf(
+                            esc_html__('Browse rooms →', 'roommate-mobile-theme'),
+                            intval($room_count)
+                        );
+                        ?>
+                    </span>
+                </a>
+
+                <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>"
+                   class="rmt-card rmt-card--light"
+                   aria-label="<?php esc_attr_e('Browse people looking for a room', 'roommate-mobile-theme'); ?>">
+
+                    <div class="rmt-card__icon rmt-card__icon--light" aria-hidden="true">🏠</div>
+
+                    <div class="rmt-card__meta">
+                        <span class="rmt-card__label rmt-card__label--light">
+                            <?php esc_html_e('Have a room', 'roommate-mobile-theme'); ?>
+                        </span>
+                        <h2 class="rmt-card__title rmt-card__title--light">
+                            <?php esc_html_e('Find a Roommate', 'roommate-mobile-theme'); ?>
+                        </h2>
                     </div>
 
-                    <div class="hero-stats">
-                        <div class="hero-stat">
-                            <strong><?php echo esc_html(wp_count_posts('room')->publish ?? 0); ?></strong>
-                            <span>Rooms</span>
-                        </div>
-                        <div class="hero-stat">
-                            <strong><?php echo esc_html(wp_count_posts('roommate')->publish ?? 0); ?></strong>
-                            <span>Roommates</span>
-                        </div>
-                    </div>
-                </div>
+                    <p class="rmt-card__desc rmt-card__desc--light">
+                        <?php esc_html_e('You have a place and need someone to share it with. Connect with vetted people looking right now.', 'roommate-mobile-theme'); ?>
+                    </p>
 
-                <div class="hero-card">
-                    <div class="hero-card__box">
-                        <h2>Start your search</h2>
-                        <p>Choose the option that fits your situation.</p>
+                    <span class="rmt-card__cta rmt-card__cta--light" aria-hidden="true">
+                        <?php
+                        printf(
+                            esc_html__('Browse roommates →', 'roommate-mobile-theme'),
+                            intval($roommate_count)
+                        );
+                        ?>
+                    </span>
+                </a>
 
-                        <div class="hero-card__options">
-                            <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="hero-option">
-                                <h3>Roommates</h3>
-                                <p>Show me people who are looking for a room or roommate.</p>
-                            </a>
+                
 
-                            <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="hero-option">
-                                <h3>Rooms</h3>
-                                <p>Show me available rooms and people who already have a place.</p>
-                            </a>
-                        </div>
-                    </div>
-                </div>
             </div>
+
+            <!-- <div class="rmt-hero__stats" role="list" aria-label="<?php esc_attr_e('Platform statistics', 'roommate-mobile-theme'); ?>">
+
+                <div class="rmt-stat" role="listitem">
+                    <span class="rmt-stat__number">
+                        <?php echo esc_html(number_format_i18n($total_listings)); ?>+
+                    </span>
+                    <span class="rmt-stat__label"><?php esc_html_e('Active listings', 'roommate-mobile-theme'); ?></span>
+                </div>
+
+                <div class="rmt-stat" role="listitem">
+                    <span class="rmt-stat__number">
+                        <?php echo esc_html(number_format_i18n($member_count)); ?>
+                    </span>
+                    <span class="rmt-stat__label"><?php esc_html_e('Members joined', 'roommate-mobile-theme'); ?></span>
+                </div>
+
+                <div class="rmt-stat" role="listitem">
+                    <span class="rmt-stat__number">92%</span>
+                    <span class="rmt-stat__label"><?php esc_html_e('Match success rate', 'roommate-mobile-theme'); ?></span>
+                </div>
+
+            </div> -->
+
+            <ul class="rmt-trust" aria-label="<?php esc_attr_e('Trust indicators', 'roommate-mobile-theme'); ?>">
+                <?php
+                $trust_items = [
+                    __('Free to browse', 'roommate-mobile-theme'),
+                    __('No hidden fees', 'roommate-mobile-theme'),
+                    __('Verified profiles', 'roommate-mobile-theme'),
+                    __('Bangkok-focused', 'roommate-mobile-theme'),
+                ];
+
+                foreach ($trust_items as $item) : ?>
+                    <li class="rmt-trust__item">
+                        <span class="rmt-trust__check" aria-hidden="true">✓</span>
+                        <?php echo esc_html($item); ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+
         </div>
     </section>
 
