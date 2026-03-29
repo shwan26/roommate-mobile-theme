@@ -40,8 +40,8 @@ function rmt_theme_setup() {
     ));
 
     add_theme_support('custom-logo', array(
-        'height'      => 80,
-        'width'       => 220,
+        'height'      => 60,
+        'width'       => 200,
         'flex-height' => true,
         'flex-width'  => true,
     ));
