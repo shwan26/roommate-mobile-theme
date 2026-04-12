@@ -85,15 +85,29 @@ if (have_posts()) :
                             <section class="single-card">
                                 <h2>Room Details</h2>
                                 <ul class="detail-list">
-                                    <?php if ($deposit) : ?><li><strong>Deposit:</strong> <?php echo esc_html(rmt_format_price($deposit)); ?></li><?php endif; ?>
-                                    <?php if ($available_date) : ?><li><strong>Available Date:</strong> <?php echo esc_html($available_date); ?></li><?php endif; ?>
+                                    <?php if ($property_name) : ?><li><strong>Property Name:</strong> <?php echo esc_html($property_name); ?></li><?php endif; ?>
                                     <?php if ($property_type) : ?><li><strong>Property Type:</strong> <?php echo esc_html($property_type); ?></li><?php endif; ?>
-                                    <?php if ($address) : ?><li><strong>Address:</strong> <?php echo esc_html($address); ?></li><?php endif; ?>
-                                    <?php if ($nearby_landmark) : ?><li><strong>Nearby Landmark:</strong> <?php echo esc_html($nearby_landmark); ?></li><?php endif; ?>
-                                    <?php if ($utilities) : ?><li><strong>Utilities:</strong> <?php echo esc_html($utilities); ?></li><?php endif; ?>
-                                    <?php if ($min_stay) : ?><li><strong>Minimum Stay:</strong> <?php echo esc_html($min_stay); ?></li><?php endif; ?>
+
+                                    <?php if ($address) : ?><li><strong>Location:</strong> <?php echo esc_html($address); ?></li><?php endif; ?>
+
+                                    <?php if ($rent) : ?><li><strong>Rent:</strong> <?php echo esc_html(rmt_format_price($rent)); ?>/month</li><?php endif; ?>
+
+                                    <?php if ($bills_included) : ?><li><strong>Bills:</strong> <?php echo esc_html($bills_included); ?></li><?php endif; ?>
+
+                                    <?php if ($deposit !== '') : ?><li><strong>Deposit:</strong> <?php echo esc_html(rmt_format_price($deposit)); ?></li><?php endif; ?>
+
+                                    <?php if ($available_date) : ?><li><strong>Available From:</strong> <?php echo esc_html($available_date); ?></li><?php endif; ?>
+
+                                    <?php if ($gender_preference) : ?><li><strong>Gender Preference:</strong> <?php echo esc_html($gender_preference); ?></li><?php endif; ?>
+
                                     <?php if ($pet_policy) : ?><li><strong>Pet Policy:</strong> <?php echo esc_html($pet_policy); ?></li><?php endif; ?>
+
                                     <?php if ($smoking_policy) : ?><li><strong>Smoking Policy:</strong> <?php echo esc_html($smoking_policy); ?></li><?php endif; ?>
+
+                                    <?php if ($utilities) : ?><li><strong>Utilities:</strong> <?php echo esc_html($utilities); ?></li><?php endif; ?>
+
+                                    <?php if ($min_stay) : ?><li><strong>Minimum Stay:</strong> <?php echo esc_html($min_stay); ?></li><?php endif; ?>
+
                                 </ul>
                             </section>
 
@@ -129,8 +143,9 @@ if (have_posts()) :
 
                         <aside class="single-listing__sidebar">
                             <section class="single-card">
-                                <h2>About the Current Roommate</h2>
+                                <h2>Current Roommate</h2>
                                 <ul class="detail-list">
+
                                     <?php if ($nickname) : ?><li><strong>Name:</strong> <?php echo esc_html($nickname); ?></li><?php endif; ?>
                                     <?php if ($age) : ?><li><strong>Age:</strong> <?php echo esc_html($age); ?></li><?php endif; ?>
                                     <?php if ($gender) : ?><li><strong>Gender:</strong> <?php echo esc_html($gender); ?></li><?php endif; ?>
@@ -140,8 +155,9 @@ if (have_posts()) :
                                     <?php if ($sleep_schedule) : ?><li><strong>Sleep Schedule:</strong> <?php echo esc_html($sleep_schedule); ?></li><?php endif; ?>
                                     <?php if ($smoker) : ?><li><strong>Smoker:</strong> <?php echo esc_html($smoker); ?></li><?php endif; ?>
                                     <?php if ($has_pets) : ?><li><strong>Has Pets:</strong> <?php echo esc_html($has_pets); ?></li><?php endif; ?>
-                                    <?php if ($social_level) : ?><li><strong>Social Level:</strong> <?php echo esc_html($social_level); ?></li><?php endif; ?>
+                                    <?php if ($social_level) : ?><li><strong>Social Level:</strong> <?php echo esc_html($social_level); ?>/10</li><?php endif; ?>
                                     <?php if ($hobbies) : ?><li><strong>Hobbies:</strong> <?php echo esc_html($hobbies); ?></li><?php endif; ?>
+
                                 </ul>
                             </section>
 
