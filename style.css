@@ -11,28 +11,28 @@ Text Domain: roommate-mobile-theme
    1. ROOT VARIABLES
    ========================================================= */
 :root {
-  --color-primary: #89e219;
-  --color-primary-dark: #6fbe12;
-  --color-primary-light: #b6f062;
+  --color-primary: #89E219;
+  --color-primary-dark: #58CC02;
+  --color-primary-light: #B7EF63;
 
-  --color-secondary: #4a1a8c;
-  --color-secondary-dark: #371368;
-  --color-secondary-light: #6f38c7;
+  --color-secondary: #4B4B4B;
+  --color-secondary-dark: #363636;
+  --color-secondary-light: #6B6B6B;
 
-  --color-bg: #f7faf3;
-  --color-surface: #ffffff;
-  --color-surface-alt: #f1f6ea;
-  --color-border: #dbe8cb;
+  --color-bg: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F7F7F7;
+  --color-border: #E4E4E4;
 
-  --color-text: #1d2614;
-  --color-text-soft: #53604a;
-  --color-text-muted: #6f7a67;
-  --color-white: #ffffff;
+  --color-text: #2F2F2F;
+  --color-text-soft: #5F5F5F;
+  --color-text-muted: #8A8A8A;
+  --color-white: #FFFFFF;
   --color-black: #111111;
 
-  --shadow-sm: 0 4px 12px rgba(17, 17, 17, 0.06);
-  --shadow-md: 0 12px 32px rgba(17, 17, 17, 0.10);
-  --shadow-lg: 0 20px 50px rgba(17, 17, 17, 0.14);
+  --shadow-sm: 0 6px 18px rgba(17, 17, 17, 0.06);
+  --shadow-md: 0 14px 35px rgba(17, 17, 17, 0.10);
+  --shadow-lg: 0 24px 60px rgba(17, 17, 17, 0.14);
 
   --radius-sm: 10px;
   --radius-md: 16px;
@@ -149,6 +149,7 @@ p {
   color: var(--color-secondary);
   font-weight: 700;
   font-size: 0.9rem;
+  border: 1px solid rgba(137, 226, 25, 0.24);
 }
 
 .btn {
@@ -179,6 +180,7 @@ p {
 
 .btn-primary:hover {
   background: var(--color-primary-dark);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-secondary {
@@ -188,6 +190,7 @@ p {
 }
 
 .btn-secondary:hover {
+  background: #FAFAFA;
   border-color: var(--color-secondary-light);
   color: var(--color-secondary-dark);
 }
@@ -222,9 +225,9 @@ p {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(247, 250, 243, 0.92);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(219, 232, 203, 0.8);
+  border-bottom: 1px solid rgba(228, 228, 228, 0.9);
 }
 
 .site-header__inner {
@@ -248,6 +251,7 @@ p {
   font-size: 1.3rem;
   font-weight: 800;
   color: var(--color-secondary);
+  letter-spacing: -0.02em;
 }
 
 .custom-logo-link img,
@@ -286,7 +290,7 @@ p {
 .primary-menu a:hover,
 .footer-menu a:hover,
 .mobile-menu-list a:hover {
-  color: var(--color-secondary);
+  color: var(--color-primary-dark);
 }
 
 .site-header__actions {
@@ -311,6 +315,7 @@ p {
   border-radius: 12px;
   padding: 0;
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
 }
 
 .mobile-menu-toggle span {
@@ -360,8 +365,8 @@ p {
 
 .hero-content {
   background:
-    radial-gradient(circle at top left, rgba(137, 226, 25, 0.22), transparent 35%),
-    linear-gradient(135deg, #fff 0%, #f4f8ee 100%);
+    radial-gradient(circle at top left, rgba(137, 226, 25, 0.16), transparent 35%),
+    linear-gradient(135deg, #FFFFFF 0%, #F8FCEB 100%);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   padding: clamp(1.5rem, 3vw, 3rem);
@@ -415,7 +420,7 @@ p {
 
 .hero-card__box {
   height: 100%;
-  background: var(--color-secondary);
+  background: linear-gradient(135deg, #4B4B4B 0%, #363636 100%);
   color: var(--color-white);
   border-radius: var(--radius-xl);
   padding: clamp(1.5rem, 3vw, 2.4rem);
@@ -437,14 +442,14 @@ p {
 
 .hero-option {
   display: block;
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-lg);
   padding: 1.1rem;
 }
 
 .hero-option:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
 }
 
@@ -526,7 +531,7 @@ p {
 .listing-card__image {
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: #e8efde;
+  background: #F3F3F3;
 }
 
 .listing-card__image img {
@@ -560,7 +565,7 @@ p {
 .listing-card__price {
   font-size: 1.05rem;
   font-weight: 800;
-  color: var(--color-secondary);
+  color: var(--color-primary-dark);
 }
 
 .listing-card__available {
@@ -574,7 +579,7 @@ p {
 }
 
 .listing-card__title a:hover {
-  color: var(--color-secondary);
+  color: var(--color-primary-dark);
 }
 
 .listing-card__address {
@@ -594,8 +599,8 @@ p {
   align-items: center;
   padding: 0.42rem 0.8rem;
   border-radius: 999px;
-  background: var(--color-surface-alt);
-  border: 1px solid var(--color-border);
+  background: #F8FCEB;
+  border: 1px solid rgba(137, 226, 25, 0.18);
   color: var(--color-secondary);
   font-size: 0.88rem;
   font-weight: 700;
@@ -644,7 +649,7 @@ p {
 .single-listing__price {
   font-size: 1.25rem;
   font-weight: 800;
-  color: var(--color-secondary);
+  color: var(--color-primary-dark);
 }
 
 .single-listing__media {
@@ -741,8 +746,8 @@ p {
 .filter-group select:focus,
 .filter-group textarea:focus {
   outline: none;
-  border-color: var(--color-secondary-light);
-  box-shadow: 0 0 0 4px rgba(111, 56, 199, 0.12);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(137, 226, 25, 0.18);
 }
 
 .filter-actions {
@@ -759,8 +764,7 @@ p {
   display: grid;
   gap: 1.25rem;
   padding: clamp(1.5rem, 3vw, 2.3rem);
-  background:
-    linear-gradient(135deg, rgba(74, 26, 140, 0.98), rgba(111, 56, 199, 0.95));
+  background: linear-gradient(135deg, #4B4B4B 0%, #2F2F2F 100%);
   color: var(--color-white);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
@@ -782,7 +786,7 @@ p {
    ========================================================= */
 .site-footer {
   padding: var(--space-12) 0 6rem;
-  background: #10130d;
+  background: #222222;
   color: rgba(255, 255, 255, 0.85);
 }
 
@@ -861,7 +865,7 @@ p {
 }
 
 .mobile-bottom-nav__item:hover {
-  color: var(--color-secondary);
+  color: var(--color-primary-dark);
 }
 
 .mobile-bottom-nav__icon {
@@ -1019,7 +1023,7 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid rgba(111, 56, 199, 0.35);
+  outline: 3px solid rgba(137, 226, 25, 0.35);
   outline-offset: 2px;
 }
 
@@ -1038,32 +1042,28 @@ textarea:focus-visible {
 
 /* =========================================================
    HERO SECTION — rmt-hero
-   Append these rules to your style.css (after section 5).
-   Requires DM Sans + DM Serif Display via Google Fonts.
    ========================================================= */
 
-/* ── Google Fonts override for hero only ── */
 .rmt-hero,
 .rmt-hero * {
   font-family: 'DM Sans', var(--font-body);
 }
+
 .rmt-hero__headline,
 .rmt-card__title {
   font-family: 'DM Serif Display', Georgia, serif;
 }
 
-/* ── Section wrapper ── */
 .rmt-hero {
   padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(2rem, 5vw, 3.5rem);
 }
 
-/* ── Eyebrow badge ── */
 .rmt-hero__eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(137, 226, 25, 0.14);
-  border: 1px solid rgba(137, 226, 25, 0.4);
+  background: rgba(137, 226, 25, 0.12);
+  border: 1px solid rgba(137, 226, 25, 0.28);
   color: var(--color-secondary);
   font-size: 0.78rem;
   font-weight: 800;
@@ -1085,10 +1085,9 @@ textarea:focus-visible {
 
 @keyframes rmt-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.45; transform: scale(0.65); }
+  50% { opacity: 0.45; transform: scale(0.65); }
 }
 
-/* ── Headline ── */
 .rmt-hero__headline {
   font-size: clamp(2.6rem, 6vw, 4.6rem);
   line-height: 1.05;
@@ -1096,12 +1095,12 @@ textarea:focus-visible {
   max-width: 800px;
   margin: 0 0 1.2rem;
   letter-spacing: -0.01em;
-  font-weight: 400; /* DM Serif Display is already heavy */
+  font-weight: 400;
 }
 
 .rmt-hero__headline mark {
   background: none;
-  color: var(--color-secondary-light);
+  color: var(--color-secondary);
   position: relative;
   display: inline-block;
   padding-bottom: 2px;
@@ -1116,10 +1115,9 @@ textarea:focus-visible {
   height: 4px;
   background: var(--color-primary);
   border-radius: 2px;
-  opacity: 0.65;
+  opacity: 0.7;
 }
 
-/* ── Subheadline ── */
 .rmt-hero__sub {
   font-size: 1.08rem;
   color: var(--color-text-soft);
@@ -1128,7 +1126,6 @@ textarea:focus-visible {
   margin-bottom: 2.2rem;
 }
 
-/* ── Option card grid ── */
 .rmt-hero__grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1142,7 +1139,6 @@ textarea:focus-visible {
   }
 }
 
-/* ── Base card ── */
 .rmt-card {
   display: flex;
   flex-direction: column;
@@ -1177,7 +1173,6 @@ textarea:focus-visible {
   opacity: 1;
 }
 
-/* ── Light card (Have a Room) ── */
 .rmt-card--light {
   background: var(--color-surface);
   border-color: var(--color-border);
@@ -1185,19 +1180,18 @@ textarea:focus-visible {
 }
 
 .rmt-card--light::before {
-  background: radial-gradient(circle at top left, rgba(137, 226, 25, 0.09), transparent 60%);
+  background: radial-gradient(circle at top left, rgba(137, 226, 25, 0.10), transparent 60%);
 }
 
 .rmt-card--light:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 14px 40px rgba(137, 226, 25, 0.2);
+  box-shadow: 0 14px 40px rgba(137, 226, 25, 0.16);
 }
 
-/* ── Dark card (Need a Room) ── */
 .rmt-card--dark {
-  background: var(--color-secondary);
-  border-color: var(--color-secondary-light);
-  box-shadow: 0 8px 32px rgba(74, 26, 140, 0.22);
+  background: linear-gradient(135deg, #4B4B4B 0%, #363636 100%);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 32px rgba(17, 17, 17, 0.20);
 }
 
 .rmt-card--dark::before {
@@ -1205,11 +1199,10 @@ textarea:focus-visible {
 }
 
 .rmt-card--dark:hover {
-  border-color: #9b59f0;
-  box-shadow: 0 18px 52px rgba(74, 26, 140, 0.34);
+  border-color: rgba(137, 226, 25, 0.30);
+  box-shadow: 0 18px 52px rgba(17, 17, 17, 0.28);
 }
 
-/* ── Card icon ── */
 .rmt-card__icon {
   width: 52px;
   height: 52px;
@@ -1227,10 +1220,9 @@ textarea:focus-visible {
 }
 
 .rmt-card__icon--dark {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.10);
 }
 
-/* ── Card meta (label + title) ── */
 .rmt-card__meta {
   display: flex;
   flex-direction: column;
@@ -1245,11 +1237,11 @@ textarea:focus-visible {
 }
 
 .rmt-card__label--light {
-  color: var(--color-secondary);
+  color: var(--color-primary-dark);
 }
 
 .rmt-card__label--dark {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.60);
 }
 
 .rmt-card__title {
@@ -1264,10 +1256,9 @@ textarea:focus-visible {
 }
 
 .rmt-card__title--dark {
-  color: #ffffff;
+  color: #FFFFFF;
 }
 
-/* ── Card description ── */
 .rmt-card__desc {
   font-size: 0.95rem;
   line-height: 1.6;
@@ -1280,10 +1271,9 @@ textarea:focus-visible {
 }
 
 .rmt-card__desc--dark {
-  color: rgba(255, 255, 255, 0.68);
+  color: rgba(255, 255, 255, 0.72);
 }
 
-/* ── Card CTA ── */
 .rmt-card__cta {
   display: inline-flex;
   align-items: center;
@@ -1308,11 +1298,10 @@ textarea:focus-visible {
 
 .rmt-card__cta--dark {
   background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-/* ── Stats strip ── */
 .rmt-hero__stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1340,7 +1329,7 @@ textarea:focus-visible {
 .rmt-stat__number {
   font-family: 'DM Serif Display', Georgia, serif;
   font-size: clamp(1.6rem, 4vw, 2rem);
-  color: var(--color-secondary);
+  color: var(--color-primary-dark);
   line-height: 1;
   font-weight: 400;
 }
@@ -1351,7 +1340,6 @@ textarea:focus-visible {
   font-weight: 600;
 }
 
-/* ── Trust badge row ── */
 .rmt-trust {
   list-style: none;
   padding: 0;
@@ -1385,19 +1373,87 @@ textarea:focus-visible {
   line-height: 1;
 }
 
-/* ── Focus / accessibility ── */
 .rmt-card:focus-visible {
-  outline: 3px solid rgba(111, 56, 199, 0.4);
+  outline: 3px solid rgba(137, 226, 25, 0.35);
   outline-offset: 3px;
 }
 
-/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .rmt-hero__eyebrow-dot {
     animation: none;
   }
+
   .rmt-card,
   .rmt-card__cta {
     transition: none !important;
   }
+}
+
+/* Post a listing section */
+.profile-post-listing {
+    margin: 1.5rem 0;
+}
+
+.profile-post-listing__subtitle {
+    color: var(--color-muted, #888);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.listing-type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.listing-type-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 1.25rem;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.listing-type-card:hover {
+    border-color: #a3a3a3;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.listing-type-card__icon {
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.listing-type-card__title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.listing-type-card__desc {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+/* Status badge on listings */
+.profile-listings__status {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-left: auto;
+}
+
+.profile-listings__status--publish {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.profile-listings__status--pending {
+    background: #fef3c7;
+    color: #92400e;
 }

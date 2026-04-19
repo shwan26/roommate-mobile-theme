@@ -27,7 +27,7 @@ defined('ABSPATH') || exit;
                         the_custom_logo();
                     } else {
                         ?>
-                        <span class="site-logo-text"><?php bloginfo('name'); ?></span>
+                        <span class="site-logo-text">Bkkroomie</span>
                         <?php
                     }
                     ?>
@@ -36,22 +36,34 @@ defined('ABSPATH') || exit;
 
             <nav class="site-nav desktop-nav" aria-label="<?php esc_attr_e('Primary Menu', 'roommate-mobile-theme'); ?>">
                 <?php
-                wp_nav_menu(array(
-                    'theme_location' => 'primary',
-                    'container'      => false,
-                    'menu_class'     => 'menu primary-menu',
-                    'fallback_cb'    => 'rmt_primary_menu_fallback',
-                ));
+                if (has_nav_menu('primary')) {
+                    wp_nav_menu(array(
+                        'theme_location' => 'primary',
+                        'container'      => false,
+                        'menu_class'     => 'menu primary-menu',
+                    ));
+                }
                 ?>
             </nav>
 
             <div class="site-header__actions">
                 <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary header-btn">
-                    Rooms
+                    Browse Rooms
                 </a>
+
                 <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn btn-primary header-btn">
-                    Roommates
+                    Browse Roommates
                 </a>
+
+                <?php if (is_user_logged_in()) : ?>
+                    <a href="<?php echo esc_url(home_url('/profile/')); ?>" class="btn btn-outline header-btn">
+                        Profile
+                    </a>
+                <?php else : ?>
+                    <a href="<?php echo esc_url(wp_login_url()); ?>" class="btn btn-outline header-btn">
+                        Login / Sign Up
+                    </a>
+                <?php endif; ?>
 
                 <button
                     class="mobile-menu-toggle"
@@ -73,21 +85,33 @@ defined('ABSPATH') || exit;
         <div class="container">
             <nav class="mobile-nav" aria-label="<?php esc_attr_e('Mobile Menu', 'roommate-mobile-theme'); ?>">
                 <?php
-                wp_nav_menu(array(
-                    'theme_location' => 'primary',
-                    'container'      => false,
-                    'menu_class'     => 'menu mobile-menu-list',
-                    'fallback_cb'    => 'rmt_primary_menu_fallback',
-                ));
+                if (has_nav_menu('primary')) {
+                    wp_nav_menu(array(
+                        'theme_location' => 'primary',
+                        'container'      => false,
+                        'menu_class'     => 'menu mobile-menu-list',
+                    ));
+                }
                 ?>
 
                 <div class="mobile-menu-actions">
                     <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary mobile-menu-btn">
-                        Explore Rooms
+                        Browse Rooms
                     </a>
+
                     <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn btn-primary mobile-menu-btn">
-                        Explore Roommates
+                        Browse Roommates
                     </a>
+
+                    <?php if (is_user_logged_in()) : ?>
+                        <a href="<?php echo esc_url(home_url('/profile/')); ?>" class="btn btn-outline mobile-menu-btn">
+                            Profile
+                        </a>
+                    <?php else : ?>
+                        <a href="<?php echo esc_url(wp_login_url()); ?>" class="btn btn-outline mobile-menu-btn">
+                            Login / Sign Up
+                        </a>
+                    <?php endif; ?>
                 </div>
             </nav>
         </div>

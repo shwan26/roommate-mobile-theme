@@ -159,108 +159,87 @@ get_header();
                 <div class="listing-grid">
                     <?php while ($show_room_query->have_posts()) : $show_room_query->the_post(); ?>
                         <?php
-                        $rent               = rmt_get_meta(get_the_ID(), '_rent');
-                        $available_date     = rmt_get_meta(get_the_ID(), '_available_date');
-                        $address            = rmt_get_meta(get_the_ID(), '_address');
-                        $nickname           = rmt_get_meta(get_the_ID(), '_nickname');
-                        $occupation         = rmt_get_meta(get_the_ID(), '_occupation');
-                        $cleanliness        = rmt_get_meta(get_the_ID(), '_cleanliness');
-                        $sleep_schedule     = rmt_get_meta(get_the_ID(), '_sleep_schedule');
-                        $pet_policy         = rmt_get_meta(get_the_ID(), '_pet_policy');
-                        $gender_preference  = rmt_get_meta(get_the_ID(), '_gender_preference');
+                            $rent               = rmt_get_meta(get_the_ID(), '_rent');
+                            $available_date     = rmt_get_meta(get_the_ID(), '_available_date');
+                            $address            = rmt_get_meta(get_the_ID(), '_address');
+                            $property_name      = rmt_get_meta(get_the_ID(), '_property_name');
+                            $bills_included     = rmt_get_meta(get_the_ID(), '_bills_included');
+                            $nickname           = rmt_get_meta(get_the_ID(), '_nickname');
+                            $occupation         = rmt_get_meta(get_the_ID(), '_occupation');
+                            $cleanliness        = rmt_get_meta(get_the_ID(), '_cleanliness');
+                            $sleep_schedule     = rmt_get_meta(get_the_ID(), '_sleep_schedule');
+                            $pet_policy         = rmt_get_meta(get_the_ID(), '_pet_policy');
+                            $gender_preference  = rmt_get_meta(get_the_ID(), '_gender_preference');
 
-                        $location_terms = get_the_terms(get_the_ID(), 'location_area');
-                        $room_type_terms = get_the_terms(get_the_ID(), 'room_type');
-                        ?>
-                        <article class="listing-card show-room-card">
-                            <a href="<?php the_permalink(); ?>" class="listing-card__image-link">
-                                <?php if (has_post_thumbnail()) : ?>
-                                    <div class="listing-card__image">
-                                        <?php the_post_thumbnail('large'); ?>
-                                    </div>
-                                <?php else : ?>
-                                    <div class="listing-card__image listing-card__image--placeholder">
-                                        <span>No Image</span>
-                                    </div>
-                                <?php endif; ?>
-                            </a>
+                            $location_terms = get_the_terms(get_the_ID(), 'location_area');
+                            $room_type_terms = get_the_terms(get_the_ID(), 'room_type');
+                            ?>
 
-                            <div class="listing-card__content">
-                                <div class="listing-card__top">
-                                    <div class="listing-card__price">
-                                        <?php echo esc_html(rmt_format_price($rent)); ?>/month
-                                    </div>
-
-                                    <?php if (!empty($available_date)) : ?>
-                                        <div class="listing-card__available">
-                                            Available: <?php echo esc_html($available_date); ?>
+                            <article class="listing-card show-room-card">
+                                <a href="<?php the_permalink(); ?>" class="listing-card__image-link">
+                                    <?php if (has_post_thumbnail()) : ?>
+                                        <div class="listing-card__image">
+                                            <?php the_post_thumbnail('large'); ?>
+                                        </div>
+                                    <?php else : ?>
+                                        <div class="listing-card__image listing-card__image--placeholder">
+                                            <span>No Image</span>
                                         </div>
                                     <?php endif; ?>
-                                </div>
+                                </a>
 
-                                <h2 class="listing-card__title">
-                                    <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-                                </h2>
+                                <div class="listing-card__content">
 
-                                <?php if (!empty($address)) : ?>
-                                    <p class="listing-card__address"><?php echo esc_html($address); ?></p>
-                                <?php endif; ?>
+                                    <div class="listing-card__top">
+                                        <div class="listing-card__price">
+                                            <?php echo esc_html(rmt_format_price($rent)); ?>/month
+                                        </div>
 
-                                <div class="listing-card__meta">
-                                    <?php if (!empty($location_terms) && !is_wp_error($location_terms)) : ?>
-                                        <span class="listing-chip">
-                                            <?php echo esc_html($location_terms[0]->name); ?>
-                                        </span>
+                                        <?php if ($available_date) : ?>
+                                            <div class="listing-card__available">
+                                                Available: <?php echo esc_html($available_date); ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <h2 class="listing-card__title">
+                                        <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                                    </h2>
+
+                                    <?php if ($property_name) : ?>
+                                        <p class="listing-card__address"><?php echo esc_html($property_name); ?></p>
                                     <?php endif; ?>
 
-                                    <?php if (!empty($room_type_terms) && !is_wp_error($room_type_terms)) : ?>
-                                        <span class="listing-chip">
-                                            <?php echo esc_html($room_type_terms[0]->name); ?>
-                                        </span>
-                                    <?php endif; ?>
+                                    <div class="listing-card__meta">
+                                        <?php if (!empty($location_terms)) : ?>
+                                            <span class="listing-chip"><?php echo esc_html($location_terms[0]->name); ?></span>
+                                        <?php endif; ?>
 
-                                    <?php if (!empty($gender_preference)) : ?>
-                                        <span class="listing-chip">
-                                            <?php echo esc_html($gender_preference); ?>
-                                        </span>
-                                    <?php endif; ?>
+                                        <?php if (!empty($room_type_terms)) : ?>
+                                            <span class="listing-chip"><?php echo esc_html($room_type_terms[0]->name); ?></span>
+                                        <?php endif; ?>
+
+                                        <?php if ($gender_preference) : ?>
+                                            <span class="listing-chip"><?php echo esc_html($gender_preference); ?></span>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <div class="listing-card__person">
+                                        <h3>Roommate</h3>
+                                        <ul>
+                                            <?php if ($nickname) : ?><li><strong><?php echo esc_html($nickname); ?></strong></li><?php endif; ?>
+                                            <?php if ($occupation) : ?><li><?php echo esc_html($occupation); ?></li><?php endif; ?>
+                                            <?php if ($cleanliness) : ?><li>Clean: <?php echo esc_html($cleanliness); ?></li><?php endif; ?>
+                                            <?php if ($sleep_schedule) : ?><li>Sleep: <?php echo esc_html($sleep_schedule); ?></li><?php endif; ?>
+                                            <?php if ($pet_policy) : ?><li>Pets: <?php echo esc_html($pet_policy); ?></li><?php endif; ?>
+                                        </ul>
+                                    </div>
+
+                                    <div class="listing-card__footer">
+                                        <a href="<?php the_permalink(); ?>" class="btn btn-primary">View Details</a>
+                                    </div>
                                 </div>
-
-                                <div class="listing-card__person">
-                                    <h3 class="listing-card__person-title">About the roommate</h3>
-
-                                    <ul class="listing-card__person-info">
-                                        <?php if (!empty($nickname)) : ?>
-                                            <li><strong>Name:</strong> <?php echo esc_html($nickname); ?></li>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($occupation)) : ?>
-                                            <li><strong>Occupation:</strong> <?php echo esc_html($occupation); ?></li>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($cleanliness)) : ?>
-                                            <li><strong>Cleanliness:</strong> <?php echo esc_html($cleanliness); ?></li>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($sleep_schedule)) : ?>
-                                            <li><strong>Sleep:</strong> <?php echo esc_html($sleep_schedule); ?></li>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($pet_policy)) : ?>
-                                            <li><strong>Pets:</strong> <?php echo esc_html($pet_policy); ?></li>
-                                        <?php endif; ?>
-                                    </ul>
-                                </div>
-
-                                <div class="listing-card__excerpt">
-                                    <?php the_excerpt(); ?>
-                                </div>
-
-                                <div class="listing-card__footer">
-                                    <a href="<?php the_permalink(); ?>" class="btn btn-primary">View Details</a>
-                                </div>
-                            </div>
-                        </article>
+                            </article>
                     <?php endwhile; ?>
                 </div>
 

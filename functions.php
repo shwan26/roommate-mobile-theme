@@ -266,20 +266,21 @@ function rmt_render_room_meta_box($post) {
     wp_nonce_field('rmt_save_meta', 'rmt_meta_nonce');
 
     $fields = array(
+        '_property_name',
+        '_property_type',
+        '_address',
+        '_map_url',
         '_rent',
+        '_bills_included',
         '_deposit',
         '_available_date',
-        '_property_type',
-        '_bedrooms',
-        '_bathrooms',
-        '_address',
-        '_nearby_landmark',
-        '_map_url',
-        '_utilities',
-        '_min_stay',
         '_gender_preference',
         '_pet_policy',
         '_smoking_policy',
+        '_utilities',
+        '_nearby_landmark',
+        '_min_stay',
+
         '_nickname',
         '_age',
         '_gender',
@@ -300,31 +301,168 @@ function rmt_render_room_meta_box($post) {
     }
     ?>
     <table class="form-table">
-        <tr><th><label for="_rent">Monthly Rent</label></th><td><input type="text" name="_rent" id="_rent" value="<?php echo esc_attr($rent); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_deposit">Deposit</label></th><td><input type="text" name="_deposit" id="_deposit" value="<?php echo esc_attr($deposit); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_available_date">Available Date</label></th><td><input type="date" name="_available_date" id="_available_date" value="<?php echo esc_attr($available_date); ?>"></td></tr>
-        <tr><th><label for="_property_type">Property Type</label></th><td><input type="text" name="_property_type" id="_property_type" value="<?php echo esc_attr($property_type); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_bedrooms">Bedrooms</label></th><td><input type="number" name="_bedrooms" id="_bedrooms" value="<?php echo esc_attr($bedrooms); ?>"></td></tr>
-        <tr><th><label for="_bathrooms">Bathrooms</label></th><td><input type="number" name="_bathrooms" id="_bathrooms" value="<?php echo esc_attr($bathrooms); ?>"></td></tr>
-        <tr><th><label for="_address">Address</label></th><td><input type="text" name="_address" id="_address" value="<?php echo esc_attr($address); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_nearby_landmark">Nearby Landmark / BTS / University</label></th><td><input type="text" name="_nearby_landmark" id="_nearby_landmark" value="<?php echo esc_attr($nearby_landmark); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_map_url">Map URL</label></th><td><input type="url" name="_map_url" id="_map_url" value="<?php echo esc_attr($map_url); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_utilities">Utilities Included</label></th><td><input type="text" name="_utilities" id="_utilities" value="<?php echo esc_attr($utilities); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_min_stay">Minimum Stay</label></th><td><input type="text" name="_min_stay" id="_min_stay" value="<?php echo esc_attr($min_stay); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_gender_preference">Gender Preference</label></th><td><input type="text" name="_gender_preference" id="_gender_preference" value="<?php echo esc_attr($gender_preference); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_pet_policy">Pet Policy</label></th><td><input type="text" name="_pet_policy" id="_pet_policy" value="<?php echo esc_attr($pet_policy); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_smoking_policy">Smoking Policy</label></th><td><input type="text" name="_smoking_policy" id="_smoking_policy" value="<?php echo esc_attr($smoking_policy); ?>" class="regular-text"></td></tr>
+    <tr><th colspan="2"><h2>Room Details</h2></th></tr>
 
-        <tr><th><label for="_nickname">Nickname</label></th><td><input type="text" name="_nickname" id="_nickname" value="<?php echo esc_attr($nickname); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_age">Age</label></th><td><input type="number" name="_age" id="_age" value="<?php echo esc_attr($age); ?>"></td></tr>
-        <tr><th><label for="_gender">Gender</label></th><td><input type="text" name="_gender" id="_gender" value="<?php echo esc_attr($gender); ?>" class="regular-text"></td></tr>
+    <tr>
+        <th><label for="_property_name">Property Name</label></th>
+        <td><input type="text" name="_property_name" id="_property_name" value="<?php echo esc_attr($property_name); ?>" class="regular-text" placeholder="Apartment / Condo Name"></td>
+    </tr>
+
+    <tr>
+        <th><label for="_property_type">Property Type</label></th>
+        <td>
+            <select name="_property_type" id="_property_type">
+                <option value="">Select property type</option>
+                <option value="Apartment" <?php selected($property_type, 'Apartment'); ?>>Apartment</option>
+                <option value="Condo" <?php selected($property_type, 'Condo'); ?>>Condo</option>
+                <option value="House" <?php selected($property_type, 'House'); ?>>House</option>
+                <option value="Studio" <?php selected($property_type, 'Studio'); ?>>Studio</option>
+            </select>
+        </td>
+    </tr>
+
+    <tr>
+        <th><label for="_address">Property Location</label></th>
+        <td><input type="text" name="_address" id="_address" value="<?php echo esc_attr($address); ?>" class="regular-text" placeholder="Address / area"></td>
+    </tr>
+
+    <tr>
+        <th><label for="_map_url">Google Map URL</label></th>
+        <td><input type="url" name="_map_url" id="_map_url" value="<?php echo esc_attr($map_url); ?>" class="regular-text"></td>
+    </tr>
+
+    <tr>
+        <th><label for="_rent">Rent Fees</label></th>
+        <td><input type="number" name="_rent" id="_rent" value="<?php echo esc_attr($rent); ?>" class="regular-text" placeholder="Amount roommate pays"></td>
+    </tr>
+
+    <tr>
+        <th><label for="_bills_included">Bills Included</label></th>
+        <td>
+            <select name="_bills_included" id="_bills_included">
+                <option value="">Select</option>
+                <option value="Included" <?php selected($bills_included, 'Included'); ?>>Included</option>
+                <option value="Not Included" <?php selected($bills_included, 'Not Included'); ?>>Not Included</option>
+                <option value="Partially Included" <?php selected($bills_included, 'Partially Included'); ?>>Partially Included</option>
+            </select>
+        </td>
+    </tr>
+
+    <tr>
+        <th><label for="_deposit">Deposit</label></th>
+        <td><input type="number" name="_deposit" id="_deposit" value="<?php echo esc_attr($deposit); ?>" class="regular-text" placeholder="0 if none"></td>
+    </tr>
+
+    <tr>
+        <th><label for="_available_date">Available From</label></th>
+        <td><input type="date" name="_available_date" id="_available_date" value="<?php echo esc_attr($available_date); ?>"></td>
+    </tr>
+
+    <tr>
+        <th><label for="_gender_preference">Gender Preference</label></th>
+        <td>
+            <select name="_gender_preference" id="_gender_preference">
+                <option value="">Select</option>
+                <option value="Male" <?php selected($gender_preference, 'Male'); ?>>Male</option>
+                <option value="Female" <?php selected($gender_preference, 'Female'); ?>>Female</option>
+                <option value="Others" <?php selected($gender_preference, 'Others'); ?>>Others</option>
+            </select>
+        </td>
+    </tr>
+
+    <tr>
+        <th><label for="_pet_policy">Pet Policy</label></th>
+        <td>
+            <select name="_pet_policy" id="_pet_policy">
+                <option value="">Select</option>
+                <option value="Accept" <?php selected($pet_policy, 'Accept'); ?>>Accept</option>
+                <option value="Not Accept" <?php selected($pet_policy, 'Not Accept'); ?>>Not Accept</option>
+            </select>
+        </td>
+    </tr>
+
+    <tr>
+        <th><label for="_smoking_policy">Smoking Policy</label></th>
+        <td>
+            <select name="_smoking_policy" id="_smoking_policy">
+                <option value="">Select</option>
+                <option value="Accept" <?php selected($smoking_policy, 'Accept'); ?>>Accept</option>
+                <option value="Not Accept" <?php selected($smoking_policy, 'Not Accept'); ?>>Not Accept</option>
+            </select>
+        </td>
+    </tr>
+
+    <tr>
+        <th><label for="_utilities">Bills / Utilities Notes</label></th>
+        <td><input type="text" name="_utilities" id="_utilities" value="<?php echo esc_attr($utilities); ?>" class="regular-text" placeholder="Water, electricity, wifi, etc."></td>
+    </tr>
+
+    <tr>
+        <th><label for="_nearby_landmark">Nearby Landmark</label></th>
+        <td><input type="text" name="_nearby_landmark" id="_nearby_landmark" value="<?php echo esc_attr($nearby_landmark); ?>" class="regular-text"></td>
+    </tr>
+
+    <tr>
+        <th><label for="_min_stay">Minimum Stay</label></th>
+        <td><input type="text" name="_min_stay" id="_min_stay" value="<?php echo esc_attr($min_stay); ?>" class="regular-text" placeholder="e.g. 6 months"></td>
+    </tr>
+
+    <tr><th colspan="2"><h2>Current Roommate Details</h2></th></tr>
+
+    <tr><th><label for="_nickname">Nickname</label></th><td><input type="text" name="_nickname" id="_nickname" value="<?php echo esc_attr($nickname); ?>" class="regular-text"></td></tr>
+    <tr><th><label for="_age">Age</label></th><td><input type="number" name="_age" id="_age" value="<?php echo esc_attr($age); ?>"></td></tr>
+
+        <tr>
+            <th><label for="_gender">Gender</label></th>
+            <td>
+                <select name="_gender" id="_gender">
+                    <option value="">Select</option>
+                    <option value="Male" <?php selected($gender, 'Male'); ?>>Male</option>
+                    <option value="Female" <?php selected($gender, 'Female'); ?>>Female</option>
+                    <option value="Others" <?php selected($gender, 'Others'); ?>>Others</option>
+                </select>
+            </td>
+        </tr>
+
         <tr><th><label for="_occupation">Occupation</label></th><td><input type="text" name="_occupation" id="_occupation" value="<?php echo esc_attr($occupation); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_languages">Languages</label></th><td><input type="text" name="_languages" id="_languages" value="<?php echo esc_attr($languages); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_cleanliness">Cleanliness</label></th><td><input type="text" name="_cleanliness" id="_cleanliness" value="<?php echo esc_attr($cleanliness); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_sleep_schedule">Sleep Schedule</label></th><td><input type="text" name="_sleep_schedule" id="_sleep_schedule" value="<?php echo esc_attr($sleep_schedule); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_smoker">Smoker</label></th><td><input type="text" name="_smoker" id="_smoker" value="<?php echo esc_attr($smoker); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_has_pets">Has Pets</label></th><td><input type="text" name="_has_pets" id="_has_pets" value="<?php echo esc_attr($has_pets); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_social_level">Social Level</label></th><td><input type="text" name="_social_level" id="_social_level" value="<?php echo esc_attr($social_level); ?>" class="regular-text"></td></tr>
+
+        <tr>
+            <th><label for="_cleanliness">Cleanliness</label></th>
+            <td>
+                <select name="_cleanliness" id="_cleanliness">
+                    <option value="">Select</option>
+                    <option value="Yes" <?php selected($cleanliness, 'Yes'); ?>>Yes</option>
+                    <option value="No" <?php selected($cleanliness, 'No'); ?>>No</option>
+                </select>
+            </td>
+        </tr>
+
+        <tr><th><label for="_sleep_schedule">Sleep Schedule</label></th><td><input type="text" name="_sleep_schedule" id="_sleep_schedule" value="<?php echo esc_attr($sleep_schedule); ?>" class="regular-text" placeholder="11 PM to 7 AM"></td></tr>
+
+        <tr>
+            <th><label for="_smoker">Smoker</label></th>
+            <td>
+                <select name="_smoker" id="_smoker">
+                    <option value="">Select</option>
+                    <option value="Yes" <?php selected($smoker, 'Yes'); ?>>Yes</option>
+                    <option value="No" <?php selected($smoker, 'No'); ?>>No</option>
+                </select>
+            </td>
+        </tr>
+
+        <tr>
+            <th><label for="_has_pets">Has Pets</label></th>
+            <td>
+                <select name="_has_pets" id="_has_pets">
+                    <option value="">Select</option>
+                    <option value="Yes" <?php selected($has_pets, 'Yes'); ?>>Yes</option>
+                    <option value="No" <?php selected($has_pets, 'No'); ?>>No</option>
+                </select>
+            </td>
+        </tr>
+
+        <tr><th><label for="_social_level">Social Level</label></th><td><input type="number" min="0" max="10" name="_social_level" id="_social_level" value="<?php echo esc_attr($social_level); ?>"></td></tr>
         <tr><th><label for="_hobbies">Hobbies</label></th><td><input type="text" name="_hobbies" id="_hobbies" value="<?php echo esc_attr($hobbies); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_bio">Bio</label></th><td><textarea name="_bio" id="_bio" rows="4" class="large-text"><?php echo esc_textarea($bio); ?></textarea></td></tr>
         <tr><th><label for="_roommate_preference">Preferred Roommate</label></th><td><textarea name="_roommate_preference" id="_roommate_preference" rows="4" class="large-text"><?php echo esc_textarea($roommate_preference); ?></textarea></td></tr>
@@ -408,6 +546,13 @@ function rmt_render_roommate_meta_box($post) {
  * 9. SAVE META BOX DATA
  * ------------------------------------------------------------
  */
+function rmt_get_chat_url( $author_id, $post_id ) {
+    return add_query_arg(
+        [ 'recipient' => $author_id, 'listing' => $post_id ],
+        home_url( '/messages/' )
+    );
+}
+
 function rmt_save_post_meta($post_id) {
     if (!isset($_POST['rmt_meta_nonce']) || !wp_verify_nonce($_POST['rmt_meta_nonce'], 'rmt_save_meta')) {
         return;
@@ -423,6 +568,8 @@ function rmt_save_post_meta($post_id) {
 
     $text_fields = array(
         '_property_type',
+        '_poperty_name',
+        '_bills_included',
         '_address',
         '_nearby_landmark',
         '_utilities',
@@ -596,3 +743,203 @@ function rmt_primary_menu_fallback() {
     echo '<li><a href="' . esc_url(get_post_type_archive_link('roommate')) . '">Roommates</a></li>';
     echo '</ul>';
 }
+
+
+
+/**
+ * FUNCTIONS.PHP ADDITIONS
+ * ============================================================
+ * Add these changes to your existing functions.php:
+ *
+ * 1. In rmt_save_post_meta(), add the missing fields to the
+ *    correct arrays (shown below).
+ *
+ * 2. Add rmt_allow_subscriber_uploads() to grant logged-in
+ *    users permission to upload images via the front-end form.
+ * ============================================================
+ */
+
+// ---------------------------------------------------------------
+// PATCH 1 — Add to $text_fields array inside rmt_save_post_meta:
+// ---------------------------------------------------------------
+//   '_property_name',
+//   '_bills_included',
+//   '_age',          // currently in $number_fields — keep there
+//   '_gender',
+//   '_lease_duration',
+//   '_private_or_shared',
+//   '_pets_ok',
+//   '_smokers_ok',
+//   '_preferred_room_type',   // already present — confirm
+//   '_preferred_property_type', // already present — confirm
+
+// Full corrected $text_fields for copy-paste:
+/*
+$text_fields = array(
+    '_property_name',        // ← NEW
+    '_bills_included',       // ← NEW
+    '_property_type',
+    '_address',
+    '_nearby_landmark',
+    '_utilities',
+    '_min_stay',
+    '_gender_preference',
+    '_pet_policy',
+    '_smoking_policy',
+    '_nickname',
+    '_gender',
+    '_occupation',
+    '_languages',
+    '_cleanliness',
+    '_sleep_schedule',
+    '_smoker',
+    '_has_pets',
+    '_social_level',
+    '_hobbies',
+    '_preferred_property_type',
+    '_preferred_room_type',
+    '_lease_duration',
+    '_preferred_area_text',
+    '_private_or_shared',
+    '_teamup_ok',
+    '_pets_ok',
+    '_smokers_ok',
+);
+*/
+
+// ---------------------------------------------------------------
+// PATCH 2 — Allow front-end image uploads for logged-in users.
+// Paste this new function anywhere in functions.php.
+// ---------------------------------------------------------------
+function rmt_allow_subscriber_uploads( $caps, $cap, $user_id ) {
+    if ( 'upload_files' === $cap && $user_id && is_user_logged_in() ) {
+        $caps = array( 'exist' ); // grant the capability
+    }
+    return $caps;
+}
+add_filter( 'user_has_cap', 'rmt_allow_subscriber_uploads', 10, 3 );
+
+// ---------------------------------------------------------------
+// PATCH 3 — Show success notice on dashboard after redirect.
+// Paste this inside your page-dashboard.php, or use the snippet
+// below inside any get_header() template:
+// ---------------------------------------------------------------
+/*
+<?php if ( isset($_GET['listing_submitted']) && $_GET['listing_submitted'] == '1' ) : ?>
+    <div class="single-card" style="border-color:#89e219; margin-bottom:1rem;">
+        <p style="margin:0; font-weight:700;">
+            Your listing has been submitted and is pending review.
+        </p>
+    </div>
+<?php endif; ?>
+*/
+
+
+/* ================================================================
+   1. MARK AS CLOSED
+   Stores a post meta flag and re-labels the post status visually.
+================================================================ */
+add_action('wp_ajax_rmt_mark_closed',        'rmt_ajax_mark_closed');
+add_action('wp_ajax_nopriv_rmt_mark_closed', 'rmt_ajax_mark_closed'); // remove if guests shouldn't act
+ 
+function rmt_ajax_mark_closed() {
+    $post_id = absint($_POST['post_id'] ?? 0);
+    $nonce   = sanitize_text_field($_POST['nonce'] ?? '');
+ 
+    if (!wp_verify_nonce($nonce, 'rmt_mark_closed_' . $post_id)) {
+        wp_send_json_error('Invalid request.');
+    }
+ 
+    // Only the author (or admin) may close their own listing
+    $author_id = (int) get_post_field('post_author', $post_id);
+    if (get_current_user_id() !== $author_id && !current_user_can('manage_options')) {
+        wp_send_json_error('Permission denied.');
+    }
+ 
+    update_post_meta($post_id, '_listing_closed', 1);
+    wp_send_json_success('Marked as closed.');
+}
+ 
+/* ================================================================
+   2. UNPUBLISH (move to draft)
+================================================================ */
+add_action('wp_ajax_rmt_unpublish', 'rmt_ajax_unpublish');
+ 
+function rmt_ajax_unpublish() {
+    $post_id = absint($_POST['post_id'] ?? 0);
+    $nonce   = sanitize_text_field($_POST['nonce'] ?? '');
+ 
+    if (!wp_verify_nonce($nonce, 'rmt_unpublish_' . $post_id)) {
+        wp_send_json_error('Invalid request.');
+    }
+ 
+    $author_id = (int) get_post_field('post_author', $post_id);
+    if (get_current_user_id() !== $author_id && !current_user_can('manage_options')) {
+        wp_send_json_error('Permission denied.');
+    }
+ 
+    $result = wp_update_post([
+        'ID'          => $post_id,
+        'post_status' => 'draft',
+    ]);
+ 
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    }
+ 
+    wp_send_json_success('Listing unpublished.');
+}
+ 
+/* ================================================================
+   3. REPORT LISTING
+   Increments a report counter; you can review these in WP Admin.
+================================================================ */
+add_action('wp_ajax_rmt_report_listing',        'rmt_ajax_report_listing');
+add_action('wp_ajax_nopriv_rmt_report_listing', 'rmt_ajax_report_listing');
+ 
+function rmt_ajax_report_listing() {
+    $post_id = absint($_POST['post_id'] ?? 0);
+    $nonce   = sanitize_text_field($_POST['nonce'] ?? '');
+ 
+    if (!wp_verify_nonce($nonce, 'rmt_report_' . $post_id)) {
+        wp_send_json_error('Invalid request.');
+    }
+ 
+    // Prevent the author from reporting their own listing
+    $author_id = (int) get_post_field('post_author', $post_id);
+    if (is_user_logged_in() && get_current_user_id() === $author_id) {
+        wp_send_json_error('You cannot report your own listing.');
+    }
+ 
+    // Bump report count
+    $count = (int) get_post_meta($post_id, '_report_count', true);
+    update_post_meta($post_id, '_report_count', $count + 1);
+ 
+    // Optional: log reporter user ID (deduplicate reports per user)
+    if (is_user_logged_in()) {
+        $reporters   = get_post_meta($post_id, '_reporters', true) ?: [];
+        $reporters[] = get_current_user_id();
+        update_post_meta($post_id, '_reporters', array_unique($reporters));
+    }
+ 
+    // Optional: auto-flag for admin review after N reports
+    $threshold = 5;
+    if (($count + 1) >= $threshold) {
+        update_post_meta($post_id, '_flagged_for_review', 1);
+    }
+ 
+    wp_send_json_success('Reported.');
+}
+ 
+
+add_action( 'admin_menu', function () {
+    add_management_page( 'Waitlist', 'Waitlist', 'manage_options', 'bkk-waitlist', function () {
+        $list = get_option( 'bkkroomie_waitlist', [] );
+        echo '<div class="wrap"><h1>BKKroomie Waitlist (' . count( $list ) . ')</h1>';
+        echo '<table class="widefat"><thead><tr><th>Email</th><th>Date</th></tr></thead><tbody>';
+        foreach ( $list as $entry ) {
+            echo '<tr><td>' . esc_html( $entry['email'] ) . '</td><td>' . esc_html( $entry['date'] ) . '</td></tr>';
+        }
+        echo '</tbody></table></div>';
+    });
+});
