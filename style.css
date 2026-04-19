@@ -1388,3 +1388,72 @@ textarea:focus-visible {
     transition: none !important;
   }
 }
+
+/* Post a listing section */
+.profile-post-listing {
+    margin: 1.5rem 0;
+}
+
+.profile-post-listing__subtitle {
+    color: var(--color-muted, #888);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.listing-type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.listing-type-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 1.25rem;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.listing-type-card:hover {
+    border-color: #a3a3a3;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.listing-type-card__icon {
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.listing-type-card__title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+.listing-type-card__desc {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+/* Status badge on listings */
+.profile-listings__status {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-left: auto;
+}
+
+.profile-listings__status--publish {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.profile-listings__status--pending {
+    background: #fef3c7;
+    color: #92400e;
+}

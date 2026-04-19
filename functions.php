@@ -546,6 +546,13 @@ function rmt_render_roommate_meta_box($post) {
  * 9. SAVE META BOX DATA
  * ------------------------------------------------------------
  */
+function rmt_get_chat_url( $author_id, $post_id ) {
+    return add_query_arg(
+        [ 'recipient' => $author_id, 'listing' => $post_id ],
+        home_url( '/messages/' )
+    );
+}
+
 function rmt_save_post_meta($post_id) {
     if (!isset($_POST['rmt_meta_nonce']) || !wp_verify_nonce($_POST['rmt_meta_nonce'], 'rmt_save_meta')) {
         return;
@@ -561,6 +568,8 @@ function rmt_save_post_meta($post_id) {
 
     $text_fields = array(
         '_property_type',
+        '_poperty_name',
+        '_bills_included',
         '_address',
         '_nearby_landmark',
         '_utilities',
@@ -824,3 +833,113 @@ add_filter( 'user_has_cap', 'rmt_allow_subscriber_uploads', 10, 3 );
     </div>
 <?php endif; ?>
 */
+
+
+/* ================================================================
+   1. MARK AS CLOSED
+   Stores a post meta flag and re-labels the post status visually.
+================================================================ */
+add_action('wp_ajax_rmt_mark_closed',        'rmt_ajax_mark_closed');
+add_action('wp_ajax_nopriv_rmt_mark_closed', 'rmt_ajax_mark_closed'); // remove if guests shouldn't act
+ 
+function rmt_ajax_mark_closed() {
+    $post_id = absint($_POST['post_id'] ?? 0);
+    $nonce   = sanitize_text_field($_POST['nonce'] ?? '');
+ 
+    if (!wp_verify_nonce($nonce, 'rmt_mark_closed_' . $post_id)) {
+        wp_send_json_error('Invalid request.');
+    }
+ 
+    // Only the author (or admin) may close their own listing
+    $author_id = (int) get_post_field('post_author', $post_id);
+    if (get_current_user_id() !== $author_id && !current_user_can('manage_options')) {
+        wp_send_json_error('Permission denied.');
+    }
+ 
+    update_post_meta($post_id, '_listing_closed', 1);
+    wp_send_json_success('Marked as closed.');
+}
+ 
+/* ================================================================
+   2. UNPUBLISH (move to draft)
+================================================================ */
+add_action('wp_ajax_rmt_unpublish', 'rmt_ajax_unpublish');
+ 
+function rmt_ajax_unpublish() {
+    $post_id = absint($_POST['post_id'] ?? 0);
+    $nonce   = sanitize_text_field($_POST['nonce'] ?? '');
+ 
+    if (!wp_verify_nonce($nonce, 'rmt_unpublish_' . $post_id)) {
+        wp_send_json_error('Invalid request.');
+    }
+ 
+    $author_id = (int) get_post_field('post_author', $post_id);
+    if (get_current_user_id() !== $author_id && !current_user_can('manage_options')) {
+        wp_send_json_error('Permission denied.');
+    }
+ 
+    $result = wp_update_post([
+        'ID'          => $post_id,
+        'post_status' => 'draft',
+    ]);
+ 
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    }
+ 
+    wp_send_json_success('Listing unpublished.');
+}
+ 
+/* ================================================================
+   3. REPORT LISTING
+   Increments a report counter; you can review these in WP Admin.
+================================================================ */
+add_action('wp_ajax_rmt_report_listing',        'rmt_ajax_report_listing');
+add_action('wp_ajax_nopriv_rmt_report_listing', 'rmt_ajax_report_listing');
+ 
+function rmt_ajax_report_listing() {
+    $post_id = absint($_POST['post_id'] ?? 0);
+    $nonce   = sanitize_text_field($_POST['nonce'] ?? '');
+ 
+    if (!wp_verify_nonce($nonce, 'rmt_report_' . $post_id)) {
+        wp_send_json_error('Invalid request.');
+    }
+ 
+    // Prevent the author from reporting their own listing
+    $author_id = (int) get_post_field('post_author', $post_id);
+    if (is_user_logged_in() && get_current_user_id() === $author_id) {
+        wp_send_json_error('You cannot report your own listing.');
+    }
+ 
+    // Bump report count
+    $count = (int) get_post_meta($post_id, '_report_count', true);
+    update_post_meta($post_id, '_report_count', $count + 1);
+ 
+    // Optional: log reporter user ID (deduplicate reports per user)
+    if (is_user_logged_in()) {
+        $reporters   = get_post_meta($post_id, '_reporters', true) ?: [];
+        $reporters[] = get_current_user_id();
+        update_post_meta($post_id, '_reporters', array_unique($reporters));
+    }
+ 
+    // Optional: auto-flag for admin review after N reports
+    $threshold = 5;
+    if (($count + 1) >= $threshold) {
+        update_post_meta($post_id, '_flagged_for_review', 1);
+    }
+ 
+    wp_send_json_success('Reported.');
+}
+ 
+
+add_action( 'admin_menu', function () {
+    add_management_page( 'Waitlist', 'Waitlist', 'manage_options', 'bkk-waitlist', function () {
+        $list = get_option( 'bkkroomie_waitlist', [] );
+        echo '<div class="wrap"><h1>BKKroomie Waitlist (' . count( $list ) . ')</h1>';
+        echo '<table class="widefat"><thead><tr><th>Email</th><th>Date</th></tr></thead><tbody>';
+        foreach ( $list as $entry ) {
+            echo '<tr><td>' . esc_html( $entry['email'] ) . '</td><td>' . esc_html( $entry['date'] ) . '</td></tr>';
+        }
+        echo '</tbody></table></div>';
+    });
+});
