@@ -6,6 +6,17 @@
 defined('ABSPATH') || exit;
 
 get_header();
+
+// Read current filters from query string
+$q             = sanitize_text_field($_GET['q'] ?? '');
+$budget_min_q  = sanitize_text_field($_GET['budget_min'] ?? '');
+$budget_max_q  = sanitize_text_field($_GET['budget_max'] ?? '');
+$move_in_q     = sanitize_text_field($_GET['move_in'] ?? '');
+$location_q    = absint($_GET['location_area'] ?? 0);
+$sort_q        = sanitize_text_field($_GET['sort'] ?? 'newest');
+
+// Terms for dropdowns
+$location_terms_all  = get_terms(['taxonomy' => 'location_area', 'hide_empty' => false]);
 ?>
 
 <main id="primary" class="site-main archive-page archive-roommate">
@@ -16,6 +27,78 @@ get_header();
             <p class="archive-description">
                 Browse profiles from people looking for a room, a roommate, or both.
             </p>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="archive-filters">
+        <div class="container">
+            <form method="get" class="filter-form">
+
+                <div class="filter-grid">
+
+                    <div class="filter-group" style="grid-column:1/-1;">
+                        <label for="q">Search</label>
+                        <input
+                            type="search"
+                            id="q"
+                            name="q"
+                            placeholder="Search name, title, bio…"
+                            value="<?php echo esc_attr($q); ?>"
+                        >
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="budget_min">Budget Min</label>
+                        <input type="number" id="budget_min" name="budget_min" min="0"
+                            value="<?php echo esc_attr($budget_min_q); ?>"
+                            placeholder="e.g. 6000">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="budget_max">Budget Max</label>
+                        <input type="number" id="budget_max" name="budget_max" min="0"
+                            value="<?php echo esc_attr($budget_max_q); ?>"
+                            placeholder="e.g. 12000">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="move_in">Move-in (on/after)</label>
+                        <input type="date" id="move_in" name="move_in"
+                            value="<?php echo esc_attr($move_in_q); ?>">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="location_area">Location Area</label>
+                        <select id="location_area" name="location_area">
+                            <option value="">— Any —</option>
+                            <?php if (!is_wp_error($location_terms_all)) : ?>
+                                <?php foreach ($location_terms_all as $t) : ?>
+                                    <option value="<?php echo esc_attr($t->term_id); ?>" <?php selected($location_q, $t->term_id); ?>>
+                                        <?php echo esc_html($t->name); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sort">Sort</label>
+                        <select id="sort" name="sort">
+                            <option value="newest" <?php selected($sort_q, 'newest'); ?>>Newest</option>
+                            <option value="oldest" <?php selected($sort_q, 'oldest'); ?>>Oldest</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-actions" style="grid-column:1/-1;">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                        <a class="btn btn-secondary" href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>">
+                            Reset
+                        </a>
+                    </div>
+
+                </div>
+            </form>
         </div>
     </section>
 

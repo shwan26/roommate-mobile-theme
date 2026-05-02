@@ -114,7 +114,7 @@ function rmt_register_post_types() {
         'show_ui'            => true,
         'show_in_menu'       => true,
         'show_in_nav_menus'  => true,
-        'show_in_admin_bar'  => true,
+        'show_in_admin_bar'  => false,
         'show_in_rest'       => true,
         'has_archive'        => 'room',
         'rewrite'            => array(
@@ -151,7 +151,7 @@ function rmt_register_post_types() {
         'show_ui'            => true,
         'show_in_menu'       => true,
         'show_in_nav_menus'  => true,
-        'show_in_admin_bar'  => true,
+        'show_in_admin_bar'  => false,
         'show_in_rest'       => true,
         'has_archive'        => 'roommate',
         'rewrite'            => array(
@@ -692,6 +692,77 @@ function rmt_register_sidebars() {
 add_action('widgets_init', 'rmt_register_sidebars');
 
 /**
+ * Get default profile photo attachment ID.
+ * Source file:
+ * /wp-content/themes/roommate-mobile-theme/images/default-profile.jpg
+ */
+function rmt_get_default_profile_photo_id() {
+    $existing_id = absint(get_option('rmt_default_profile_photo_id'));
+
+    if ($existing_id && get_post($existing_id)) {
+        return $existing_id;
+    }
+
+    $file_path = get_template_directory() . '/images/default-profile.jpg';
+
+    if (!file_exists($file_path)) {
+        return 0;
+    }
+
+    $file_type = wp_check_filetype(basename($file_path), null);
+
+    $upload_dir = wp_upload_dir();
+    $new_file_path = $upload_dir['path'] . '/rmt-default-profile.jpg';
+
+    if (!file_exists($new_file_path)) {
+        copy($file_path, $new_file_path);
+    }
+
+    $attachment = [
+        'guid' => $upload_dir['url'] . '/rmt-default-profile.jpg',
+        'post_mime_type' => $file_type['type'],
+        'post_title'     => 'Default Profile Photo',
+        'post_content'   => '',
+        'post_status'    => 'inherit',
+    ];
+
+    $attachment_id = wp_insert_attachment($attachment, $new_file_path);
+
+    if (is_wp_error($attachment_id) || !$attachment_id) {
+        return 0;
+    }
+
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+
+    $attachment_data = wp_generate_attachment_metadata($attachment_id, $new_file_path);
+    wp_update_attachment_metadata($attachment_id, $attachment_data);
+
+    update_option('rmt_default_profile_photo_id', $attachment_id);
+
+    return $attachment_id;
+}
+
+/**
+ * Upload profile photo if user uploaded one.
+ * Otherwise return default profile photo ID.
+ */
+function rmt_get_uploaded_or_default_profile_photo_id($field_name, $post_id) {
+    if (!empty($_FILES[$field_name]['name'])) {
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+
+        $attachment_id = media_handle_upload($field_name, $post_id);
+
+        if (!is_wp_error($attachment_id)) {
+            return $attachment_id;
+        }
+    }
+
+    return rmt_get_default_profile_photo_id();
+}
+
+/**
  * ------------------------------------------------------------
  * 12. AJAX LOAD MORE EXAMPLE
  * ------------------------------------------------------------
@@ -943,3 +1014,415 @@ add_action( 'admin_menu', function () {
         echo '</tbody></table></div>';
     });
 });
+
+/**
+ * ================================================================
+ * FUNCTIONS.PHP ADDITIONS
+ * Add these snippets to the bottom of your existing functions.php
+ * ================================================================
+ *
+ * These additions:
+ *  1. Flush rewrite rules when 'edit-roommate' page is created,
+ *     so the URL /edit-roommate/?edit_id=N works immediately.
+ *  2. Redirect logged-out users away from /edit-roommate/ gracefully.
+ *  3. Add `_budget_min` and `_budget_max` as number fields in
+ *     rmt_save_post_meta() (patch for the admin meta box saver too).
+ * ================================================================
+ */
+
+// ---------------------------------------------------------------
+// 1. Ensure the Edit Roommate page slug resolves correctly.
+//    Create a WordPress page with:
+//      Title: "Edit Roommate Profile"
+//      Slug:  "edit-roommate"
+//      Template: "Edit Roommate Profile"   ← page-edit-roommate.php
+//    Then flush permalinks once via Settings → Permalinks → Save.
+// ---------------------------------------------------------------
+
+// ---------------------------------------------------------------
+// 2. Protect /edit-roommate/ from unauthenticated access via
+//    template_redirect (belt-and-suspenders in addition to the
+//    check inside the template itself).
+// ---------------------------------------------------------------
+add_action('template_redirect', 'rmt_protect_edit_roommate_page');
+
+function rmt_protect_edit_roommate_page() {
+    if (
+        is_page('edit-roommate') &&
+        !is_user_logged_in()
+    ) {
+        wp_redirect(wp_login_url(get_permalink()));
+        exit;
+    }
+}
+
+// ---------------------------------------------------------------
+// 3. PATCH rmt_save_post_meta() to also save _budget_min /
+//    _budget_max from the admin meta box (they were missing from
+//    the $number_fields array).
+//    If you have already patched rmt_save_post_meta(), skip this.
+//
+//    This standalone save_post hook covers any admin saves that
+//    still miss those two fields.
+// ---------------------------------------------------------------
+add_action('save_post_roommate', 'rmt_save_budget_meta', 20);
+
+function rmt_save_budget_meta($post_id) {
+    if (!isset($_POST['rmt_meta_nonce']) || !wp_verify_nonce($_POST['rmt_meta_nonce'], 'rmt_save_meta')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+
+    foreach (['_budget_min', '_budget_max'] as $field) {
+        if (isset($_POST[$field]) && is_numeric($_POST[$field])) {
+            update_post_meta($post_id, $field, $_POST[$field]);
+        }
+    }
+}
+
+add_action('pre_get_posts', function ($query) {
+
+    if (is_admin() || !$query->is_main_query()) {
+        return;
+    }
+
+    // Only for roommate archive
+    if (!$query->is_post_type_archive('roommate')) {
+        return;
+    }
+
+    // Default order: newest listing first
+    $sort = sanitize_text_field($_GET['sort'] ?? 'newest');
+    $query->set('orderby', 'date');
+    $query->set('order', $sort === 'oldest' ? 'ASC' : 'DESC');
+
+    // Search (q)
+    if (!empty($_GET['q'])) {
+        $query->set('s', sanitize_text_field($_GET['q']));
+    }
+
+    // Meta filters
+    $meta_query = ['relation' => 'AND'];
+
+    // Budget filtering: keep it simple (posts with _budget_min/_budget_max)
+    // budget_min param means: listing budget_max >= budget_min OR budget_min >= budget_min (fallback)
+    $budget_min = isset($_GET['budget_min']) ? floatval($_GET['budget_min']) : null;
+    if ($budget_min !== null && $_GET['budget_min'] !== '') {
+        $meta_query[] = [
+            'relation' => 'OR',
+            [
+                'key'     => '_budget_max',
+                'value'   => $budget_min,
+                'type'    => 'NUMERIC',
+                'compare' => '>=',
+            ],
+            [
+                'key'     => '_budget_min',
+                'value'   => $budget_min,
+                'type'    => 'NUMERIC',
+                'compare' => '>=',
+            ],
+        ];
+    }
+
+    // budget_max param means: listing budget_min <= budget_max OR budget_max <= budget_max (fallback)
+    $budget_max = isset($_GET['budget_max']) ? floatval($_GET['budget_max']) : null;
+    if ($budget_max !== null && $_GET['budget_max'] !== '') {
+        $meta_query[] = [
+            'relation' => 'OR',
+            [
+                'key'     => '_budget_min',
+                'value'   => $budget_max,
+                'type'    => 'NUMERIC',
+                'compare' => '<=',
+            ],
+            [
+                'key'     => '_budget_max',
+                'value'   => $budget_max,
+                'type'    => 'NUMERIC',
+                'compare' => '<=',
+            ],
+        ];
+    }
+
+    // Move-in date (on/after)
+    if (!empty($_GET['move_in'])) {
+        $meta_query[] = [
+            'key'     => '_move_in_date',
+            'value'   => sanitize_text_field($_GET['move_in']),
+            'type'    => 'DATE',
+            'compare' => '>=',
+        ];
+    }
+
+
+    if (count($meta_query) > 1) {
+        $query->set('meta_query', $meta_query);
+    }
+
+    // Taxonomy filters
+    $tax_query = ['relation' => 'AND'];
+
+    if (!empty($_GET['location_area'])) {
+        $tax_query[] = [
+            'taxonomy' => 'location_area',
+            'field'    => 'term_id',
+            'terms'    => [absint($_GET['location_area'])],
+        ];
+    }
+
+
+    if (count($tax_query) > 1) {
+        $query->set('tax_query', $tax_query);
+    }
+});
+
+/**
+ * ================================================================
+ * FRONTEND-ONLY USER EXPERIENCE
+ * ================================================================
+ * Normal users:
+ * - no WP admin bar
+ * - no wp-admin access
+ * - can upload images from frontend forms
+ * - edit room and roommate only from frontend pages
+ * 
+ * Admins:
+ * - can still access wp-admin normally
+ * ================================================================
+ */
+
+/**
+ * Hide admin bar for all non-admin users on frontend.
+ */
+add_filter('show_admin_bar', 'rmt_hide_admin_bar_for_normal_users');
+
+function rmt_hide_admin_bar_for_normal_users($show) {
+    if (!is_user_logged_in()) {
+        return false;
+    }
+
+    if (current_user_can('manage_options')) {
+        return $show;
+    }
+
+    return false;
+}
+
+/**
+ * Stop normal users from accessing wp-admin.
+ * Admin users can still access wp-admin.
+ */
+add_action('admin_init', 'rmt_block_wp_admin_for_normal_users');
+
+function rmt_block_wp_admin_for_normal_users() {
+    if (!is_user_logged_in()) {
+        return;
+    }
+
+    if (current_user_can('manage_options')) {
+        return;
+    }
+
+    if (wp_doing_ajax()) {
+        return;
+    }
+
+    wp_redirect(home_url('/dashboard/'));
+    exit;
+}
+
+/**
+ * Allow logged-in frontend users to upload images.
+ * Needed for room images and roommate profile photos.
+ */
+add_filter('user_has_cap', 'rmt_allow_frontend_user_uploads', 10, 3);
+
+function rmt_allow_frontend_user_uploads($allcaps, $caps, $args) {
+    if (isset($args[0]) && $args[0] === 'upload_files' && is_user_logged_in()) {
+        $allcaps['upload_files'] = true;
+    }
+
+    return $allcaps;
+}
+
+/**
+ * Protect frontend edit pages.
+ * Logged-out users go to login page.
+ */
+add_action('template_redirect', 'rmt_protect_frontend_edit_pages');
+
+function rmt_protect_frontend_edit_pages() {
+    if (
+        is_page('edit-room') ||
+        is_page('edit-roommate') ||
+        is_page('dashboard') ||
+        is_page('post-a-room') ||
+        is_page('post-a-roommate')
+    ) {
+        if (!is_user_logged_in()) {
+            wp_redirect(wp_login_url(get_permalink()));
+            exit;
+        }
+    }
+}
+
+/**
+ * Redirect normal users away from backend edit links.
+ * If they somehow click /wp-admin/post.php?post=123&action=edit,
+ * send them to the correct frontend edit page.
+ */
+add_action('load-post.php', 'rmt_redirect_backend_edit_to_frontend');
+
+function rmt_redirect_backend_edit_to_frontend() {
+    if (current_user_can('manage_options')) {
+        return;
+    }
+
+    $post_id = absint($_GET['post'] ?? 0);
+
+    if (!$post_id) {
+        wp_redirect(home_url('/dashboard/'));
+        exit;
+    }
+
+    $post = get_post($post_id);
+
+    if (!$post) {
+        wp_redirect(home_url('/dashboard/'));
+        exit;
+    }
+
+    if ((int) $post->post_author !== get_current_user_id()) {
+        wp_redirect(home_url('/dashboard/'));
+        exit;
+    }
+
+    if ($post->post_type === 'room') {
+        wp_redirect(add_query_arg('edit_id', $post_id, home_url('/edit-room/')));
+        exit;
+    }
+
+    if ($post->post_type === 'roommate') {
+        wp_redirect(add_query_arg('edit_id', $post_id, home_url('/edit-roommate/')));
+        exit;
+    }
+
+    wp_redirect(home_url('/dashboard/'));
+    exit;
+}
+
+/**
+ * Remove backend edit links from frontend for normal users.
+ */
+add_filter('edit_post_link', 'rmt_remove_frontend_backend_edit_link_for_users', 10, 3);
+
+function rmt_remove_frontend_backend_edit_link_for_users($link, $post_id, $text) {
+    if (current_user_can('manage_options')) {
+        return $link;
+    }
+
+    return '';
+}
+
+/**
+ * Admin Reports Page
+ */
+add_action('admin_menu', 'rmt_add_reports_admin_page');
+
+function rmt_add_reports_admin_page() {
+    add_menu_page(
+        'Listing Reports',
+        'Reports',
+        'manage_options',
+        'rmt-listing-reports',
+        'rmt_render_reports_admin_page',
+        'dashicons-flag',
+        26
+    );
+}
+
+function rmt_render_reports_admin_page() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    $reported_posts = new WP_Query([
+        'post_type'      => ['room', 'roommate'],
+        'post_status'    => ['publish', 'draft', 'pending'],
+        'posts_per_page' => -1,
+        'meta_query'     => [
+            'relation' => 'OR',
+            [
+                'key'     => '_report_count',
+                'value'   => 0,
+                'compare' => '>',
+                'type'    => 'NUMERIC',
+            ],
+            [
+                'key'     => '_spam_report_count',
+                'value'   => 0,
+                'compare' => '>',
+                'type'    => 'NUMERIC',
+            ],
+            [
+                'key'     => '_flagged_for_review',
+                'value'   => 1,
+                'compare' => '=',
+            ],
+        ],
+    ]);
+
+    echo '<div class="wrap">';
+    echo '<h1>Listing Reports</h1>';
+
+    if (!$reported_posts->have_posts()) {
+        echo '<p>No reported listings yet.</p>';
+        echo '</div>';
+        return;
+    }
+
+    echo '<table class="widefat striped">';
+    echo '<thead>';
+    echo '<tr>';
+    echo '<th>Title</th>';
+    echo '<th>Type</th>';
+    echo '<th>Status</th>';
+    echo '<th>Report Count</th>';
+    echo '<th>Flagged</th>';
+    echo '<th>Actions</th>';
+    echo '</tr>';
+    echo '</thead>';
+    echo '<tbody>';
+
+    while ($reported_posts->have_posts()) {
+        $reported_posts->the_post();
+
+        $post_id = get_the_ID();
+
+        $report_count = (int) get_post_meta($post_id, '_report_count', true);
+        $spam_count   = (int) get_post_meta($post_id, '_spam_report_count', true);
+        $total_count  = max($report_count, $spam_count);
+
+        $flagged = get_post_meta($post_id, '_flagged_for_review', true) ? 'Yes' : 'No';
+
+        echo '<tr>';
+        echo '<td><strong>' . esc_html(get_the_title()) . '</strong></td>';
+        echo '<td>' . esc_html(get_post_type($post_id)) . '</td>';
+        echo '<td>' . esc_html(get_post_status($post_id)) . '</td>';
+        echo '<td>' . esc_html($total_count) . '</td>';
+        echo '<td>' . esc_html($flagged) . '</td>';
+        echo '<td>';
+        echo '<a class="button button-small" href="' . esc_url(get_edit_post_link($post_id)) . '">Review</a> ';
+        echo '<a class="button button-small" href="' . esc_url(get_permalink($post_id)) . '" target="_blank">View</a>';
+        echo '</td>';
+        echo '</tr>';
+    }
+
+    wp_reset_postdata();
+
+    echo '</tbody>';
+    echo '</table>';
+    echo '</div>';
+}

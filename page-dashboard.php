@@ -1,6 +1,7 @@
 <?php
 /**
  * Template Name: User Dashboard
+ * Frontend-only listing management for room and roommate posts.
  */
 
 defined('ABSPATH') || exit;
@@ -14,75 +15,108 @@ $current_user    = wp_get_current_user();
 $success_message = '';
 $error_message   = '';
 
-/**
- * Handle delete action (only draft/pending posts)
- */
-if (
-    $_SERVER['REQUEST_METHOD'] === 'POST' &&
-    isset($_POST['rmt_delete_listing'])
-) {
-    if (
-        !isset($_POST['rmt_dashboard_nonce']) ||
-        !wp_verify_nonce($_POST['rmt_dashboard_nonce'], 'rmt_dashboard_action')
-    ) {
+function rmt_dashboard_can_manage($post_id, $user_id) {
+    $post = get_post($post_id);
+    return $post && in_array($post->post_type, ['room', 'roommate'], true) && (int) $post->post_author === (int) $user_id;
+}
+
+function rmt_dashboard_status_label($post_id) {
+    if (get_post_meta($post_id, '_rmt_done', true)) {
+        return 'Done';
+    }
+
+    $status = get_post_status($post_id);
+    return $status ? ucfirst($status) : '';
+}
+
+function rmt_dashboard_edit_url($post_id) {
+    $type = get_post_type($post_id);
+
+    if ($type === 'room') {
+        return add_query_arg('edit_id', $post_id, home_url('/edit-room/'));
+    }
+
+    if ($type === 'roommate') {
+        return add_query_arg('edit_id', $post_id, home_url('/edit-roommate/'));
+    }
+
+    return home_url('/dashboard/');
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_dashboard_action_type'])) {
+    if (!isset($_POST['rmt_dashboard_nonce']) || !wp_verify_nonce($_POST['rmt_dashboard_nonce'], 'rmt_dashboard_action')) {
         $error_message = 'Security check failed.';
     } else {
-        $delete_post_id = isset($_POST['delete_post_id']) ? absint($_POST['delete_post_id']) : 0;
-        $post_status    = get_post_field('post_status', $delete_post_id);
+        $action  = sanitize_key($_POST['rmt_dashboard_action_type']);
+        $post_id = absint($_POST['post_id'] ?? 0);
 
-        if ($delete_post_id && get_post_field('post_author', $delete_post_id) == $current_user->ID) {
-            if (in_array($post_status, ['draft', 'pending'])) {
-                wp_trash_post($delete_post_id);
-                $success_message = 'Listing deleted successfully.';
-            } else {
-                $error_message = 'Only draft or unpublished listings can be deleted. Unpublish it first.';
+        if (!$post_id || !rmt_dashboard_can_manage($post_id, $current_user->ID)) {
+            $error_message = 'You are not allowed to manage this listing.';
+        } else {
+            if ($action === 'publish') {
+                wp_update_post([
+                    'ID'          => $post_id,
+                    'post_status' => 'publish',
+                ]);
+
+                delete_post_meta($post_id, '_rmt_done');
+
+                $success_message = 'Listing published successfully.';
             }
-        } else {
-            $error_message = 'You are not allowed to delete this listing.';
+
+            if ($action === 'unpublish') {
+                wp_update_post([
+                    'ID'          => $post_id,
+                    'post_status' => 'draft',
+                ]);
+
+                delete_post_meta($post_id, '_rmt_done');
+
+                $success_message = 'Listing unpublished and moved to draft.';
+            }
+
+            if ($action === 'done') {
+                wp_update_post([
+                    'ID'          => $post_id,
+                    'post_status' => 'draft',
+                ]);
+
+                update_post_meta($post_id, '_rmt_done', 1);
+
+                $success_message = 'Listing marked as done and hidden from public listings.';
+            }
+
+            if ($action === 'delete') {
+                $status = get_post_status($post_id);
+
+                if ($status === 'publish') {
+                    $error_message = 'Unpublish the listing before deleting it.';
+                } else {
+                    wp_trash_post($post_id);
+                    $success_message = 'Listing moved to trash.';
+                }
+            }
         }
     }
 }
 
-/**
- * Handle unpublish action (move to draft)
- */
-if (
-    $_SERVER['REQUEST_METHOD'] === 'POST' &&
-    isset($_POST['rmt_unpublish_listing'])
-) {
-    if (
-        !isset($_POST['rmt_dashboard_nonce']) ||
-        !wp_verify_nonce($_POST['rmt_dashboard_nonce'], 'rmt_dashboard_action')
-    ) {
-        $error_message = 'Security check failed.';
-    } else {
-        $unpublish_post_id = isset($_POST['unpublish_post_id']) ? absint($_POST['unpublish_post_id']) : 0;
-
-        if ($unpublish_post_id && get_post_field('post_author', $unpublish_post_id) == $current_user->ID) {
-            wp_update_post([
-                'ID'          => $unpublish_post_id,
-                'post_status' => 'draft',
-            ]);
-            $success_message = 'Listing unpublished and moved to draft.';
-        } else {
-            $error_message = 'You are not allowed to unpublish this listing.';
-        }
-    }
-}
-
-$room_posts = new WP_Query(array(
+$room_posts = new WP_Query([
     'post_type'      => 'room',
     'author'         => $current_user->ID,
-    'post_status'    => array('publish', 'pending', 'draft'),
+    'post_status'    => ['publish', 'pending', 'draft'],
     'posts_per_page' => -1,
-));
+    'orderby'        => 'modified',
+    'order'          => 'DESC',
+]);
 
-$roommate_posts = new WP_Query(array(
+$roommate_posts = new WP_Query([
     'post_type'      => 'roommate',
     'author'         => $current_user->ID,
-    'post_status'    => array('publish', 'pending', 'draft'),
+    'post_status'    => ['publish', 'pending', 'draft'],
     'posts_per_page' => -1,
-));
+    'orderby'        => 'modified',
+    'order'          => 'DESC',
+]);
 
 get_header();
 ?>
@@ -92,35 +126,35 @@ get_header();
         <div class="container">
             <span class="archive-badge">Dashboard</span>
             <h1 class="archive-title">Welcome, <?php echo esc_html($current_user->display_name); ?></h1>
-            <p class="archive-description">
-                Manage your room and roommate listings, check their status, and keep your profile up to date.
-            </p>
+            <p class="archive-description">Manage your room and roommate listings.</p>
         </div>
     </section>
 
     <section class="archive-filters">
         <div class="container">
             <?php if (!empty($success_message)) : ?>
-                <div class="single-card" style="border-color:#89e219; margin-bottom: 1rem;">
-                    <p style="margin:0; font-weight:700;"><?php echo esc_html($success_message); ?></p>
+                <div class="rmt-notice rmt-notice--success">
+                    <p><?php echo esc_html($success_message); ?></p>
                 </div>
             <?php endif; ?>
 
             <?php if (!empty($error_message)) : ?>
-                <div class="single-card" style="border-color:#d9534f; margin-bottom: 1rem;">
-                    <p style="margin:0; font-weight:700;"><?php echo esc_html($error_message); ?></p>
+                <div class="rmt-notice rmt-notice--error">
+                    <p><?php echo esc_html($error_message); ?></p>
                 </div>
             <?php endif; ?>
 
-            <?php if (isset($_GET['listing_submitted']) && $_GET['listing_submitted'] == '1') : ?>
+            <?php if (isset($_GET['listing_submitted'])) : ?>
                 <div class="single-card" style="border-color:#89e219; margin-bottom:1rem;">
-                    <p style="margin:0; font-weight:700;">Your listing has been submitted and is now live.</p>
+                    <p style="margin:0;font-weight:700;">
+                        <?php echo (isset($_GET['listing_status']) && $_GET['listing_status'] === 'draft') ? 'Your listing was saved as draft.' : 'Your listing was published successfully.'; ?>
+                    </p>
                 </div>
             <?php endif; ?>
 
-            <?php if (isset($_GET['listing_updated']) && $_GET['listing_updated'] == '1') : ?>
-                <div class="single-card" style="border-color:#89e219; margin-bottom:1rem;">
-                    <p style="margin:0; font-weight:700;">Your listing has been updated successfully.</p>
+            <?php if (isset($_GET['listing_updated'])) : ?>
+                <div class="rmt-notice rmt-notice--success">
+                    <p>Your listing has been updated successfully.</p>
                 </div>
             <?php endif; ?>
 
@@ -138,45 +172,44 @@ get_header();
                 <div class="single-card">
                     <h2>Quick Actions</h2>
                     <div class="cta-actions">
-                        <a href="<?php echo esc_url(home_url('/post-listing')); ?>" class="btn btn-primary">
-                            Post New Listing
+                        <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="btn btn-primary">
+                            Post a Room
                         </a>
-                        <a href="<?php echo esc_url(home_url('/')); ?>" class="btn btn-secondary">
-                            Back to Home
+
+                        <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="btn btn-secondary">
+                            Post a Roommate
                         </a>
-                        <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn btn-secondary">
-                            Log Out
-                        </a>
+                        <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn btn-secondary">Log Out</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         MY ROOMS
-    ═══════════════════════════════════════════════════════════ -->
     <section class="listing-section">
         <div class="container">
             <div class="section-heading">
                 <span class="section-badge">My Rooms</span>
                 <h2>Your Room Listings</h2>
-                <p>These are the room listings you have submitted.</p>
+                <p>Edit, publish, unpublish, mark done, or delete room listings.</p>
             </div>
 
             <?php if ($room_posts->have_posts()) : ?>
                 <div class="listing-grid">
                     <?php while ($room_posts->have_posts()) : $room_posts->the_post(); ?>
                         <?php
-                        $rent           = rmt_get_meta(get_the_ID(), '_rent');
-                        $available_date = rmt_get_meta(get_the_ID(), '_available_date');
-                        $address        = rmt_get_meta(get_the_ID(), '_address');
-                        $post_status    = get_post_status();
-                        $is_published   = ($post_status === 'publish');
+                        $post_id        = get_the_ID();
+                        $rent           = rmt_get_meta($post_id, '_rent');
+                        $available_date = rmt_get_meta($post_id, '_available_date');
+                        $address        = rmt_get_meta($post_id, '_address');
+                        $post_status    = get_post_status($post_id);
+                        $is_published   = $post_status === 'publish';
+                        $is_done        = (bool) get_post_meta($post_id, '_rmt_done', true);
                         ?>
+
                         <article class="listing-card">
                             <?php if (has_post_thumbnail()) : ?>
-                                <a href="<?php the_permalink(); ?>" class="listing-card__image-link">
+                                <a href="<?php echo esc_url(get_permalink()); ?>" class="listing-card__image-link">
                                     <div class="listing-card__image">
                                         <?php the_post_thumbnail('large'); ?>
                                     </div>
@@ -185,16 +218,19 @@ get_header();
 
                             <div class="listing-card__content">
                                 <div class="listing-card__top">
-                                    <span class="listing-chip <?php echo !$is_published ? 'listing-chip--draft' : ''; ?>">
-                                        <?php echo esc_html(ucfirst($post_status)); ?>
+                                    <span class="listing-chip <?php echo !$is_published ? 'listing-chip--draft' : ''; ?> <?php echo $is_done ? 'listing-chip--done' : ''; ?>">
+                                        <?php echo esc_html(rmt_dashboard_status_label($post_id)); ?>
                                     </span>
+
                                     <?php if ($rent) : ?>
-                                        <div class="listing-card__price"><?php echo esc_html(rmt_format_price($rent)); ?>/month</div>
+                                        <div class="listing-card__price">
+                                            <?php echo esc_html(rmt_format_price($rent)); ?>/month
+                                        </div>
                                     <?php endif; ?>
                                 </div>
 
                                 <h3 class="listing-card__title">
-                                    <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                                    <a href="<?php echo esc_url(get_permalink()); ?>"><?php the_title(); ?></a>
                                 </h3>
 
                                 <?php if ($address) : ?>
@@ -205,44 +241,56 @@ get_header();
                                     <p class="listing-card__address">Available: <?php echo esc_html($available_date); ?></p>
                                 <?php endif; ?>
 
-                                <div class="cta-actions" style="flex-wrap:wrap;gap:.5rem;">
-
+                                <div class="cta-actions dashboard-card-actions">
                                     <?php if ($is_published) : ?>
-                                        <a href="<?php the_permalink(); ?>" class="btn btn-primary">View</a>
+                                        <a href="<?php echo esc_url(get_permalink()); ?>" class="btn btn-primary">View</a>
                                     <?php endif; ?>
 
-                                    <!-- Edit: go to WP Admin editor for rooms (no custom front-end room editor yet) -->
-                                    <a href="<?php echo esc_url(get_edit_post_link(get_the_ID())); ?>" class="btn btn-secondary">Edit</a>
+                                    <a href="<?php echo esc_url(rmt_dashboard_edit_url($post_id)); ?>" class="btn btn-secondary">Edit</a>
+
+                                    <?php if (!$is_published || $is_done) : ?>
+                                        <form method="post">
+                                            <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
+                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+                                            <input type="hidden" name="rmt_dashboard_action_type" value="publish">
+                                            <button type="submit" class="btn btn-primary">Publish</button>
+                                        </form>
+                                    <?php endif; ?>
 
                                     <?php if ($is_published) : ?>
-                                        <!-- Unpublish (move to draft) -->
-                                        <form method="post" style="display:inline;">
+                                        <form method="post">
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
-                                            <input type="hidden" name="unpublish_post_id" value="<?php echo esc_attr(get_the_ID()); ?>">
-                                            <button type="submit" name="rmt_unpublish_listing" value="1"
-                                                class="btn btn-secondary"
-                                                onclick="return confirm('Unpublish this listing? It will move to draft and won\'t be visible to others.');">
+                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+                                            <input type="hidden" name="rmt_dashboard_action_type" value="unpublish">
+                                            <button type="submit" class="btn btn-secondary" onclick="return confirm('Unpublish this listing?');">
                                                 Unpublish
                                             </button>
                                         </form>
-                                    <?php else : ?>
-                                        <!-- Delete only for non-published posts -->
-                                        <form method="post" style="display:inline;">
+
+                                        <form method="post">
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
-                                            <input type="hidden" name="delete_post_id" value="<?php echo esc_attr(get_the_ID()); ?>">
-                                            <button type="submit" name="rmt_delete_listing" value="1"
-                                                class="btn btn-secondary btn--danger"
-                                                onclick="return confirm('Permanently delete this listing?');">
+                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+                                            <input type="hidden" name="rmt_dashboard_action_type" value="done">
+                                            <button type="submit" class="btn btn-secondary" onclick="return confirm('Mark this listing as done?');">
+                                                Done
+                                            </button>
+                                        </form>
+                                    <?php else : ?>
+                                        <form method="post">
+                                            <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
+                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+                                            <input type="hidden" name="rmt_dashboard_action_type" value="delete">
+                                            <button type="submit" class="btn btn-secondary btn--danger" onclick="return confirm('Move this listing to trash?');">
                                                 Delete
                                             </button>
                                         </form>
                                     <?php endif; ?>
-
                                 </div>
                             </div>
                         </article>
                     <?php endwhile; ?>
                 </div>
+
                 <?php wp_reset_postdata(); ?>
             <?php else : ?>
                 <div class="empty-state">
@@ -253,34 +301,32 @@ get_header();
         </div>
     </section>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         MY ROOMMATES
-    ═══════════════════════════════════════════════════════════ -->
     <section class="listing-section">
         <div class="container">
             <div class="section-heading">
                 <span class="section-badge">My Roommates</span>
                 <h2>Your Roommate Profiles</h2>
-                <p>These are the roommate profiles you have submitted.</p>
+                <p>Edit, publish, unpublish, mark done, or delete roommate profiles.</p>
             </div>
 
             <?php if ($roommate_posts->have_posts()) : ?>
                 <div class="listing-grid">
                     <?php while ($roommate_posts->have_posts()) : $roommate_posts->the_post(); ?>
                         <?php
-                        $budget_min     = rmt_get_meta(get_the_ID(), '_budget_min');
-                        $budget_max     = rmt_get_meta(get_the_ID(), '_budget_max');
-                        $move_in_date   = rmt_get_meta(get_the_ID(), '_move_in_date');
-                        $preferred_area = rmt_get_meta(get_the_ID(), '_preferred_area_text');
-                        $post_status    = get_post_status();
-                        $is_published   = ($post_status === 'publish');
-
-                        // Build the front-end edit URL
-                        $edit_url = add_query_arg('edit_id', get_the_ID(), home_url('/edit-roommate/'));
+                        $post_id        = get_the_ID();
+                        $budget_min     = rmt_get_meta($post_id, '_budget_min');
+                        $budget_max     = rmt_get_meta($post_id, '_budget_max');
+                        $legacy_budget  = rmt_get_meta($post_id, '_budget');
+                        $move_in_date   = rmt_get_meta($post_id, '_move_in_date');
+                        $preferred_area = rmt_get_meta($post_id, '_preferred_area_text') ?: rmt_get_meta($post_id, '_preferred_area');
+                        $post_status    = get_post_status($post_id);
+                        $is_published   = $post_status === 'publish';
+                        $is_done        = (bool) get_post_meta($post_id, '_rmt_done', true);
                         ?>
+
                         <article class="listing-card">
                             <?php if (has_post_thumbnail()) : ?>
-                                <a href="<?php the_permalink(); ?>" class="listing-card__image-link">
+                                <a href="<?php echo esc_url(get_permalink()); ?>" class="listing-card__image-link">
                                     <div class="listing-card__image">
                                         <?php the_post_thumbnail('large'); ?>
                                     </div>
@@ -289,18 +335,33 @@ get_header();
 
                             <div class="listing-card__content">
                                 <div class="listing-card__top">
-                                    <span class="listing-chip <?php echo !$is_published ? 'listing-chip--draft' : ''; ?>">
-                                        <?php echo esc_html(ucfirst($post_status)); ?>
+                                    <span class="listing-chip <?php echo !$is_published ? 'listing-chip--draft' : ''; ?> <?php echo $is_done ? 'listing-chip--done' : ''; ?>">
+                                        <?php echo esc_html(rmt_dashboard_status_label($post_id)); ?>
                                     </span>
+
                                     <div class="listing-card__price">
-                                        <?php if ($budget_min) echo esc_html(rmt_format_price($budget_min)); ?>
-                                        <?php if ($budget_min && $budget_max) echo ' – '; ?>
-                                        <?php if ($budget_max) echo esc_html(rmt_format_price($budget_max)); ?>
+                                        <?php
+                                        if ($budget_min || $budget_max) {
+                                            if ($budget_min) {
+                                                echo esc_html(rmt_format_price($budget_min));
+                                            }
+
+                                            if ($budget_min && $budget_max) {
+                                                echo ' – ';
+                                            }
+
+                                            if ($budget_max) {
+                                                echo esc_html(rmt_format_price($budget_max));
+                                            }
+                                        } elseif ($legacy_budget) {
+                                            echo esc_html(rmt_format_price($legacy_budget));
+                                        }
+                                        ?>
                                     </div>
                                 </div>
 
                                 <h3 class="listing-card__title">
-                                    <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                                    <a href="<?php echo esc_url(get_permalink()); ?>"><?php the_title(); ?></a>
                                 </h3>
 
                                 <?php if ($preferred_area) : ?>
@@ -311,44 +372,56 @@ get_header();
                                     <p class="listing-card__address">Move-in: <?php echo esc_html($move_in_date); ?></p>
                                 <?php endif; ?>
 
-                                <div class="cta-actions" style="flex-wrap:wrap;gap:.5rem;">
-
+                                <div class="cta-actions dashboard-card-actions">
                                     <?php if ($is_published) : ?>
-                                        <a href="<?php the_permalink(); ?>" class="btn btn-primary">View</a>
+                                        <a href="<?php echo esc_url(get_permalink()); ?>" class="btn btn-primary">View</a>
                                     <?php endif; ?>
 
-                                    <!-- Edit: front-end edit page -->
-                                    <a href="<?php echo esc_url($edit_url); ?>" class="btn btn-secondary">Edit</a>
+                                    <a href="<?php echo esc_url(rmt_dashboard_edit_url($post_id)); ?>" class="btn btn-secondary">Edit</a>
+
+                                    <?php if (!$is_published || $is_done) : ?>
+                                        <form method="post">
+                                            <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
+                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+                                            <input type="hidden" name="rmt_dashboard_action_type" value="publish">
+                                            <button type="submit" class="btn btn-primary">Publish</button>
+                                        </form>
+                                    <?php endif; ?>
 
                                     <?php if ($is_published) : ?>
-                                        <!-- Unpublish (move to draft) -->
-                                        <form method="post" style="display:inline;">
+                                        <form method="post">
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
-                                            <input type="hidden" name="unpublish_post_id" value="<?php echo esc_attr(get_the_ID()); ?>">
-                                            <button type="submit" name="rmt_unpublish_listing" value="1"
-                                                class="btn btn-secondary"
-                                                onclick="return confirm('Unpublish this profile? It will move to draft and won\'t be visible to others.');">
+                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+                                            <input type="hidden" name="rmt_dashboard_action_type" value="unpublish">
+                                            <button type="submit" class="btn btn-secondary" onclick="return confirm('Unpublish this profile?');">
                                                 Unpublish
                                             </button>
                                         </form>
-                                    <?php else : ?>
-                                        <!-- Delete only for draft/pending -->
-                                        <form method="post" style="display:inline;">
+
+                                        <form method="post">
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
-                                            <input type="hidden" name="delete_post_id" value="<?php echo esc_attr(get_the_ID()); ?>">
-                                            <button type="submit" name="rmt_delete_listing" value="1"
-                                                class="btn btn-secondary btn--danger"
-                                                onclick="return confirm('Permanently delete this profile?');">
+                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+                                            <input type="hidden" name="rmt_dashboard_action_type" value="done">
+                                            <button type="submit" class="btn btn-secondary" onclick="return confirm('Mark this profile as done?');">
+                                                Done
+                                            </button>
+                                        </form>
+                                    <?php else : ?>
+                                        <form method="post">
+                                            <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
+                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
+                                            <input type="hidden" name="rmt_dashboard_action_type" value="delete">
+                                            <button type="submit" class="btn btn-secondary btn--danger" onclick="return confirm('Move this profile to trash?');">
                                                 Delete
                                             </button>
                                         </form>
                                     <?php endif; ?>
-
                                 </div>
                             </div>
                         </article>
                     <?php endwhile; ?>
                 </div>
+
                 <?php wp_reset_postdata(); ?>
             <?php else : ?>
                 <div class="empty-state">
@@ -359,23 +432,5 @@ get_header();
         </div>
     </section>
 </main>
-
-<style>
-/* Draft chip variant */
-.listing-chip--draft {
-    background: rgba(255,193,7,0.15);
-    border-color: rgba(255,193,7,0.4);
-    color: #b78a00;
-}
-
-/* Danger button */
-.btn--danger {
-    border-color: rgba(220,53,69,0.4) !important;
-    color: #dc3545 !important;
-}
-.btn--danger:hover {
-    background: rgba(220,53,69,0.08) !important;
-}
-</style>
 
 <?php get_footer(); ?>

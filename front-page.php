@@ -14,7 +14,7 @@ $logo_url    = $upload_base . '/bkkroomie/logo.png';
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BKKroomie – Find Your Perfect Roommate in Bangkok</title>
+    <title>BKKroomie – Find Your Awesome Roommate in Bangkok</title>
     <?php wp_head(); ?>
 
     <style>
@@ -91,7 +91,7 @@ $logo_url    = $upload_base . '/bkkroomie/logo.png';
             <h1 class="hero-title" style="max-width:none; font-size:clamp(2.2rem,6vw,4rem);">
                 Here's Where You
                 <span style="display:block; color:var(--color-primary);">
-                    Find Your Perfect Roommate in Bangkok
+                    Find Your Awesome Roommate in Bangkok
                 </span>
             </h1>
 
