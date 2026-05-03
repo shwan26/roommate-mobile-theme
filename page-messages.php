@@ -109,16 +109,20 @@ get_header();
 
             <?php if (!$is_single_chat) : ?>
                 <div class="single-card rmt-all-chats">
-                    
-
                     <div class="rmt-chat-search-wrap">
+                        <svg class="rmt-chat-search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <circle cx="9" cy="9" r="5.5"/>
+                            <path d="M13 13l3.5 3.5"/>
+                        </svg>
                         <input
                             type="search"
                             id="rmt-chat-search"
                             class="par-input"
-                            placeholder="Search by user, post title, or message..."
+                            placeholder="Search chats…"
                             aria-label="Search chats"
+                            autocomplete="off"
                         >
+                        <button type="button" class="rmt-search-clear" id="rmt-search-clear" aria-label="Clear search">&#x2715;</button>
                     </div>
 
                     <?php if (!empty($conversations)) : ?>
@@ -133,12 +137,17 @@ get_header();
                                 ?>
                                 <div class="rmt-conversation-row" data-search="<?php echo esc_attr(strtolower($search_text)); ?>">
                                     <a class="rmt-conversation-item" href="<?php echo esc_url($chat_url); ?>">
-                                        <div>
+                                        <?php
+                                        $initials = $other_user
+                                            ? strtoupper(substr($other_user->display_name, 0, 1))
+                                            : '?';
+                                        ?>
+                                        <div class="rmt-conv-avatar" aria-hidden="true"><?php echo esc_html($initials); ?></div>
+                                        <div class="rmt-conv-body">
                                             <strong><?php echo esc_html($other_user ? $other_user->display_name : 'User'); ?></strong>
-                                            <span><?php echo esc_html($listing_title ?: 'Listing'); ?></span>
-                                            <p><?php echo esc_html(wp_trim_words($conversation->last_message, 18)); ?></p>
+                                            <span class="rmt-conv-listing"><?php echo esc_html($listing_title ?: 'Listing'); ?></span>
+                                            <p><?php echo esc_html(wp_trim_words($conversation->last_message, 14)); ?></p>
                                         </div>
-
                                         <div class="rmt-conversation-meta">
                                             <?php if ((int) $conversation->unread_count > 0) : ?>
                                                 <span class="rmt-unread-badge"><?php echo esc_html((int) $conversation->unread_count); ?></span>
@@ -155,10 +164,14 @@ get_header();
                                             type="submit"
                                             name="rmt_delete_conversation"
                                             value="1"
-                                            class="btn btn-secondary btn--danger rmt-delete-chat-btn"
+                                            class="rmt-delete-chat-btn"
+                                            title="Delete conversation"
                                             onclick="return confirm('Delete this chat permanently? This cannot be recovered.');"
                                         >
-                                            Delete
+                                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                                <path d="M2 4h12M5 4V2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5V4M6 7v5M10 7v5M3 4l1 9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-9"/>
+                                            </svg>
+                                            <span class="screen-reader-text">Delete</span>
                                         </button>
                                     </form>
                                 </div>
@@ -239,27 +252,39 @@ get_header();
 
 <script>
 (function () {
-    const box = document.getElementById('rmt-chat-box');
+    /* auto-scroll chat to bottom */
+    var box = document.getElementById('rmt-chat-box');
     if (box) box.scrollTop = box.scrollHeight;
 
-    const search = document.getElementById('rmt-chat-search');
-    const rows = Array.from(document.querySelectorAll('.rmt-conversation-row'));
-    const noResults = document.getElementById('rmt-chat-no-results');
+    /* search + clear button */
+    var search   = document.getElementById('rmt-chat-search');
+    var clearBtn = document.getElementById('rmt-search-clear');
+    var rows     = Array.from(document.querySelectorAll('.rmt-conversation-row'));
+    var noRes    = document.getElementById('rmt-chat-no-results');
 
-    if (search && rows.length) {
+    function filterChats(value) {
+        var q = value.trim().toLowerCase();
+        var visible = 0;
+        rows.forEach(function (row) {
+            var match = row.dataset.search.indexOf(q) !== -1;
+            row.hidden = !match;
+            if (match) visible++;
+        });
+        if (noRes) noRes.hidden = visible !== 0 || q === '';
+        if (clearBtn) clearBtn.classList.toggle('visible', q.length > 0);
+    }
+
+    if (search) {
         search.addEventListener('input', function () {
-            const value = this.value.trim().toLowerCase();
-            let visibleCount = 0;
+            filterChats(this.value);
+        });
+    }
 
-            rows.forEach(function (row) {
-                const matches = row.dataset.search.indexOf(value) !== -1;
-                row.hidden = !matches;
-                if (matches) visibleCount++;
-            });
-
-            if (noResults) {
-                noResults.hidden = visibleCount !== 0;
-            }
+    if (clearBtn && search) {
+        clearBtn.addEventListener('click', function () {
+            search.value = '';
+            filterChats('');
+            search.focus();
         });
     }
 })();
