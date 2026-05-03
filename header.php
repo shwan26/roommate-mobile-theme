@@ -4,6 +4,9 @@
  */
 
 defined('ABSPATH') || exit;
+$is_room_active = is_post_type_archive('room') || is_singular('room') || is_page(['post-a-room', 'edit-room']);
+$is_roommate_active = is_post_type_archive('roommate') || is_singular('roommate') || is_page(['post-a-roommate', 'edit-roommate']);
+$is_dashboard_active = is_page('dashboard');
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -47,17 +50,17 @@ defined('ABSPATH') || exit;
             </nav>
 
             <div class="site-header__actions">
-                <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary header-btn">
+                <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn <?php echo $is_room_active ? 'btn-primary' : 'btn-secondary'; ?> header-btn">
                     Browse Rooms
                 </a>
 
-                <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn btn-primary header-btn">
+                <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn <?php echo $is_roommate_active ? 'btn-primary' : 'btn-secondary'; ?> header-btn">
                     Browse Roommates
                 </a>
 
                 <?php if (is_user_logged_in()) : ?>
-                    <a href="<?php echo esc_url(home_url('/profile/')); ?>" class="btn btn-outline header-btn">
-                        Profile
+                    <a href="<?php echo esc_url(home_url('/dashboard/')); ?>" class="btn <?php echo $is_dashboard_active ? 'btn-primary' : 'btn-outline'; ?> header-btn">
+                        Dashboard
                     </a>
                 <?php else : ?>
                     <a href="<?php echo esc_url(wp_login_url()); ?>" class="btn btn-outline header-btn">
@@ -95,17 +98,17 @@ defined('ABSPATH') || exit;
                 ?>
 
                 <div class="mobile-menu-actions">
-                    <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary mobile-menu-btn">
+                    <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn <?php echo $is_room_active ? 'btn-primary' : 'btn-secondary'; ?> mobile-menu-btn">
                         Browse Rooms
                     </a>
 
-                    <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn btn-primary mobile-menu-btn">
+                    <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn <?php echo $is_roommate_active ? 'btn-primary' : 'btn-secondary'; ?> mobile-menu-btn">
                         Browse Roommates
                     </a>
 
                     <?php if (is_user_logged_in()) : ?>
-                        <a href="<?php echo esc_url(home_url('/profile/')); ?>" class="btn btn-outline mobile-menu-btn">
-                            Profile
+                        <a href="<?php echo esc_url(home_url('/dashboard/')); ?>" class="btn <?php echo $is_dashboard_active ? 'btn-primary' : 'btn-outline'; ?> mobile-menu-btn">
+                            Dashboard
                         </a>
                     <?php else : ?>
                         <a href="<?php echo esc_url(wp_login_url()); ?>" class="btn btn-outline mobile-menu-btn">

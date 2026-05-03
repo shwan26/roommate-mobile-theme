@@ -46,6 +46,9 @@ if (have_posts()) :
         $location_terms = get_the_terms($post_id, 'location_area');
         $lifestyles     = get_the_terms($post_id, 'lifestyle');
 
+        $edit_url = add_query_arg('edit_id', $post_id, home_url('/edit-roommate/'));
+
+        
         // Profile photo — use post thumbnail, else hard fallback to default image URL
         if (has_post_thumbnail($post_id)) {
             $photo_url = get_the_post_thumbnail_url($post_id, 'medium');
@@ -241,13 +244,7 @@ if (have_posts()) :
         <main id="primary" class="site-main single-page single-roommate">
             <div class="container">
 
-                <?php if ($action_message) : ?>
-                    <div class="srm-notice srm-notice--success"><?php echo esc_html($action_message); ?></div>
-                <?php endif; ?>
-
-                <?php if ($report_sent) : ?>
-                    <div class="srm-notice srm-notice--warning">✅ Thank you — your report has been sent to our team for review.</div>
-                <?php endif; ?>
+         
 
                 <!-- Profile header -->
                 <div class="srm-hero">
@@ -295,9 +292,10 @@ if (have_posts()) :
 
                         <?php if ($is_owner || $is_admin) : ?>
                             <!-- Owner / admin actions -->
-                            <a href="<?php echo esc_url(get_edit_post_link($post_id)); ?>" class="btn btn-secondary">
+                            <a href="<?php echo esc_url($edit_url); ?>" class="btn btn-secondary">
                                 ✏️ Edit Profile
                             </a>
+
                             <form method="post" style="display:inline;">
                                 <?php wp_nonce_field('rmt_unpublish_' . $post_id, 'rmt_unpublish_nonce'); ?>
                                 <button type="submit" class="btn btn-secondary"
@@ -313,11 +311,17 @@ if (have_posts()) :
 
                         <?php if ($is_visitor) : ?>
                             <!-- Visitor actions -->
-                            <button class="btn-chat" onclick="window.location.href='<?php echo esc_url(home_url('/chat/?with=' . $post_author_id)); ?>'">
-                                💬 Chat
-                            </button>
-                            <button class="btn-danger" onclick="document.getElementById('report-modal').classList.add('open')">
-                                🚩 Report
+                            <?php if (is_user_logged_in()) : ?>
+                                <a class="btn btn-primary btn--chat" href="<?php echo esc_url(rmt_get_chat_url($post_author_id, $post_id)); ?>">
+                                    💬 Chat with roommate
+                                </a>
+                            <?php else : ?>
+                                <a class="btn btn-primary btn--chat" href="<?php echo esc_url(wp_login_url(get_permalink($post_id))); ?>">
+                                    💬 Login to chat
+                                </a>
+                            <?php endif; ?>
+                            <button class="btn btn-ghost btn--report js-report-spam" onclick="document.getElementById('report-modal').classList.add('open')">
+                                🚩 Report to Admin
                             </button>
                         <?php endif; ?>
 

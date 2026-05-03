@@ -1611,51 +1611,6 @@ function rmt_get_message_status_label($message, $current_user_id) {
     return $is_read ? 'Read' : 'Unread';
 }
 
-/**
- * Permanently delete one conversation for the current user.
- * This removes all messages between the two users for the selected listing.
- */
-function rmt_delete_conversation($user_id, $other_user_id, $listing_id) {
-    global $wpdb;
-
-    $user_id       = absint($user_id);
-    $other_user_id = absint($other_user_id);
-    $listing_id    = absint($listing_id);
-
-    if (!$user_id || !$other_user_id || !$listing_id) {
-        return new WP_Error('missing_data', 'Conversation could not be found.');
-    }
-
-    if (!rmt_user_can_chat_about_listing($user_id, $other_user_id, $listing_id)) {
-        return new WP_Error('not_allowed', 'You cannot delete this conversation.');
-    }
-
-    $table = rmt_messages_table_name();
-
-    $deleted = $wpdb->query(
-        $wpdb->prepare(
-            "DELETE FROM {$table}
-             WHERE listing_id = %d
-             AND (
-                (sender_id = %d AND recipient_id = %d)
-                OR
-                (sender_id = %d AND recipient_id = %d)
-             )",
-            $listing_id,
-            $user_id,
-            $other_user_id,
-            $other_user_id,
-            $user_id
-        )
-    );
-
-    if ($deleted === false) {
-        return new WP_Error('db_error', 'Conversation could not be deleted.');
-    }
-
-    return true;
-}
-
 function rmt_get_user_conversations($user_id, $limit = 12) {
     global $wpdb;
 

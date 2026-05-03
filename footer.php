@@ -6,43 +6,24 @@
 defined('ABSPATH') || exit;
 ?>
 
-<footer class="site-footer">
+<footer class="site-footer site-footer--simple">
     <div class="container">
-        <div class="site-footer__inner">
-
-            <div class="site-footer__brand">
-                <h2 class="site-footer__title"><?php bloginfo('name'); ?></h2>
-                <p class="site-footer__text">
-                    <?php bloginfo('description'); ?>
-                </p>
-            </div>
-
-            <div class="site-footer__nav">
-                <h3 class="site-footer__heading"><?php esc_html_e('Quick Links', 'roommate-mobile-theme'); ?></h3>
-                <?php
-                wp_nav_menu(array(
-                    'theme_location' => 'footer',
-                    'container'      => false,
-                    'menu_class'     => 'footer-menu',
-                    'fallback_cb'    => false,
-                ));
-                ?>
-            </div>
-
-            <div class="site-footer__contact">
-                <h3 class="site-footer__heading"><?php esc_html_e('About', 'roommate-mobile-theme'); ?></h3>
-                <p class="site-footer__text">
-                    <?php esc_html_e('Find roommates, discover rooms, and connect easily in one place.', 'roommate-mobile-theme'); ?>
-                </p>
-            </div>
-
-        </div>
-
-        <div class="site-footer__bottom">
-            <p>
-                &copy; <?php echo esc_html(date('Y')); ?> <?php bloginfo('name'); ?>.
-                <?php esc_html_e('All rights reserved.', 'roommate-mobile-theme'); ?>
+        <div class="simple-footer">
+            <p class="simple-footer__text">
+                Find your roommate © <?php echo esc_html(date('Y')); ?> bkkroomie. All rights reserved.
             </p>
+
+            <a
+                class="simple-footer__social"
+                href="https://www.facebook.com/bkkroomie"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+            >
+                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path fill="currentColor" d="M22 12.06C22 6.48 17.52 2 11.94 2S2 6.48 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.5 1.49-3.88 3.77-3.88 1.09 0 2.23.19 2.23.19v2.45h-1.26c-1.24 0-1.63.77-1.63 1.56v1.89h2.78l-.44 2.91h-2.34V22c4.78-.76 8.45-4.92 8.45-9.94Z"/>
+                </svg>
+            </a>
         </div>
     </div>
 </footer>
