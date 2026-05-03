@@ -241,8 +241,11 @@ get_header();
                                 <?php wp_nonce_field('rmt_send_message_' . $listing_id . '_' . $recipient_id, 'rmt_message_nonce'); ?>
                                 <textarea name="message" class="par-textarea" rows="3" maxlength="1500" placeholder="Write your message..." required></textarea>
                                 <button type="submit" name="rmt_send_message" value="1" class="btn btn-primary">Send Message</button>
+                                
                             </form>
                         </div>
+                        <p>⚠️ Safety Notice. Do not share sensitive or private information (e.g., personal ID). 
+                            Beware of scammers. Bkkroomie is not responsible for any issues arising from user interactions. </p>
                     </div>
                 <?php endif; ?>
             <?php endif; ?>

@@ -152,7 +152,7 @@ if (have_posts()) :
                                 data-post-id="<?php echo esc_attr($post_id); ?>"
                                 data-nonce="<?php echo esc_attr(wp_create_nonce('rmt_report_' . $post_id)); ?>"
                             >
-                                🚩 Report listing
+                                🚩 Report to Admin
                             </button>
                         </div>
                     <?php endif; ?>

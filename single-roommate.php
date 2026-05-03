@@ -313,15 +313,15 @@ if (have_posts()) :
                             <!-- Visitor actions -->
                             <?php if (is_user_logged_in()) : ?>
                                 <a class="btn btn-primary btn--chat" href="<?php echo esc_url(rmt_get_chat_url($post_author_id, $post_id)); ?>">
-                                    💬 Chat
+                                    💬 Chat with roommate
                                 </a>
                             <?php else : ?>
                                 <a class="btn btn-primary btn--chat" href="<?php echo esc_url(wp_login_url(get_permalink($post_id))); ?>">
                                     💬 Login to chat
                                 </a>
                             <?php endif; ?>
-                            <button class="btn-danger" onclick="document.getElementById('report-modal').classList.add('open')">
-                                🚩 Report
+                            <button class="btn btn-ghost btn--report js-report-spam" onclick="document.getElementById('report-modal').classList.add('open')">
+                                🚩 Report to Admin
                             </button>
                         <?php endif; ?>
 
