@@ -311,9 +311,15 @@ if (have_posts()) :
 
                         <?php if ($is_visitor) : ?>
                             <!-- Visitor actions -->
-                            <button class="btn-chat" onclick="window.location.href='<?php echo esc_url(home_url('/chat/?with=' . $post_author_id)); ?>'">
-                                💬 Chat
-                            </button>
+                            <?php if (is_user_logged_in()) : ?>
+                                <a class="btn btn-primary btn--chat" href="<?php echo esc_url(rmt_get_chat_url($post_author_id, $post_id)); ?>">
+                                    💬 Chat
+                                </a>
+                            <?php else : ?>
+                                <a class="btn btn-primary btn--chat" href="<?php echo esc_url(wp_login_url(get_permalink($post_id))); ?>">
+                                    💬 Login to chat
+                                </a>
+                            <?php endif; ?>
                             <button class="btn-danger" onclick="document.getElementById('report-modal').classList.add('open')">
                                 🚩 Report
                             </button>

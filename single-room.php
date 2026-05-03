@@ -53,6 +53,9 @@ if (have_posts()) :
         $amenities      = get_the_terms($post_id, 'amenity');
         $lifestyles     = get_the_terms($post_id, 'lifestyle');
         $room_types     = get_the_terms($post_id, 'room_type');
+
+        $room_author_id = (int) get_post_field('post_author', get_the_ID());
+        $current_user_id = get_current_user_id();
         ?>
 
         <main id="primary" class="site-main single-page single-room">

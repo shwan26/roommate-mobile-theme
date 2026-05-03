@@ -183,6 +183,45 @@ get_header();
                     </div>
                 </div>
             </div>
+
+            <?php $rmt_conversations = function_exists('rmt_get_user_conversations') ? rmt_get_user_conversations($current_user->ID, 10) : array(); ?>
+            <div class="single-card rmt-dashboard-messages">
+                <div class="rmt-dashboard-messages__header">
+                    <div>
+                        <h2>Recent Chats</h2>
+                        <p>Continue conversations from your room and roommate posts.</p>
+                    </div>
+                    <a href="<?php echo esc_url(home_url('/messages/')); ?>" class="btn btn-secondary">Open Messages</a>
+                </div>
+
+                <?php if (!empty($rmt_conversations)) : ?>
+                    <div class="rmt-conversation-list">
+                        <?php foreach ($rmt_conversations as $conversation) : ?>
+                            <?php
+                            $other_user = get_userdata((int) $conversation->other_user_id);
+                            $listing_id = (int) $conversation->listing_id;
+                            $chat_url   = rmt_get_chat_url((int) $conversation->other_user_id, $listing_id);
+                            ?>
+                            <a class="rmt-conversation-item" href="<?php echo esc_url($chat_url); ?>">
+                                <div>
+                                    <strong><?php echo esc_html($other_user ? $other_user->display_name : 'User'); ?></strong>
+                                    <span><?php echo esc_html(get_the_title($listing_id)); ?></span>
+                                    <p><?php echo esc_html(wp_trim_words($conversation->last_message, 16)); ?></p>
+                                </div>
+
+                                <div class="rmt-conversation-meta">
+                                    <?php if ((int) $conversation->unread_count > 0) : ?>
+                                        <span class="rmt-unread-badge"><?php echo esc_html((int) $conversation->unread_count); ?></span>
+                                    <?php endif; ?>
+                                    <small><?php echo esc_html(mysql2date('M j, g:i A', $conversation->last_message_at)); ?></small>
+                                </div>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else : ?>
+                    <p class="rmt-dashboard-empty">No chats yet. When someone messages you from a listing, it will appear here.</p>
+                <?php endif; ?>
+            </div>
         </div>
     </section>
 
