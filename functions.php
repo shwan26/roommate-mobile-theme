@@ -1687,3 +1687,261 @@ function rmt_get_user_conversations($user_id, $limit = 12) {
         )
     );
 }
+
+/**
+ * Custom WordPress login/register page styling
+ */
+function bkkroomie_custom_login_styles() {
+    ?>
+    <style>
+        body.login {
+            background: #ffffff;
+            font-family: "Inter", "Segoe UI", Arial, sans-serif;
+        }
+
+        body.login div#login {
+            width: 420px;
+            max-width: calc(100% - 32px);
+            padding-top: 60px;
+        }
+
+        body.login h1 a {
+            background-image: url('<?php echo esc_url(get_template_directory_uri() . "/assets/images/bkkroomie-logo.png"); ?>');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            width: 260px;
+            height: 80px;
+            margin-bottom: 24px;
+        }
+
+        body.login form {
+            border: 1px solid #E4E4E4;
+            border-radius: 24px;
+            box-shadow: 0 14px 35px rgba(17, 17, 17, 0.08);
+            padding: 32px;
+        }
+
+        body.login label {
+            color: #2F2F2F;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        body.login input[type="text"],
+        body.login input[type="password"],
+        body.login input[type="email"] {
+            border: 1.5px solid #E4E4E4;
+            border-radius: 14px;
+            min-height: 48px;
+            padding: 8px 14px;
+            font-size: 16px;
+            box-shadow: none;
+        }
+
+        body.login input:focus {
+            border-color: #89E219;
+            box-shadow: 0 0 0 4px rgba(137, 226, 25, 0.18);
+            outline: none;
+        }
+
+        body.login .button-primary {
+            background: #89E219;
+            border-color: #89E219;
+            color: #111111;
+            border-radius: 999px;
+            min-height: 44px;
+            padding: 0 24px;
+            font-weight: 800;
+            font-size: 15px;
+            box-shadow: 0 2px 10px rgba(137, 226, 25, 0.35);
+        }
+
+        body.login .button-primary:hover {
+            background: #58CC02;
+            border-color: #58CC02;
+            color: #111111;
+        }
+
+        body.login #nav,
+        body.login #backtoblog {
+            text-align: center;
+        }
+
+        body.login #nav a,
+        body.login #backtoblog a {
+            color: #4B4B4B;
+            font-weight: 700;
+        }
+
+        body.login #nav a:hover,
+        body.login #backtoblog a:hover {
+            color: #58CC02;
+        }
+
+        .login .message,
+        .login .notice,
+        .login .success {
+            border-left-color: #89E219;
+            border-radius: 12px;
+        }
+    </style>
+    <?php
+}
+add_action('login_enqueue_scripts', 'bkkroomie_custom_login_styles');
+
+function bkkroomie_login_logo_url() {
+    return home_url('/');
+}
+add_filter('login_headerurl', 'bkkroomie_login_logo_url');
+
+function bkkroomie_login_logo_title() {
+    return get_bloginfo('name');
+}
+add_filter('login_headertext', 'bkkroomie_login_logo_title');
+
+/**
+ * Bkkroomie listing limits.
+ * Subscribers can post up to 5 rooms and 5 roommate profiles.
+ * Administrators have no limit.
+ */
+
+function bkkroomie_user_is_unlimited_poster($user_id = 0) {
+    $user_id = $user_id ? (int) $user_id : get_current_user_id();
+
+    if (!$user_id) {
+        return false;
+    }
+
+    return user_can($user_id, 'manage_options');
+}
+
+function bkkroomie_get_user_post_count_by_type($user_id, $post_type) {
+    $counts = count_user_posts((int) $user_id, $post_type, true);
+    return (int) $counts;
+}
+
+function bkkroomie_get_listing_limit($post_type) {
+    $limits = array(
+        'room'     => 5,
+        'roommate' => 5,
+    );
+
+    return isset($limits[$post_type]) ? (int) $limits[$post_type] : 0;
+}
+
+function bkkroomie_user_can_create_listing($user_id, $post_type) {
+    if (bkkroomie_user_is_unlimited_poster($user_id)) {
+        return true;
+    }
+
+    $limit = bkkroomie_get_listing_limit($post_type);
+
+    if (!$limit) {
+        return true;
+    }
+
+    $current_count = bkkroomie_get_user_post_count_by_type($user_id, $post_type);
+
+    return $current_count < $limit;
+}
+
+function bkkroomie_get_listing_limit_message($post_type) {
+    if ($post_type === 'room') {
+        return __('You have reached the limit of 5 room posts. Please edit or delete an existing room before posting a new one.', 'roommate-mobile-theme');
+    }
+
+    if ($post_type === 'roommate') {
+        return __('You have reached the limit of 5 roommate posts. Please edit or delete an existing roommate profile before posting a new one.', 'roommate-mobile-theme');
+    }
+
+    return __('You have reached the posting limit.', 'roommate-mobile-theme');
+}
+
+/**
+ * Block frontend form pages when subscriber has reached limit.
+ * Adjust page slugs if yours are different.
+ */
+function bkkroomie_block_limited_listing_pages() {
+    if (!is_user_logged_in()) {
+        return;
+    }
+
+    $user_id = get_current_user_id();
+
+    if (bkkroomie_user_is_unlimited_poster($user_id)) {
+        return;
+    }
+
+    $blocked_post_type = '';
+
+    if (is_page('post-a-room')) {
+        $blocked_post_type = 'room';
+    }
+
+    if (is_page('post-a-roommate')) {
+        $blocked_post_type = 'roommate';
+    }
+
+    if (!$blocked_post_type) {
+        return;
+    }
+
+    if (bkkroomie_user_can_create_listing($user_id, $blocked_post_type)) {
+        return;
+    }
+
+    wp_safe_redirect(add_query_arg(
+        array(
+            'listing_limit' => $blocked_post_type,
+        ),
+        home_url('/dashboard/')
+    ));
+    exit;
+}
+add_action('template_redirect', 'bkkroomie_block_limited_listing_pages');
+
+/**
+ * Prevent direct wp_insert_post abuse too.
+ */
+function bkkroomie_enforce_listing_limit_before_insert($data, $postarr) {
+    if (empty($data['post_type'])) {
+        return $data;
+    }
+
+    $post_type = $data['post_type'];
+
+    if (!in_array($post_type, array('room', 'roommate'), true)) {
+        return $data;
+    }
+
+    $user_id = get_current_user_id();
+
+    if (!$user_id || bkkroomie_user_is_unlimited_poster($user_id)) {
+        return $data;
+    }
+
+    $post_id = isset($postarr['ID']) ? (int) $postarr['ID'] : 0;
+
+    /*
+     * Allow editing existing posts.
+     * Only block creating new posts.
+     */
+    if ($post_id > 0) {
+        return $data;
+    }
+
+    if (!bkkroomie_user_can_create_listing($user_id, $post_type)) {
+        wp_die(
+            esc_html(bkkroomie_get_listing_limit_message($post_type)),
+            esc_html__('Posting limit reached', 'roommate-mobile-theme'),
+            array(
+                'response' => 403,
+                'back_link' => true,
+            )
+        );
+    }
+
+    return $data;
+}
+add_filter('wp_insert_post_data', 'bkkroomie_enforce_listing_limit_before_insert', 10, 2);

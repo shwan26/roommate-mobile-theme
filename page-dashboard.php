@@ -121,10 +121,21 @@ $roommate_posts = new WP_Query([
 get_header();
 ?>
 
+<?php
+$listing_limit = isset($_GET['listing_limit']) ? sanitize_key($_GET['listing_limit']) : '';
+
+if ($listing_limit === 'room' || $listing_limit === 'roommate') :
+?>
+    <div class="container">
+        <div class="rmt-notice rmt-notice--error">
+            <p><?php echo esc_html(bkkroomie_get_listing_limit_message($listing_limit)); ?></p>
+        </div>
+    </div>
+<?php endif; ?>
+
 <main id="primary" class="site-main dashboard-page">
     <section class="archive-hero">
         <div class="container">
-            <span class="archive-badge">Dashboard</span>
             <h1 class="archive-title">Welcome, <?php echo esc_html($current_user->display_name); ?></h1>
             <p class="archive-description">Manage your room and roommate listings.</p>
         </div>
@@ -172,13 +183,25 @@ get_header();
                 <div class="single-card">
                     <h2>Quick Actions</h2>
                     <div class="cta-actions">
-                        <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="btn btn-primary">
-                            Post a Room
-                        </a>
+                        <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'room')) : ?>
+                            <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="btn btn-primary">
+                                Post a Room
+                            </a>
+                        <?php else : ?>
+                            <button class="btn btn-outline" type="button" disabled>
+                                Room Limit Reached
+                            </button>
+                        <?php endif; ?>
 
-                        <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="btn btn-secondary">
-                            Post a Roommate
-                        </a>
+                        <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'roommate')) : ?>
+                            <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="btn btn-secondary">
+                                Post a Roommate
+                            </a>
+                        <?php else : ?>
+                            <button class="btn btn-outline" type="button" disabled>
+                                Roommate Limit Reached
+                            </button>
+                        <?php endif; ?>
                         <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn btn-secondary">Log Out</a>
                     </div>
                 </div>

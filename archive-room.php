@@ -1,21 +1,149 @@
 <?php
 /**
- * Archive Template: Show Room
+ * Archive Template: Room
  */
 
 defined('ABSPATH') || exit;
 
 get_header();
+
+function rmt_archive_get_meta($post_id, $key, $default = '') {
+    $value = get_post_meta($post_id, $key, true);
+    return $value !== '' ? $value : $default;
+}
+
+function rmt_archive_terms_text($post_id, $taxonomy) {
+    $terms = get_the_terms($post_id, $taxonomy);
+
+    if (empty($terms) || is_wp_error($terms)) {
+        return '';
+    }
+
+    return implode(', ', wp_list_pluck($terms, 'name'));
+}
+
+function rmt_archive_format_date($date) {
+    if (!$date) {
+        return '';
+    }
+
+    $timestamp = strtotime($date);
+
+    if (!$timestamp) {
+        return $date;
+    }
+
+    return date_i18n('M j, Y', $timestamp);
+}
+
+$q               = sanitize_text_field(wp_unslash($_GET['q'] ?? ''));
+$rent_min_q      = sanitize_text_field(wp_unslash($_GET['rent_min'] ?? ''));
+$rent_max_q      = sanitize_text_field(wp_unslash($_GET['rent_max'] ?? ''));
+$available_q     = sanitize_text_field(wp_unslash($_GET['available_from'] ?? ''));
+$location_q      = absint($_GET['location_area'] ?? 0);
+$room_type_q     = absint($_GET['room_type'] ?? 0);
+$sort_q          = sanitize_text_field(wp_unslash($_GET['sort'] ?? 'newest'));
+
+$paged = max(1, get_query_var('paged') ? get_query_var('paged') : get_query_var('page'));
+
+$location_terms_all = get_terms([
+    'taxonomy'   => 'location_area',
+    'hide_empty' => false,
+]);
+
+$room_type_terms_all = get_terms([
+    'taxonomy'   => 'room_type',
+    'hide_empty' => false,
+]);
+
+$meta_query = [
+    'relation' => 'AND',
+];
+
+if ($rent_min_q !== '') {
+    $meta_query[] = [
+        'key'     => '_rent',
+        'value'   => absint($rent_min_q),
+        'compare' => '>=',
+        'type'    => 'NUMERIC',
+    ];
+}
+
+if ($rent_max_q !== '') {
+    $meta_query[] = [
+        'key'     => '_rent',
+        'value'   => absint($rent_max_q),
+        'compare' => '<=',
+        'type'    => 'NUMERIC',
+    ];
+}
+
+if ($available_q !== '') {
+    $meta_query[] = [
+        'key'     => '_available_date',
+        'value'   => $available_q,
+        'compare' => '>=',
+        'type'    => 'DATE',
+    ];
+}
+
+$tax_query = [
+    'relation' => 'AND',
+];
+
+if ($location_q) {
+    $tax_query[] = [
+        'taxonomy' => 'location_area',
+        'field'    => 'term_id',
+        'terms'    => [$location_q],
+    ];
+}
+
+if ($room_type_q) {
+    $tax_query[] = [
+        'taxonomy' => 'room_type',
+        'field'    => 'term_id',
+        'terms'    => [$room_type_q],
+    ];
+}
+
+$order = $sort_q === 'oldest' ? 'ASC' : 'DESC';
+
+$room_query_args = [
+    'post_type'      => 'room',
+    'post_status'    => 'publish',
+    'posts_per_page' => 9,
+    'paged'          => $paged,
+    'orderby'        => 'date',
+    'order'          => $order,
+];
+
+if ($q !== '') {
+    $room_query_args['s'] = $q;
+}
+
+if (count($meta_query) > 1) {
+    $room_query_args['meta_query'] = $meta_query;
+}
+
+if (count($tax_query) > 1) {
+    $room_query_args['tax_query'] = $tax_query;
+}
+
+$room_query = new WP_Query($room_query_args);
 ?>
 
-<main id="primary" class="site-main archive-page archive-show-room">
+<main id="primary" class="site-main archive-page archive-room">
+
     <section class="archive-hero">
         <div class="container">
-            <div class="archive-hero__content">
-                <span class="archive-badge">Room</span>
-                <h1 class="archive-title"><?php post_type_archive_title(); ?></h1>
-                <p class="archive-description">
-                    Browse listings from people who already have a room and are looking for a compatible roommate.
+            <div class="section-heading">
+                <h1>
+                    <?php esc_html_e('Browse Rooms', 'roommate-mobile-theme'); ?>
+                </h1>
+
+                <p>
+                    <?php esc_html_e('Find available rooms in Bangkok and connect with people looking for a roommate.', 'roommate-mobile-theme'); ?>
                 </p>
             </div>
         </div>
@@ -23,74 +151,131 @@ get_header();
 
     <section class="archive-filters">
         <div class="container">
-            <form method="get" class="filter-form">
+            <form method="get" class="filter-form" action="<?php echo esc_url(get_post_type_archive_link('room')); ?>">
                 <div class="filter-grid">
-                    <div class="filter-group">
-                        <label for="location_area">Location</label>
-                        <?php
-                        $locations = get_terms(array(
-                            'taxonomy'   => 'location_area',
-                            'hide_empty' => true,
-                        ));
-                        ?>
-                        <select name="location_area" id="location_area">
-                            <option value="">All Locations</option>
-                            <?php if (!is_wp_error($locations) && !empty($locations)) : ?>
-                                <?php foreach ($locations as $location) : ?>
-                                    <option value="<?php echo esc_attr($location->slug); ?>" <?php selected(isset($_GET['location_area']) ? $_GET['location_area'] : '', $location->slug); ?>>
-                                        <?php echo esc_html($location->name); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </select>
+
+                    <div class="filter-group" style="grid-column:1/-1;">
+                        <label for="q">
+                            <?php esc_html_e('Search', 'roommate-mobile-theme'); ?>
+                        </label>
+
+                        <input
+                            type="search"
+                            id="q"
+                            name="q"
+                            placeholder="<?php esc_attr_e('Search title, description, area…', 'roommate-mobile-theme'); ?>"
+                            value="<?php echo esc_attr($q); ?>"
+                        >
                     </div>
 
                     <div class="filter-group">
-                        <label for="room_type">Room Type</label>
-                        <?php
-                        $room_types = get_terms(array(
-                            'taxonomy'   => 'room_type',
-                            'hide_empty' => true,
-                        ));
-                        ?>
-                        <select name="room_type" id="room_type">
-                            <option value="">All Room Types</option>
-                            <?php if (!is_wp_error($room_types) && !empty($room_types)) : ?>
-                                <?php foreach ($room_types as $room_type) : ?>
-                                    <option value="<?php echo esc_attr($room_type->slug); ?>" <?php selected(isset($_GET['room_type']) ? $_GET['room_type'] : '', $room_type->slug); ?>>
-                                        <?php echo esc_html($room_type->name); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </select>
-                    </div>
+                        <label for="rent_min">
+                            <?php esc_html_e('Rent Min', 'roommate-mobile-theme'); ?>
+                        </label>
 
-                    <div class="filter-group">
-                        <label for="max_rent">Max Rent</label>
                         <input
                             type="number"
-                            name="max_rent"
-                            id="max_rent"
-                            placeholder="e.g. 12000"
-                            value="<?php echo isset($_GET['max_rent']) ? esc_attr($_GET['max_rent']) : ''; ?>"
+                            id="rent_min"
+                            name="rent_min"
+                            min="0"
+                            value="<?php echo esc_attr($rent_min_q); ?>"
+                            placeholder="<?php esc_attr_e('e.g. 5000', 'roommate-mobile-theme'); ?>"
                         >
                     </div>
 
                     <div class="filter-group">
-                        <label for="gender_preference">Gender Preference</label>
+                        <label for="rent_max">
+                            <?php esc_html_e('Rent Max', 'roommate-mobile-theme'); ?>
+                        </label>
+
                         <input
-                            type="text"
-                            name="gender_preference"
-                            id="gender_preference"
-                            placeholder="e.g. Female only"
-                            value="<?php echo isset($_GET['gender_preference']) ? esc_attr($_GET['gender_preference']) : ''; ?>"
+                            type="number"
+                            id="rent_max"
+                            name="rent_max"
+                            min="0"
+                            value="<?php echo esc_attr($rent_max_q); ?>"
+                            placeholder="<?php esc_attr_e('e.g. 15000', 'roommate-mobile-theme'); ?>"
                         >
                     </div>
 
-                    <div class="filter-actions">
-                        <button type="submit" class="btn btn-primary">Apply Filters</button>
-                        <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-secondary">Reset</a>
+                    <div class="filter-group">
+                        <label for="available_from">
+                            <?php esc_html_e('Available From', 'roommate-mobile-theme'); ?>
+                        </label>
+
+                        <input
+                            type="date"
+                            id="available_from"
+                            name="available_from"
+                            value="<?php echo esc_attr($available_q); ?>"
+                        >
                     </div>
+
+                    <div class="filter-group">
+                        <label for="location_area">
+                            <?php esc_html_e('Location Area', 'roommate-mobile-theme'); ?>
+                        </label>
+
+                        <select id="location_area" name="location_area">
+                            <option value="">
+                                <?php esc_html_e('— Any —', 'roommate-mobile-theme'); ?>
+                            </option>
+
+                            <?php if (!is_wp_error($location_terms_all)) : ?>
+                                <?php foreach ($location_terms_all as $term) : ?>
+                                    <option value="<?php echo esc_attr($term->term_id); ?>" <?php selected($location_q, $term->term_id); ?>>
+                                        <?php echo esc_html($term->name); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="room_type">
+                            <?php esc_html_e('Property Type', 'roommate-mobile-theme'); ?>
+                        </label>
+
+                        <select id="room_type" name="room_type">
+                            <option value="">
+                                <?php esc_html_e('— Any —', 'roommate-mobile-theme'); ?>
+                            </option>
+
+                            <?php if (!is_wp_error($room_type_terms_all)) : ?>
+                                <?php foreach ($room_type_terms_all as $term) : ?>
+                                    <option value="<?php echo esc_attr($term->term_id); ?>" <?php selected($room_type_q, $term->term_id); ?>>
+                                        <?php echo esc_html($term->name); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sort">
+                            <?php esc_html_e('Sort', 'roommate-mobile-theme'); ?>
+                        </label>
+
+                        <select id="sort" name="sort">
+                            <option value="newest" <?php selected($sort_q, 'newest'); ?>>
+                                <?php esc_html_e('Newest', 'roommate-mobile-theme'); ?>
+                            </option>
+                            <option value="oldest" <?php selected($sort_q, 'oldest'); ?>>
+                                <?php esc_html_e('Oldest', 'roommate-mobile-theme'); ?>
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="filter-actions" style="grid-column:1/-1;">
+                        <button type="submit" class="btn btn-primary">
+                            <?php esc_html_e('Search Rooms', 'roommate-mobile-theme'); ?>
+                        </button>
+
+                        <a class="btn btn-secondary" href="<?php echo esc_url(get_post_type_archive_link('room')); ?>">
+                            <?php esc_html_e('Reset', 'roommate-mobile-theme'); ?>
+                        </a>
+                    </div>
+
                 </div>
             </form>
         </div>
@@ -98,169 +283,123 @@ get_header();
 
     <section class="archive-listings">
         <div class="container">
-            <?php
-            $paged = max(1, get_query_var('paged') ? get_query_var('paged') : get_query_var('page'));
 
-            $tax_query = array();
-            $meta_query = array();
-
-            if (!empty($_GET['location_area'])) {
-                $tax_query[] = array(
-                    'taxonomy' => 'location_area',
-                    'field'    => 'slug',
-                    'terms'    => sanitize_text_field($_GET['location_area']),
-                );
-            }
-
-            if (!empty($_GET['room_type'])) {
-                $tax_query[] = array(
-                    'taxonomy' => 'room_type',
-                    'field'    => 'slug',
-                    'terms'    => sanitize_text_field($_GET['room_type']),
-                );
-            }
-
-            if (!empty($_GET['max_rent'])) {
-                $meta_query[] = array(
-                    'key'     => '_rent',
-                    'value'   => (float) $_GET['max_rent'],
-                    'compare' => '<=',
-                    'type'    => 'NUMERIC',
-                );
-            }
-
-            if (!empty($_GET['gender_preference'])) {
-                $meta_query[] = array(
-                    'key'     => '_gender_preference',
-                    'value'   => sanitize_text_field($_GET['gender_preference']),
-                    'compare' => 'LIKE',
-                );
-            }
-
-            $args = array(
-                'post_type'      => 'room',
-                'post_status'    => 'publish',
-                'posts_per_page' => 9,
-                'paged'          => $paged,
-            );
-
-            if (!empty($tax_query)) {
-                $args['tax_query'] = $tax_query;
-            }
-
-            if (!empty($meta_query)) {
-                $args['meta_query'] = $meta_query;
-            }
-
-            $show_room_query = new WP_Query($args);
-            ?>
-
-            <?php if ($show_room_query->have_posts()) : ?>
+            <?php if ($room_query->have_posts()) : ?>
                 <div class="listing-grid">
-                    <?php while ($show_room_query->have_posts()) : $show_room_query->the_post(); ?>
+
+                    <?php while ($room_query->have_posts()) : $room_query->the_post(); ?>
                         <?php
-                            $rent               = rmt_get_meta(get_the_ID(), '_rent');
-                            $available_date     = rmt_get_meta(get_the_ID(), '_available_date');
-                            $address            = rmt_get_meta(get_the_ID(), '_address');
-                            $property_name      = rmt_get_meta(get_the_ID(), '_property_name');
-                            $bills_included     = rmt_get_meta(get_the_ID(), '_bills_included');
-                            $nickname           = rmt_get_meta(get_the_ID(), '_nickname');
-                            $occupation         = rmt_get_meta(get_the_ID(), '_occupation');
-                            $cleanliness        = rmt_get_meta(get_the_ID(), '_cleanliness');
-                            $sleep_schedule     = rmt_get_meta(get_the_ID(), '_sleep_schedule');
-                            $pet_policy         = rmt_get_meta(get_the_ID(), '_pet_policy');
-                            $gender_preference  = rmt_get_meta(get_the_ID(), '_gender_preference');
+                        $post_id = get_the_ID();
 
-                            $location_terms = get_the_terms(get_the_ID(), 'location_area');
-                            $room_type_terms = get_the_terms(get_the_ID(), 'room_type');
-                            ?>
+                        $rent             = rmt_archive_get_meta($post_id, '_rent');
+                        $available_date   = rmt_archive_get_meta($post_id, '_available_date');
+                        $property_type    = rmt_archive_get_meta($post_id, '_property_type');
+                        $address          = rmt_archive_get_meta($post_id, '_address');
+                        $nearby_landmark  = rmt_archive_get_meta($post_id, '_nearby_landmark');
 
-                            <article class="listing-card show-room-card">
-                                <a href="<?php the_permalink(); ?>" class="listing-card__image-link">
+                        $room_type_text   = rmt_archive_terms_text($post_id, 'room_type');
+                        $location_text    = rmt_archive_terms_text($post_id, 'location_area');
+
+                        $display_property = $room_type_text ? $room_type_text : $property_type;
+                        $display_location = $location_text ? $location_text : $address;
+                        ?>
+
+                        <article <?php post_class('listing-card'); ?>>
+
+                            <a href="<?php the_permalink(); ?>" class="listing-card__image-link">
+                                <div class="listing-card__image">
                                     <?php if (has_post_thumbnail()) : ?>
-                                        <div class="listing-card__image">
-                                            <?php the_post_thumbnail('large'); ?>
-                                        </div>
+                                        <?php the_post_thumbnail('large'); ?>
                                     <?php else : ?>
                                         <div class="listing-card__image listing-card__image--placeholder">
-                                            <span>No Image</span>
+                                            <?php esc_html_e('No Image', 'roommate-mobile-theme'); ?>
                                         </div>
                                     <?php endif; ?>
+                                </div>
+                            </a>
+
+                            <div class="listing-card__content">
+
+                                <h2 class="listing-card__title">
+                                    <a href="<?php the_permalink(); ?>">
+                                        <?php the_title(); ?>
+                                    </a>
+                                </h2>
+
+                                <div class="listing-card__chips">
+                                    <?php if ($display_property) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Property Type:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($display_property); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($display_location) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Location:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($display_location); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($rent) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Rent:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html(number_format_i18n((int) $rent)); ?>
+                                            <?php esc_html_e(' THB/month', 'roommate-mobile-theme'); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($available_date) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Available From:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html(rmt_archive_format_date($available_date)); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <?php if ($nearby_landmark) : ?>
+                                    <p class="listing-card__address">
+                                        <?php esc_html_e('Nearby: ', 'roommate-mobile-theme'); ?>
+                                        <?php echo esc_html($nearby_landmark); ?>
+                                    </p>
+                                <?php endif; ?>
+
+                                <a href="<?php the_permalink(); ?>" class="btn btn-secondary">
+                                    <?php esc_html_e('View Room', 'roommate-mobile-theme'); ?>
                                 </a>
 
-                                <div class="listing-card__content">
+                            </div>
+                        </article>
 
-                                    <div class="listing-card__top">
-                                        <div class="listing-card__price">
-                                            <?php echo esc_html(rmt_format_price($rent)); ?>/month
-                                        </div>
-
-                                        <?php if ($available_date) : ?>
-                                            <div class="listing-card__available">
-                                                Available: <?php echo esc_html($available_date); ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <h2 class="listing-card__title">
-                                        <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
-                                    </h2>
-
-                                    <?php if ($property_name) : ?>
-                                        <p class="listing-card__address"><?php echo esc_html($property_name); ?></p>
-                                    <?php endif; ?>
-
-                                    <div class="listing-card__meta">
-                                        <?php if (!empty($location_terms)) : ?>
-                                            <span class="listing-chip"><?php echo esc_html($location_terms[0]->name); ?></span>
-                                        <?php endif; ?>
-
-                                        <?php if (!empty($room_type_terms)) : ?>
-                                            <span class="listing-chip"><?php echo esc_html($room_type_terms[0]->name); ?></span>
-                                        <?php endif; ?>
-
-                                        <?php if ($gender_preference) : ?>
-                                            <span class="listing-chip"><?php echo esc_html($gender_preference); ?></span>
-                                        <?php endif; ?>
-                                    </div>
-
-                                    <div class="listing-card__person">
-                                        <h3>Roommate</h3>
-                                        <ul>
-                                            <?php if ($nickname) : ?><li><strong><?php echo esc_html($nickname); ?></strong></li><?php endif; ?>
-                                            <?php if ($occupation) : ?><li><?php echo esc_html($occupation); ?></li><?php endif; ?>
-                                            <?php if ($cleanliness) : ?><li>Clean: <?php echo esc_html($cleanliness); ?></li><?php endif; ?>
-                                            <?php if ($sleep_schedule) : ?><li>Sleep: <?php echo esc_html($sleep_schedule); ?></li><?php endif; ?>
-                                            <?php if ($pet_policy) : ?><li>Pets: <?php echo esc_html($pet_policy); ?></li><?php endif; ?>
-                                        </ul>
-                                    </div>
-
-                                    <div class="listing-card__footer">
-                                        <a href="<?php the_permalink(); ?>" class="btn btn-primary">View Details</a>
-                                    </div>
-                                </div>
-                            </article>
                     <?php endwhile; ?>
+
                 </div>
 
                 <div class="pagination-wrap">
                     <?php
-                    echo paginate_links(array(
-                        'total'   => $show_room_query->max_num_pages,
-                        'current' => $paged,
-                    ));
+                    echo paginate_links([
+                        'total'     => $room_query->max_num_pages,
+                        'current'   => $paged,
+                        'prev_text' => esc_html__('Previous', 'roommate-mobile-theme'),
+                        'next_text' => esc_html__('Next', 'roommate-mobile-theme'),
+                    ]);
                     ?>
                 </div>
 
                 <?php wp_reset_postdata(); ?>
+
             <?php else : ?>
+
                 <div class="empty-state">
-                    <h2>No Show Room listings found</h2>
-                    <p>Try changing your filters or check back later for new listings.</p>
+                    <h2><?php esc_html_e('No rooms found', 'roommate-mobile-theme'); ?></h2>
+                    <p><?php esc_html_e('Try changing your filters or check back later.', 'roommate-mobile-theme'); ?></p>
                 </div>
+
             <?php endif; ?>
+
         </div>
     </section>
+
 </main>
 
 <?php get_footer(); ?>
