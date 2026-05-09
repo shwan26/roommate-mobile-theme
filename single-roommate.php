@@ -288,7 +288,7 @@ if (have_posts()) :
 
                 <!-- ── Action bar ─────────────────────────────── -->
                 <?php if ($is_owner || $is_visitor || $is_admin) : ?>
-                    <div class="srm-action-bar">
+                    <div>
 
                         <?php if ($is_owner || $is_admin) : ?>
                             <!-- Owner / admin actions -->

@@ -4,9 +4,14 @@
  */
 
 defined('ABSPATH') || exit;
-$is_room_active = is_post_type_archive('room') || is_singular('room') || is_page(['post-a-room', 'edit-room']);
-$is_roommate_active = is_post_type_archive('roommate') || is_singular('roommate') || is_page(['post-a-roommate', 'edit-roommate']);
+
+$is_room_active      = is_post_type_archive('room') || is_singular('room') || is_page(array('post-a-room', 'edit-room'));
+$is_roommate_active  = is_post_type_archive('roommate') || is_singular('roommate') || is_page(array('post-a-roommate', 'edit-roommate'));
 $is_dashboard_active = is_page('dashboard');
+
+$custom_logo_id = get_theme_mod('custom_logo');
+$theme_logo_url = get_template_directory_uri() . '/assets/images/bkkroomie-logo.png';
+$theme_logo_path = get_template_directory() . '/assets/images/bkkroomie-logo.png';
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -15,6 +20,7 @@ $is_dashboard_active = is_page('dashboard');
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?php wp_head(); ?>
 </head>
+
 <body <?php body_class(); ?>>
 
 <?php wp_body_open(); ?>
@@ -24,13 +30,33 @@ $is_dashboard_active = is_page('dashboard');
         <div class="site-header__inner">
 
             <div class="site-branding">
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="site-logo-link">
+                <a href="<?php echo esc_url(home_url('/')); ?>" class="site-logo-link" aria-label="<?php echo esc_attr(get_bloginfo('name')); ?>">
                     <?php
-                    if (function_exists('the_custom_logo') && has_custom_logo()) {
-                        the_custom_logo();
+                    if ($custom_logo_id) {
+                        echo wp_get_attachment_image(
+                            $custom_logo_id,
+                            'full',
+                            false,
+                            array(
+                                'class'    => 'site-logo-img',
+                                'alt'      => esc_attr(get_bloginfo('name')),
+                                'loading'  => 'eager',
+                                'decoding' => 'async',
+                            )
+                        );
+                    } elseif (file_exists($theme_logo_path)) {
+                        ?>
+                        <img
+                            src="<?php echo esc_url($theme_logo_url); ?>"
+                            alt="<?php echo esc_attr(get_bloginfo('name')); ?>"
+                            class="site-logo-img"
+                            loading="eager"
+                            decoding="async"
+                        >
+                        <?php
                     } else {
                         ?>
-                        <span class="site-logo-text">Bkkroomie</span>
+                        <span class="site-logo-text"><?php echo esc_html(get_bloginfo('name')); ?></span>
                         <?php
                     }
                     ?>

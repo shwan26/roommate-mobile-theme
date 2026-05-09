@@ -266,11 +266,26 @@ p {
 
 .site-branding {
   flex-shrink: 0;
+  width: 320px;
+  max-width: 320px;
 }
 
 .site-logo-link {
   display: inline-flex;
   align-items: center;
+  width: 100%;
+}
+
+.site-logo-img,
+.site-branding img,
+.custom-logo-link img {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  max-height: 46px;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .site-logo-text {
@@ -280,8 +295,38 @@ p {
   letter-spacing: -0.03em;
 }
 
-.custom-logo-link img,
-.site-branding img,
+@media (min-width: 1024px) {
+  .site-branding {
+    width: 360px;
+    max-width: 360px;
+  }
+
+  .site-logo-img,
+  .site-branding img,
+  .custom-logo-link img {
+    max-width: 360px;
+    max-height: 82px;
+  }
+
+  .site-header__inner {
+    min-height: 92px;
+  }
+}
+
+@media (max-width: 767px) {
+  .site-branding {
+    width: 210px;
+    max-width: 210px;
+  }
+
+  .site-logo-img,
+  .site-branding img,
+  .custom-logo-link img {
+    max-width: 210px;
+    max-height: 54px;
+  }
+}
+
 .footer-brand img {
   max-height: 46px;
   width: auto;

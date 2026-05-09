@@ -136,7 +136,7 @@ if (have_posts()) :
                                     href="<?php echo esc_url(rmt_get_chat_url($post_author_id, $post_id)); ?>"
                                     class="btn btn-primary btn--chat"
                                 >
-                                    💬 Message roommate
+                                    💬 Chat with roommate
                                 </a>
                             <?php else : ?>
                                 <a
