@@ -283,14 +283,15 @@ get_header();
 
 <main id="primary" class="site-main single-page post-a-roommate">
     <div class="container">
+        <p class="u-mb-4">
+            <a href="<?php echo esc_url(get_permalink($edit_id)); ?>" class="btn btn-secondary" aria-label="<?php esc_attr_e('Back to listing', 'roommate-mobile-theme'); ?>">
+                ←
+            </a>
+        </p>
         <div class="par-page-header">
-            <div class="par-eyebrow">
-                <span class="par-eyebrow-dot"></span>
-                Edit Profile
-            </div>
 
             <h1>Edit Roommate Profile</h1>
-            <p>Update your roommate profile from the frontend only.</p>
+            <p>Update your roommate profile.</p>
         </div>
 
         <?php if (!empty($errors)) : ?>
@@ -638,16 +639,6 @@ get_header();
                         </div>
                     </div>
 
-                    <div class="par-tip-card">
-                        <h3>💡 Editing Tips</h3>
-
-                        <ul class="par-tip-list">
-                            <li>Update your move-in date if your plans changed.</li>
-                            <li>A clear photo can get more responses.</li>
-                            <li>Be specific about lifestyle and deal-breakers.</li>
-                            <li>Draft profiles will not appear publicly.</li>
-                        </ul>
-                    </div>
                 </aside>
             </div>
         </form>

@@ -122,6 +122,6 @@ $logo_url    = $upload_base . '/bkkroomie/logo.png';
     </div><!-- .container -->
 </section>
 
-<?php wp_footer(); ?>
+<?php get_footer(); ?>
 </body>
 </html>

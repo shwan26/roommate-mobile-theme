@@ -234,15 +234,17 @@ $room_type_terms = get_terms(['taxonomy' => 'room_type', 'hide_empty' => false])
 get_header();
 ?>
 
-<main id="primary" class="site-main post-a-room">
+<main id="primary" class="site-main post-a-room edit-room-page">
     <div class="container">
+
+        <p class="u-mb-4">
+            <a href="<?php echo esc_url($edit_id ? get_permalink($edit_id) : get_post_type_archive_link('room')); ?>" class="btn btn-secondary">
+                ←
+            </a>
+        </p>
         <header class="par-page-header">
-            <span class="par-eyebrow">
-                <span class="par-eyebrow-dot"></span>
-                Edit Room Listing
-            </span>
-            <h1>Edit your room listing</h1>
-            <p>Update your listing from the frontend. No WordPress admin page needed.</p>
+            <h1>Edit your room details</h1>
+            <p>Update your room details below</p>
         </header>
 
         <?php if (!empty($errors)) : ?>
