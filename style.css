@@ -216,27 +216,27 @@ p { margin-top: 0; color: var(--color-text-soft); }
   min-height: 68px;
 }
 
-.site-branding { flex-shrink: 0; width: 300px; max-width: 300px; }
+.site-branding { flex-shrink: 0; width: 360px; max-width: 360px; }
 .site-logo-link { display: inline-flex; align-items: center; width: 100%; }
 .site-logo-img, .site-branding img, .custom-logo-link img {
   display: block;
   width: 100%;
-  max-width: 300px;
+  max-width: 360px;
   height: auto;
-  max-height: 44px;
+  max-height: 54px;
   object-fit: contain;
   object-position: left center;
 }
 .site-logo-text { font-size: 1.2rem; font-weight: 800; color: var(--charcoal); letter-spacing: -0.03em; }
 
 @media (min-width: 1024px) {
-  .site-branding { width: 340px; max-width: 340px; }
-  .site-logo-img, .site-branding img, .custom-logo-link img { max-width: 340px; max-height: 56px; }
-  .site-header__inner { min-height: 80px; }
+  .site-branding { width: 420px; max-width: 420px; }
+  .site-logo-img, .site-branding img, .custom-logo-link img { max-width: 420px; max-height: 68px; }
+  .site-header__inner { min-height: 88px; }
 }
 @media (max-width: 767px) {
-  .site-branding { width: 190px; max-width: 190px; }
-  .site-logo-img, .site-branding img, .custom-logo-link img { max-width: 190px; max-height: 42px; }
+  .site-branding { width: 210px; max-width: 210px; }
+  .site-logo-img, .site-branding img, .custom-logo-link img { max-width: 210px; max-height: 48px; }
 }
 
 .footer-brand img { max-height: 40px; width: auto; }
@@ -1176,9 +1176,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   body { overflow-x: hidden; }
   .container { width: min(100% - 1.25rem, var(--container)); }
 
-  .site-header__inner { min-height: 60px; gap: 0.7rem; }
-  .site-branding { width: 175px; max-width: 175px; }
-  .site-logo-img, .site-branding img, .custom-logo-link img { max-width: 175px; max-height: 40px; }
+  .site-header__inner { min-height: 66px; gap: 0.7rem; }
+  .site-branding { width: 205px; max-width: 205px; }
+  .site-logo-img, .site-branding img, .custom-logo-link img { max-width: 205px; max-height: 48px; }
   .mobile-menu-toggle { width: 42px; height: 42px; border-radius: 13px; }
 
   .post-a-room, .post-a-roommate, .dashboard-page,
@@ -1312,8 +1312,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 @media (max-width: 420px) {
   .container { width: min(100% - 1rem, var(--container)); }
-  .site-branding { width: 148px; max-width: 148px; }
-  .site-logo-img, .site-branding img, .custom-logo-link img { max-width: 148px; max-height: 38px; }
+  .site-branding { width: 172px; max-width: 172px; }
+  .site-logo-img, .site-branding img, .custom-logo-link img { max-width: 172px; max-height: 44px; }
   .par-card, .single-card, .filter-form, .rmt-dashboard-messages, .rmt-chat-panel { padding: 0.85rem; }
   .par-page-header h1, .single-listing__header h1 { font-size: 1.8rem; }
 }
@@ -1640,4 +1640,3 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     font-size: 0.72rem;
   }
 }
-
