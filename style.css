@@ -200,13 +200,11 @@ p { margin-top: 0; color: var(--color-text-soft); }
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--green);
+  border-bottom: 1px solid rgba(255,255,255,0.22);
   transition: box-shadow 0.3s ease;
 }
-.site-header.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.07); }
+.site-header.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.15); }
 
 .site-header__inner {
   display: flex;
@@ -228,6 +226,12 @@ p { margin-top: 0; color: var(--color-text-soft); }
   object-position: left center;
 }
 .site-logo-text { font-size: 1.2rem; font-weight: 800; color: var(--charcoal); letter-spacing: -0.03em; }
+.site-header .site-logo-text { color: #fff; }
+.site-header .site-logo-img,
+.site-header .site-branding img,
+.site-header .custom-logo-link img {
+  filter: brightness(0) invert(1);
+}
 
 @media (min-width: 1024px) {
   .site-branding { width: 420px; max-width: 420px; }
@@ -254,6 +258,13 @@ p { margin-top: 0; color: var(--color-text-soft); }
   color: var(--color-text-soft);
   transition: color 0.18s, background 0.18s;
 }
+.site-header .primary-menu a {
+  color: rgba(255,255,255,0.88);
+}
+.site-header .primary-menu a:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.16);
+}
 .primary-menu a:hover, .footer-menu a:hover, .mobile-menu-list a:hover {
   color: var(--color-text);
   background: var(--color-surface-alt);
@@ -265,9 +276,27 @@ p { margin-top: 0; color: var(--color-text-soft); }
   background: rgba(88,204,2,0.10);
   font-weight: 700;
 }
+.site-header .primary-menu .current-menu-item > a,
+.site-header .primary-menu .current-page-ancestor > a,
+.site-header .primary-menu .current-menu-ancestor > a {
+  color: #fff;
+  background: rgba(255,255,255,0.22);
+}
 
 .site-header__actions { display: flex; align-items: center; gap: 0.5rem; }
 .header-btn { display: none; }
+.site-header .header-btn.btn-primary,
+.site-header .header-btn.btn-secondary,
+.site-header .header-btn.btn-outline {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border-color: rgba(255,255,255,0.34);
+  box-shadow: none;
+}
+.site-header .header-btn:hover {
+  background: rgba(255,255,255,0.28);
+  border-color: rgba(255,255,255,0.55);
+}
 
 .mobile-menu-toggle {
   display: inline-flex;
@@ -276,8 +305,8 @@ p { margin-top: 0; color: var(--color-text-soft); }
   align-items: center;
   width: 42px;
   height: 42px;
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.34);
   border-radius: 12px;
   padding: 0;
   cursor: pointer;
@@ -286,11 +315,11 @@ p { margin-top: 0; color: var(--color-text-soft); }
   position: relative;
   overflow: hidden;
 }
-.mobile-menu-toggle:hover { border-color: var(--charcoal); box-shadow: var(--shadow-md); }
+.mobile-menu-toggle:hover { border-color: rgba(255,255,255,0.55); box-shadow: var(--shadow-md); }
 .mobile-menu-toggle span {
   display: block;
   width: 18px; height: 2px;
-  background: var(--color-text);
+  background: #fff;
   border-radius: 999px;
   position: absolute;
   transition: transform 0.32s cubic-bezier(0.23,1,0.32,1), opacity 0.22s ease, top 0.32s cubic-bezier(0.23,1,0.32,1);
@@ -305,20 +334,38 @@ p { margin-top: 0; color: var(--color-text-soft); }
 .mobile-menu-toggle[aria-expanded="true"] span:nth-child(3) { top: 50%; transform: translate(-50%,-50%) rotate(-45deg); }
 
 .mobile-menu {
-  border-top: 1px solid var(--color-border);
-  background: rgba(255,255,255,0.98);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height 0.38s cubic-bezier(0.23,1,0.32,1), opacity 0.28s ease;
+  position: fixed;
+  top: 66px;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  width: min(84vw, 380px);
+  border-left: 1px solid rgba(255,255,255,0.22);
+  background: rgba(38, 122, 20, 0.84);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: -22px 0 50px rgba(0,0,0,0.22);
+  overflow-y: auto;
+  transform: translateX(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.36s cubic-bezier(0.23,1,0.32,1), opacity 0.26s ease, visibility 0.26s ease;
   opacity: 0;
 }
-.mobile-menu.is-open { max-height: 600px; opacity: 1; }
+.mobile-menu.is-open {
+  transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+}
 .mobile-menu[hidden] { display: block !important; }
 
-.mobile-nav { padding: 1rem 0 1.25rem; }
+.mobile-menu .container {
+  width: 100%;
+  padding-inline: 1.25rem;
+}
+
+.mobile-nav { padding: 1.25rem 0 1.5rem; }
 
 .mobile-menu-list {
   display: grid; gap: 0.1rem;
@@ -329,22 +376,34 @@ p { margin-top: 0; color: var(--color-text-soft); }
   padding: 0.7rem 0.5rem;
   border-radius: 10px;
   font-weight: 600; font-size: 0.95rem;
-  color: var(--color-text-soft);
+  color: #fff;
 }
-.mobile-menu-list a:hover { background: var(--color-surface-alt); color: var(--color-text); }
+.mobile-menu-list a:hover { background: rgba(255,255,255,0.16); color: #fff; }
 .mobile-menu-list .current-menu-item > a,
 .mobile-menu-list .current-page-ancestor > a {
-  color: var(--green);
-  background: rgba(88,204,2,0.08);
+  color: #fff;
+  background: rgba(255,255,255,0.18);
   font-weight: 700;
 }
 
 .mobile-menu-actions {
   display: grid; gap: 0.55rem;
   margin-top: 0.5rem; padding-top: 0.9rem;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid rgba(255,255,255,0.22);
 }
 .mobile-menu-btn { width: 100%; justify-content: center; min-height: 46px; font-size: 0.95rem; }
+.mobile-menu .mobile-menu-btn.btn-primary,
+.mobile-menu .mobile-menu-btn.btn-secondary,
+.mobile-menu .mobile-menu-btn.btn-outline {
+  background: rgba(255,255,255,0.16);
+  color: #fff;
+  border-color: rgba(255,255,255,0.34);
+  box-shadow: none;
+}
+.mobile-menu .mobile-menu-btn:hover {
+  background: rgba(255,255,255,0.26);
+  border-color: rgba(255,255,255,0.5);
+}
 
 /* =========================================================
    5. HERO / FRONT PAGE
