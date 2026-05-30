@@ -201,7 +201,6 @@ p { margin-top: 0; color: var(--color-text-soft); }
   top: 0;
   z-index: 1000;
   background: var(--green);
-  border-bottom: 1px solid rgba(255,255,255,0.22);
   transition: box-shadow 0.3s ease;
 }
 .site-header.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.15); }
@@ -259,11 +258,29 @@ p { margin-top: 0; color: var(--color-text-soft); }
   transition: color 0.18s, background 0.18s;
 }
 .site-header .primary-menu a {
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  background: transparent;
   color: rgba(255,255,255,0.88);
+}
+.site-header .primary-menu a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgba(255,255,255,0.18);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.24s ease;
 }
 .site-header .primary-menu a:hover {
   color: #fff;
-  background: rgba(255,255,255,0.16);
+  background: transparent;
+}
+.site-header .primary-menu a:hover::before {
+  transform: scaleX(1);
 }
 .primary-menu a:hover, .footer-menu a:hover, .mobile-menu-list a:hover {
   color: var(--color-text);
@@ -280,7 +297,12 @@ p { margin-top: 0; color: var(--color-text-soft); }
 .site-header .primary-menu .current-page-ancestor > a,
 .site-header .primary-menu .current-menu-ancestor > a {
   color: #fff;
-  background: rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.18);
+}
+.site-header .primary-menu .current-menu-item > a::before,
+.site-header .primary-menu .current-page-ancestor > a::before,
+.site-header .primary-menu .current-menu-ancestor > a::before {
+  transform: scaleX(0);
 }
 
 .site-header__actions { display: flex; align-items: center; gap: 0.5rem; }
@@ -288,14 +310,38 @@ p { margin-top: 0; color: var(--color-text-soft); }
 .site-header .header-btn.btn-primary,
 .site-header .header-btn.btn-secondary,
 .site-header .header-btn.btn-outline {
-  background: rgba(255,255,255,0.18);
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  background: transparent;
   color: #fff;
-  border-color: rgba(255,255,255,0.34);
+  border: 0;
   box-shadow: none;
 }
+.site-header .header-btn::before,
+.mobile-menu .mobile-menu-btn::before,
+.mobile-menu-toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgba(255,255,255,0.18);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.24s ease;
+}
 .site-header .header-btn:hover {
-  background: rgba(255,255,255,0.28);
-  border-color: rgba(255,255,255,0.55);
+  background: transparent;
+}
+.site-header .header-btn:hover::before {
+  transform: scaleX(1);
+}
+.site-header .header-btn.btn-primary {
+  background: rgba(255,255,255,0.18);
+}
+.site-header .header-btn.btn-primary::before {
+  transform: scaleX(0);
 }
 
 .mobile-menu-toggle {
@@ -305,18 +351,24 @@ p { margin-top: 0; color: var(--color-text-soft); }
   align-items: center;
   width: 42px;
   height: 42px;
-  background: rgba(255,255,255,0.18);
-  border: 1.5px solid rgba(255,255,255,0.34);
+  background: transparent;
+  border: 0;
   border-radius: 12px;
   padding: 0;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: none;
+  transition: box-shadow 0.2s;
   position: relative;
+  z-index: 0;
   overflow: hidden;
 }
-.mobile-menu-toggle:hover { border-color: rgba(255,255,255,0.55); box-shadow: var(--shadow-md); }
+.mobile-menu-toggle:hover { box-shadow: var(--shadow-sm); }
+.mobile-menu-toggle:hover::before,
+.mobile-menu-toggle[aria-expanded="true"]::before {
+  transform: scaleX(1);
+}
 .mobile-menu-toggle span {
+  z-index: 1;
   display: block;
   width: 18px; height: 2px;
   background: #fff;
@@ -340,7 +392,6 @@ p { margin-top: 0; color: var(--color-text-soft); }
   bottom: 0;
   z-index: 999;
   width: min(84vw, 380px);
-  border-left: 1px solid rgba(255,255,255,0.22);
   background: rgba(38, 122, 20, 0.84);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -373,36 +424,66 @@ p { margin-top: 0; color: var(--color-text-soft); }
 }
 .mobile-menu-list a {
   display: flex; align-items: center;
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
   padding: 0.7rem 0.5rem;
   border-radius: 10px;
   font-weight: 600; font-size: 0.95rem;
+  background: transparent;
   color: #fff;
 }
-.mobile-menu-list a:hover { background: rgba(255,255,255,0.16); color: #fff; }
+.mobile-menu-list a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgba(255,255,255,0.18);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.24s ease;
+}
+.mobile-menu-list a:hover { background: transparent; color: #fff; }
+.mobile-menu-list a:hover::before { transform: scaleX(1); }
 .mobile-menu-list .current-menu-item > a,
 .mobile-menu-list .current-page-ancestor > a {
   color: #fff;
   background: rgba(255,255,255,0.18);
   font-weight: 700;
 }
+.mobile-menu-list .current-menu-item > a::before,
+.mobile-menu-list .current-page-ancestor > a::before {
+  transform: scaleX(0);
+}
 
 .mobile-menu-actions {
   display: grid; gap: 0.55rem;
   margin-top: 0.5rem; padding-top: 0.9rem;
-  border-top: 1px solid rgba(255,255,255,0.22);
 }
 .mobile-menu-btn { width: 100%; justify-content: center; min-height: 46px; font-size: 0.95rem; }
 .mobile-menu .mobile-menu-btn.btn-primary,
 .mobile-menu .mobile-menu-btn.btn-secondary,
 .mobile-menu .mobile-menu-btn.btn-outline {
-  background: rgba(255,255,255,0.16);
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  background: transparent;
   color: #fff;
-  border-color: rgba(255,255,255,0.34);
+  border: 0;
   box-shadow: none;
 }
 .mobile-menu .mobile-menu-btn:hover {
-  background: rgba(255,255,255,0.26);
-  border-color: rgba(255,255,255,0.5);
+  background: transparent;
+}
+.mobile-menu .mobile-menu-btn:hover::before {
+  transform: scaleX(1);
+}
+.mobile-menu .mobile-menu-btn.btn-primary {
+  background: rgba(255,255,255,0.18);
+}
+.mobile-menu .mobile-menu-btn.btn-primary::before {
+  transform: scaleX(0);
 }
 
 /* =========================================================
