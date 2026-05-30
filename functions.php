@@ -1706,12 +1706,12 @@ function bkkroomie_custom_login_styles() {
         }
 
         body.login h1 a {
-            background-image: url('<?php echo esc_url(get_template_directory_uri() . "/assets/images/bkkroomie-logo.png"); ?>');
+            background-image: url('<?php echo esc_url(get_template_directory_uri() . "/assets/images/bbkroomie-full.png"); ?>');
             background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
-            width: 260px;
-            height: 80px;
+            width: 320px;
+            height: 150px;
             margin-bottom: 24px;
         }
 
