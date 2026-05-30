@@ -112,6 +112,18 @@ $theme_logo_path = get_template_directory() . '/assets/images/bkkroomie-logo.png
 
     <div id="mobile-menu" class="mobile-menu" hidden>
         <div class="container">
+            <div class="mobile-menu__header">
+                <button
+                    class="mobile-menu-close"
+                    type="button"
+                    aria-controls="mobile-menu"
+                    aria-label="<?php esc_attr_e('Close menu', 'roommate-mobile-theme'); ?>"
+                >
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+
             <nav class="mobile-nav" aria-label="<?php esc_attr_e('Mobile Menu', 'roommate-mobile-theme'); ?>">
                 <?php
                 if (has_nav_menu('primary')) {
