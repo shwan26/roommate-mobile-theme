@@ -400,7 +400,7 @@ p { margin-top: 0; color: var(--color-text-soft); }
   right: 0;
   bottom: 0;
   z-index: 1001;
-  width: min(50vw, 320px);
+  width: min(60vw, 320px);
   background: var(--green);
   box-shadow: -22px 0 50px rgba(0,0,0,0.22);
   overflow-y: auto;
