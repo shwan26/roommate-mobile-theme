@@ -126,7 +126,7 @@ $latest_roommates = new WP_Query(array(
 
                     <span class="rmt-card__meta">
                         <span class="rmt-card__label rmt-card__label--light">
-                            <?php esc_html_e('Have Room', 'roommate-mobile-theme'); ?>
+                            <?php esc_html_e('Need Room', 'roommate-mobile-theme'); ?>
                         </span>
 
                         <span class="rmt-card__title rmt-card__title--light">
@@ -137,10 +137,6 @@ $latest_roommates = new WP_Query(array(
                     <span class="rmt-card__desc rmt-card__desc--light">
                         <?php esc_html_e('See available rooms, rent prices, areas, amenities, and roommate preferences.', 'roommate-mobile-theme'); ?>
                     </span>
-
-                    <span class="rmt-card__cta rmt-card__cta--light">
-                        <?php esc_html_e('Find a room', 'roommate-mobile-theme'); ?>
-                    </span>
                 </a>
 
                 <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="rmt-card rmt-card--dark">
@@ -148,7 +144,7 @@ $latest_roommates = new WP_Query(array(
 
                     <span class="rmt-card__meta">
                         <span class="rmt-card__label rmt-card__label--dark">
-                            <?php esc_html_e('Need Room', 'roommate-mobile-theme'); ?>
+                            <?php esc_html_e('Have Room', 'roommate-mobile-theme'); ?>
                         </span>
 
                         <span class="rmt-card__title rmt-card__title--dark">
@@ -158,10 +154,6 @@ $latest_roommates = new WP_Query(array(
 
                     <span class="rmt-card__desc rmt-card__desc--dark">
                         <?php esc_html_e('Find people looking for a room and compare budget, move-in date, lifestyle, and area.', 'roommate-mobile-theme'); ?>
-                    </span>
-
-                    <span class="rmt-card__cta rmt-card__cta--dark">
-                        <?php esc_html_e('Find a roommate', 'roommate-mobile-theme'); ?>
                     </span>
                 </a>
             </div>
