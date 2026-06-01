@@ -1034,7 +1034,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* =========================================================
    16. FRONTEND FORMS / DASHBOARD
    ========================================================= */
-.post-a-room, .post-a-roommate, .dashboard-page { padding: var(--sp-10) 0 var(--sp-16); }
+.post-a-room, .post-a-roommate, .dashboard-page, .edit-profile-page { padding: var(--sp-10) 0 var(--sp-16); }
 
 .par-page-header { margin-bottom: var(--sp-8); }
 
@@ -1396,6 +1396,34 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .dashboard-card-actions { flex-wrap: wrap; gap: 0.5rem; }
 .dashboard-card-actions form { display: inline-flex; }
 
+.edit-profile-layout .par-card__icon {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--charcoal);
+}
+.edit-profile-summary-card {
+  text-align: center;
+}
+.edit-profile-summary-card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+.edit-profile-summary-card .detail-list {
+  text-align: left;
+}
+.edit-profile-avatar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.edit-profile-avatar__image {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 3px solid rgba(88,204,2,0.24);
+  box-shadow: var(--shadow-sm);
+}
+
 .listing-chip--draft { background: rgba(255,193,7,0.12); border-color: rgba(255,193,7,0.35); color: #92400e; }
 .listing-chip--done  { background: rgba(108,117,125,0.12); border-color: rgba(108,117,125,0.30); color: #555; }
 
@@ -1403,6 +1431,52 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .btn--danger:hover { background: rgba(220,53,69,0.07) !important; }
 
 @media (min-width: 768px) { .dashboard-summary-grid { grid-template-columns: 2fr 1fr; } }
+
+@media (max-width: 767px) {
+  .dashboard-summary-grid {
+    gap: 0.85rem;
+  }
+
+  .dashboard-quick-card {
+    justify-content: flex-start;
+    gap: 0.85rem;
+    padding: 1rem;
+  }
+
+  .dashboard-quick-card h2 {
+    text-align: left;
+    font-size: 1.2rem;
+  }
+
+  .dashboard-quick-actions {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 0.55rem;
+  }
+
+  .dashboard-quick-actions .dashboard-quick-btn {
+    min-width: 0;
+    min-height: 42px;
+    padding: 0.62rem 0.7rem;
+    font-size: 0.82rem;
+    white-space: normal;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .dashboard-quick-actions .dashboard-quick-btn--danger {
+    grid-column: 1 / -1;
+  }
+
+  .dashboard-quick-actions .dashboard-quick-btn--logout {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 380px) {
+  .dashboard-quick-actions {
+    grid-template-columns: 1fr;
+  }
+}
 
 .u-mt-2 { margin-top: 0.5rem; }
 .u-mt-4 { margin-top: 1rem; }
@@ -1681,6 +1755,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     text-align: center;
     line-height: 1.2;
   }
+  .dashboard-quick-actions > .dashboard-quick-btn--logout,
   .dashboard-quick-actions > .dashboard-quick-btn--danger {
     justify-self: center;
     width: min(100%, 260px);

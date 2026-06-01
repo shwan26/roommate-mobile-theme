@@ -1307,6 +1307,7 @@ function rmt_protect_frontend_edit_pages() {
         is_page('edit-room') ||
         is_page('edit-roommate') ||
         is_page('dashboard') ||
+        is_page('edit-profile') ||
         is_page('post-a-room') ||
         is_page('post-a-roommate') ||
         is_page('messages')

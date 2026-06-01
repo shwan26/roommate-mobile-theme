@@ -204,7 +204,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                 <div class="single-card dashboard-account-card">
                     <div class="dashboard-card-header">
                         <h2>Account Details</h2>
-                        <a href="<?php echo esc_url(admin_url('profile.php')); ?>" class="dashboard-edit-link" aria-label="Edit account details">
+                        <a href="<?php echo esc_url(home_url('/edit-profile/')); ?>" class="dashboard-edit-link" aria-label="Edit account details">
                             <span>Edit</span>
                         </a>
                     </div>
@@ -238,8 +238,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                 Roommate Limit Reached
                             </button>
                         <?php endif; ?>
-                        <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn dashboard-quick-btn">Log Out</a>
-                        <a href="<?php echo esc_url(wp_lostpassword_url(home_url('/dashboard/'))); ?>" class="btn dashboard-quick-btn">Change Password</a>
+                        <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn dashboard-quick-btn dashboard-quick-btn--logout">Log Out</a>
                         <button
                             class="btn dashboard-quick-btn dashboard-quick-btn--danger"
                             type="button"
