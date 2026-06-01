@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
 define( 'RMT_VERSION',   '1.0.0' );
 define( 'RMT_THEME_DIR', get_template_directory());
 define( 'RMT_THEME_URI', get_template_directory_uri());
+define( 'RMT_REWRITE_VERSION', '2026-06-01-archives' );
 
 /**
  * ------------------------------------------------------------
@@ -91,23 +92,23 @@ add_action('wp_enqueue_scripts', 'rmt_enqueue_assets');
  */
 function rmt_register_post_types() {
 
-    // SHOW ROOMS
+    // ROOMS
     register_post_type('room', array(
         'labels' => array(
-            'name'               => __('Show Rooms', 'roommate-mobile-theme'),
-            'singular_name'      => __('Show Room', 'roommate-mobile-theme'),
+            'name'               => __('Rooms', 'roommate-mobile-theme'),
+            'singular_name'      => __('Room', 'roommate-mobile-theme'),
             'add_new'            => __('Add New', 'roommate-mobile-theme'),
-            'add_new_item'       => __('Add New Show Room Listing', 'roommate-mobile-theme'),
-            'edit_item'          => __('Edit Show Room Listing', 'roommate-mobile-theme'),
-            'new_item'           => __('New Show Room Listing', 'roommate-mobile-theme'),
-            'view_item'          => __('View Show Room Listing', 'roommate-mobile-theme'),
-            'view_items'         => __('View Show Room Listings', 'roommate-mobile-theme'),
-            'search_items'       => __('Search Show Rooms', 'roommate-mobile-theme'),
-            'not_found'          => __('No show room listings found', 'roommate-mobile-theme'),
-            'not_found_in_trash' => __('No show room listings found in Trash', 'roommate-mobile-theme'),
-            'all_items'          => __('All Show Rooms', 'roommate-mobile-theme'),
-            'archives'           => __('Show Room Archives', 'roommate-mobile-theme'),
-            'menu_name'          => __('Show Rooms', 'roommate-mobile-theme'),
+            'add_new_item'       => __('Add New Room Listing', 'roommate-mobile-theme'),
+            'edit_item'          => __('Edit Room Listing', 'roommate-mobile-theme'),
+            'new_item'           => __('New Room Listing', 'roommate-mobile-theme'),
+            'view_item'          => __('View Room Listing', 'roommate-mobile-theme'),
+            'view_items'         => __('View Room Listings', 'roommate-mobile-theme'),
+            'search_items'       => __('Search Rooms', 'roommate-mobile-theme'),
+            'not_found'          => __('No room listings found', 'roommate-mobile-theme'),
+            'not_found_in_trash' => __('No room listings found in Trash', 'roommate-mobile-theme'),
+            'all_items'          => __('All Rooms', 'roommate-mobile-theme'),
+            'archives'           => __('Room Archives', 'roommate-mobile-theme'),
+            'menu_name'          => __('Rooms', 'roommate-mobile-theme'),
         ),
         'public'             => true,
         'publicly_queryable' => true,
@@ -166,6 +167,51 @@ function rmt_register_post_types() {
     ));
 }
 add_action('init', 'rmt_register_post_types');
+
+/**
+ * Keep listing archive URLs from falling through to the default page/post route.
+ *
+ * Local installs can keep stale rewrite rules after custom post type changes, which
+ * makes /roommate/ render index.php with "Nothing found" instead of the archive.
+ */
+function rmt_register_archive_rewrite_rules() {
+    add_rewrite_rule('^room/?$', 'index.php?post_type=room', 'top');
+    add_rewrite_rule('^room/page/([0-9]{1,})/?$', 'index.php?post_type=room&paged=$matches[1]', 'top');
+    add_rewrite_rule('^roommate/?$', 'index.php?post_type=roommate', 'top');
+    add_rewrite_rule('^roommate/page/([0-9]{1,})/?$', 'index.php?post_type=roommate&paged=$matches[1]', 'top');
+}
+add_action('init', 'rmt_register_archive_rewrite_rules', 20);
+
+function rmt_normalize_listing_archive_requests($query_vars) {
+    if (!isset($query_vars['pagename'])) {
+        return $query_vars;
+    }
+
+    $pagename = trim((string) $query_vars['pagename'], '/');
+
+    if (!in_array($pagename, array('room', 'roommate'), true)) {
+        return $query_vars;
+    }
+
+    unset($query_vars['pagename'], $query_vars['page']);
+    $query_vars['post_type'] = $pagename;
+
+    return $query_vars;
+}
+add_filter('request', 'rmt_normalize_listing_archive_requests');
+
+function rmt_maybe_flush_listing_archive_rewrites() {
+    if (get_option('rmt_rewrite_version') === RMT_REWRITE_VERSION) {
+        return;
+    }
+
+    rmt_register_post_types();
+    rmt_register_taxonomies();
+    rmt_register_archive_rewrite_rules();
+    flush_rewrite_rules(false);
+    update_option('rmt_rewrite_version', RMT_REWRITE_VERSION);
+}
+add_action('wp_loaded', 'rmt_maybe_flush_listing_archive_rewrites');
 
 /**
  * ------------------------------------------------------------
@@ -227,7 +273,7 @@ add_action('init', 'rmt_register_taxonomies');
 function rmt_add_meta_boxes() {
     add_meta_box(
         'rmt_room_details',
-        __('Show Room Details', 'roommate-mobile-theme'),
+        __('Room Details', 'roommate-mobile-theme'),
         'rmt_render_room_meta_box',
         'room',
         'normal',
@@ -813,7 +859,7 @@ add_action('wp_ajax_nopriv_rmt_load_more', 'rmt_ajax_load_more');
 function rmt_primary_menu_fallback() {
     echo '<ul class="menu primary-menu">';
     echo '<li><a href="' . esc_url(home_url('/')) . '">Home</a></li>';
-    echo '<li><a href="' . esc_url(get_post_type_archive_link('room')) . '">Show Rooms</a></li>';
+    echo '<li><a href="' . esc_url(get_post_type_archive_link('room')) . '">Rooms</a></li>';
     echo '<li><a href="' . esc_url(get_post_type_archive_link('roommate')) . '">Roommates</a></li>';
     echo '</ul>';
 }
@@ -1687,3 +1733,261 @@ function rmt_get_user_conversations($user_id, $limit = 12) {
         )
     );
 }
+
+/**
+ * Custom WordPress login/register page styling
+ */
+function bkkroomie_custom_login_styles() {
+    ?>
+    <style>
+        body.login {
+            background: #ffffff;
+            font-family: "Inter", "Segoe UI", Arial, sans-serif;
+        }
+
+        body.login div#login {
+            width: 420px;
+            max-width: calc(100% - 32px);
+            padding-top: 60px;
+        }
+
+        body.login h1 a {
+            background-image: url('<?php echo esc_url(get_template_directory_uri() . "/assets/images/bbkroomie-full.png"); ?>');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            width: 320px;
+            height: 150px;
+            margin-bottom: 24px;
+        }
+
+        body.login form {
+            border: 1px solid #E4E4E4;
+            border-radius: 24px;
+            box-shadow: 0 14px 35px rgba(17, 17, 17, 0.08);
+            padding: 32px;
+        }
+
+        body.login label {
+            color: #2F2F2F;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        body.login input[type="text"],
+        body.login input[type="password"],
+        body.login input[type="email"] {
+            border: 1.5px solid #E4E4E4;
+            border-radius: 14px;
+            min-height: 48px;
+            padding: 8px 14px;
+            font-size: 16px;
+            box-shadow: none;
+        }
+
+        body.login input:focus {
+            border-color: #89E219;
+            box-shadow: 0 0 0 4px rgba(137, 226, 25, 0.18);
+            outline: none;
+        }
+
+        body.login .button-primary {
+            background: #89E219;
+            border-color: #89E219;
+            color: #111111;
+            border-radius: 999px;
+            min-height: 44px;
+            padding: 0 24px;
+            font-weight: 800;
+            font-size: 15px;
+            box-shadow: 0 2px 10px rgba(137, 226, 25, 0.35);
+        }
+
+        body.login .button-primary:hover {
+            background: #58CC02;
+            border-color: #58CC02;
+            color: #111111;
+        }
+
+        body.login #nav,
+        body.login #backtoblog {
+            text-align: center;
+        }
+
+        body.login #nav a,
+        body.login #backtoblog a {
+            color: #4B4B4B;
+            font-weight: 700;
+        }
+
+        body.login #nav a:hover,
+        body.login #backtoblog a:hover {
+            color: #58CC02;
+        }
+
+        .login .message,
+        .login .notice,
+        .login .success {
+            border-left-color: #89E219;
+            border-radius: 12px;
+        }
+    </style>
+    <?php
+}
+add_action('login_enqueue_scripts', 'bkkroomie_custom_login_styles');
+
+function bkkroomie_login_logo_url() {
+    return home_url('/');
+}
+add_filter('login_headerurl', 'bkkroomie_login_logo_url');
+
+function bkkroomie_login_logo_title() {
+    return get_bloginfo('name');
+}
+add_filter('login_headertext', 'bkkroomie_login_logo_title');
+
+/**
+ * Bkkroomie listing limits.
+ * Subscribers can post up to 5 rooms and 5 roommate profiles.
+ * Administrators have no limit.
+ */
+
+function bkkroomie_user_is_unlimited_poster($user_id = 0) {
+    $user_id = $user_id ? (int) $user_id : get_current_user_id();
+
+    if (!$user_id) {
+        return false;
+    }
+
+    return user_can($user_id, 'manage_options');
+}
+
+function bkkroomie_get_user_post_count_by_type($user_id, $post_type) {
+    $counts = count_user_posts((int) $user_id, $post_type, true);
+    return (int) $counts;
+}
+
+function bkkroomie_get_listing_limit($post_type) {
+    $limits = array(
+        'room'     => 5,
+        'roommate' => 5,
+    );
+
+    return isset($limits[$post_type]) ? (int) $limits[$post_type] : 0;
+}
+
+function bkkroomie_user_can_create_listing($user_id, $post_type) {
+    if (bkkroomie_user_is_unlimited_poster($user_id)) {
+        return true;
+    }
+
+    $limit = bkkroomie_get_listing_limit($post_type);
+
+    if (!$limit) {
+        return true;
+    }
+
+    $current_count = bkkroomie_get_user_post_count_by_type($user_id, $post_type);
+
+    return $current_count < $limit;
+}
+
+function bkkroomie_get_listing_limit_message($post_type) {
+    if ($post_type === 'room') {
+        return __('You have reached the limit of 5 room posts. Please edit or delete an existing room before posting a new one.', 'roommate-mobile-theme');
+    }
+
+    if ($post_type === 'roommate') {
+        return __('You have reached the limit of 5 roommate posts. Please edit or delete an existing roommate profile before posting a new one.', 'roommate-mobile-theme');
+    }
+
+    return __('You have reached the posting limit.', 'roommate-mobile-theme');
+}
+
+/**
+ * Block frontend form pages when subscriber has reached limit.
+ * Adjust page slugs if yours are different.
+ */
+function bkkroomie_block_limited_listing_pages() {
+    if (!is_user_logged_in()) {
+        return;
+    }
+
+    $user_id = get_current_user_id();
+
+    if (bkkroomie_user_is_unlimited_poster($user_id)) {
+        return;
+    }
+
+    $blocked_post_type = '';
+
+    if (is_page('post-a-room')) {
+        $blocked_post_type = 'room';
+    }
+
+    if (is_page('post-a-roommate')) {
+        $blocked_post_type = 'roommate';
+    }
+
+    if (!$blocked_post_type) {
+        return;
+    }
+
+    if (bkkroomie_user_can_create_listing($user_id, $blocked_post_type)) {
+        return;
+    }
+
+    wp_safe_redirect(add_query_arg(
+        array(
+            'listing_limit' => $blocked_post_type,
+        ),
+        home_url('/dashboard/')
+    ));
+    exit;
+}
+add_action('template_redirect', 'bkkroomie_block_limited_listing_pages');
+
+/**
+ * Prevent direct wp_insert_post abuse too.
+ */
+function bkkroomie_enforce_listing_limit_before_insert($data, $postarr) {
+    if (empty($data['post_type'])) {
+        return $data;
+    }
+
+    $post_type = $data['post_type'];
+
+    if (!in_array($post_type, array('room', 'roommate'), true)) {
+        return $data;
+    }
+
+    $user_id = get_current_user_id();
+
+    if (!$user_id || bkkroomie_user_is_unlimited_poster($user_id)) {
+        return $data;
+    }
+
+    $post_id = isset($postarr['ID']) ? (int) $postarr['ID'] : 0;
+
+    /*
+     * Allow editing existing posts.
+     * Only block creating new posts.
+     */
+    if ($post_id > 0) {
+        return $data;
+    }
+
+    if (!bkkroomie_user_can_create_listing($user_id, $post_type)) {
+        wp_die(
+            esc_html(bkkroomie_get_listing_limit_message($post_type)),
+            esc_html__('Posting limit reached', 'roommate-mobile-theme'),
+            array(
+                'response' => 403,
+                'back_link' => true,
+            )
+        );
+    }
+
+    return $data;
+}
+add_filter('wp_insert_post_data', 'bkkroomie_enforce_listing_limit_before_insert', 10, 2);

@@ -87,7 +87,16 @@ get_header();
 <main id="primary" class="site-main rmt-messages-page">
     <section class="archive-hero">
         <div class="container">
-            <span class="archive-badge">Messages</span>
+
+            <p class="u-mb-4">
+                <a
+                    href="<?php echo esc_url($is_single_chat ? home_url('/messages/') : home_url('/dashboard/')); ?>"
+                    class="btn btn-secondary"
+                    aria-label="<?php esc_attr_e('Go back', 'roommate-mobile-theme'); ?>"
+                >
+                    ←
+                </a>
+            </p>
             <h1 class="archive-title"><?php echo $is_single_chat ? 'Chat' : 'All Chats'; ?></h1>
             <p class="archive-description">Send simple text messages about a room or roommate listing.</p>
         </div>
@@ -202,12 +211,12 @@ get_header();
                                         </p>
                                     <?php endif; ?>
                                 </div>
-                                <div class="rmt-chat-header-actions">
-                                    <a class="btn btn-secondary" href="<?php echo esc_url(home_url('/messages/')); ?>">All Chats</a>
+                                <!-- <div class="rmt-chat-header-actions">
+                                    
                                     <?php if ($listing) : ?>
                                         <a class="btn btn-secondary" href="<?php echo esc_url(get_permalink($listing_id)); ?>">Details Post</a>
                                     <?php endif; ?>
-                                </div>
+                                </div> -->
                             </div>
 
                             <div class="rmt-chat-box" id="rmt-chat-box">
