@@ -1796,7 +1796,7 @@ add_filter('login_headertext', 'bkkroomie_login_logo_title');
 
 /**
  * Bkkroomie listing limits.
- * Subscribers can post up to 5 rooms and 5 roommate profiles.
+ * Subscribers can post up to 1 room and 1 roommate profile.
  * Administrators have no limit.
  */
 
@@ -1817,8 +1817,8 @@ function bkkroomie_get_user_post_count_by_type($user_id, $post_type) {
 
 function bkkroomie_get_listing_limit($post_type) {
     $limits = array(
-        'room'     => 5,
-        'roommate' => 5,
+        'room'     => 1,
+        'roommate' => 1,
     );
 
     return isset($limits[$post_type]) ? (int) $limits[$post_type] : 0;
@@ -1842,11 +1842,11 @@ function bkkroomie_user_can_create_listing($user_id, $post_type) {
 
 function bkkroomie_get_listing_limit_message($post_type) {
     if ($post_type === 'room') {
-        return __('You have reached the limit of 5 room posts. Please edit or delete an existing room before posting a new one.', 'roommate-mobile-theme');
+        return __('You have reached the limit of 1 room post. Please edit or delete your existing room before posting a new one.', 'roommate-mobile-theme');
     }
 
     if ($post_type === 'roommate') {
-        return __('You have reached the limit of 5 roommate posts. Please edit or delete an existing roommate profile before posting a new one.', 'roommate-mobile-theme');
+        return __('You have reached the limit of 1 roommate post. Please edit or delete your existing roommate profile before posting a new one.', 'roommate-mobile-theme');
     }
 
     return __('You have reached the posting limit.', 'roommate-mobile-theme');
