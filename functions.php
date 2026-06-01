@@ -92,23 +92,23 @@ add_action('wp_enqueue_scripts', 'rmt_enqueue_assets');
  */
 function rmt_register_post_types() {
 
-    // SHOW ROOMS
+    // ROOMS
     register_post_type('room', array(
         'labels' => array(
-            'name'               => __('Show Rooms', 'roommate-mobile-theme'),
-            'singular_name'      => __('Show Room', 'roommate-mobile-theme'),
+            'name'               => __('Rooms', 'roommate-mobile-theme'),
+            'singular_name'      => __('Room', 'roommate-mobile-theme'),
             'add_new'            => __('Add New', 'roommate-mobile-theme'),
-            'add_new_item'       => __('Add New Show Room Listing', 'roommate-mobile-theme'),
-            'edit_item'          => __('Edit Show Room Listing', 'roommate-mobile-theme'),
-            'new_item'           => __('New Show Room Listing', 'roommate-mobile-theme'),
-            'view_item'          => __('View Show Room Listing', 'roommate-mobile-theme'),
-            'view_items'         => __('View Show Room Listings', 'roommate-mobile-theme'),
-            'search_items'       => __('Search Show Rooms', 'roommate-mobile-theme'),
-            'not_found'          => __('No show room listings found', 'roommate-mobile-theme'),
-            'not_found_in_trash' => __('No show room listings found in Trash', 'roommate-mobile-theme'),
-            'all_items'          => __('All Show Rooms', 'roommate-mobile-theme'),
-            'archives'           => __('Show Room Archives', 'roommate-mobile-theme'),
-            'menu_name'          => __('Show Rooms', 'roommate-mobile-theme'),
+            'add_new_item'       => __('Add New Room Listing', 'roommate-mobile-theme'),
+            'edit_item'          => __('Edit Room Listing', 'roommate-mobile-theme'),
+            'new_item'           => __('New Room Listing', 'roommate-mobile-theme'),
+            'view_item'          => __('View Room Listing', 'roommate-mobile-theme'),
+            'view_items'         => __('View Room Listings', 'roommate-mobile-theme'),
+            'search_items'       => __('Search Rooms', 'roommate-mobile-theme'),
+            'not_found'          => __('No room listings found', 'roommate-mobile-theme'),
+            'not_found_in_trash' => __('No room listings found in Trash', 'roommate-mobile-theme'),
+            'all_items'          => __('All Rooms', 'roommate-mobile-theme'),
+            'archives'           => __('Room Archives', 'roommate-mobile-theme'),
+            'menu_name'          => __('Rooms', 'roommate-mobile-theme'),
         ),
         'public'             => true,
         'publicly_queryable' => true,
@@ -273,7 +273,7 @@ add_action('init', 'rmt_register_taxonomies');
 function rmt_add_meta_boxes() {
     add_meta_box(
         'rmt_room_details',
-        __('Show Room Details', 'roommate-mobile-theme'),
+        __('Room Details', 'roommate-mobile-theme'),
         'rmt_render_room_meta_box',
         'room',
         'normal',
@@ -859,7 +859,7 @@ add_action('wp_ajax_nopriv_rmt_load_more', 'rmt_ajax_load_more');
 function rmt_primary_menu_fallback() {
     echo '<ul class="menu primary-menu">';
     echo '<li><a href="' . esc_url(home_url('/')) . '">Home</a></li>';
-    echo '<li><a href="' . esc_url(get_post_type_archive_link('room')) . '">Show Rooms</a></li>';
+    echo '<li><a href="' . esc_url(get_post_type_archive_link('room')) . '">Rooms</a></li>';
     echo '<li><a href="' . esc_url(get_post_type_archive_link('roommate')) . '">Roommates</a></li>';
     echo '</ul>';
 }
