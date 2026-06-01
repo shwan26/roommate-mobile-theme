@@ -170,8 +170,13 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
             <?php endif; ?>
 
             <div class="dashboard-summary-grid">
-                <div class="single-card">
-                    <h2>Account</h2>
+                <div class="single-card dashboard-account-card">
+                    <div class="dashboard-card-header">
+                        <h2>Account Details</h2>
+                        <a href="<?php echo esc_url(admin_url('profile.php')); ?>" class="dashboard-edit-link" aria-label="Edit account details">
+                            <span>Edit</span>
+                        </a>
+                    </div>
                     <ul class="detail-list">
                         <li><strong>Name:</strong> <?php echo esc_html($current_user->display_name); ?></li>
                         <li><strong>Email:</strong> <?php echo esc_html($current_user->user_email); ?></li>
@@ -180,29 +185,33 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                     </ul>
                 </div>
 
-                <div class="single-card">
+                <div class="single-card dashboard-quick-card">
                     <h2>Quick Actions</h2>
-                    <div class="cta-actions">
+                    <div class="cta-actions dashboard-quick-actions">
                         <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'room')) : ?>
-                            <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="btn btn-primary">
-                                Post a Room
+                            <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="btn dashboard-quick-btn">
+                                + Post a Room
                             </a>
                         <?php else : ?>
-                            <button class="btn btn-outline" type="button" disabled>
+                            <button class="btn dashboard-quick-btn" type="button" disabled>
                                 Room Limit Reached
                             </button>
                         <?php endif; ?>
 
                         <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'roommate')) : ?>
-                            <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="btn btn-secondary">
-                                Post a Roommate
+                            <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="btn dashboard-quick-btn">
+                                + Post a Roommate
                             </a>
                         <?php else : ?>
-                            <button class="btn btn-outline" type="button" disabled>
+                            <button class="btn dashboard-quick-btn" type="button" disabled>
                                 Roommate Limit Reached
                             </button>
                         <?php endif; ?>
-                        <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn btn-secondary">Log Out</a>
+                        <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn dashboard-quick-btn">Log Out</a>
+                        <a href="<?php echo esc_url(wp_lostpassword_url(home_url('/dashboard/'))); ?>" class="btn dashboard-quick-btn">Change Password</a>
+                        <button class="btn dashboard-quick-btn dashboard-quick-btn--danger" type="button" disabled title="Account deletion is not available from this dashboard yet.">
+                            Delete Account
+                        </button>
                     </div>
                 </div>
             </div>
