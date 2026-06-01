@@ -6,6 +6,12 @@
 defined('ABSPATH') || exit;
 ?>
 
+<div class="footer-skyline" aria-hidden="true">
+    <svg class="footer-skyline__line" viewBox="0 0 900 176" preserveAspectRatio="none" focusable="false">
+        <path d="M1 174V84h5v80h3V66h11v97h28V122h4V84h5V76h4V95h5v68h5V92h24v59h9V107l23 12 7-5v63h7V61h4V43l11-10 12 10v133h11V72h5v-6h9v-6h10v6h5v82h9v-29l10-9 11 9v57h6v-43h11v43h5V55h6v126h7v-43h18V111h18v74h15V110l11 7v27h7v39h15v-31h14v-65l15-9 6 4 23-11v104h5V101h4V95h15v5h10v84h7v-51h6v-9h10v-4h7V54h4V33h7v-5h3v-8h2v8h4v5h8v130h10V89h19v82h8V57h6v115h6v-44h11v44h7V78h4v-6h8v6h7v96h9V127l8-8 9 8v47h7V91h7V57h5v117h10V129h9v45h15v-49l11-10 11 10v50h8V86h7v82h24v-40h4v-27h5V70h4v98h9v-57l12-7 10 8v58h8V64h4V45h9v129h12V93h6v-8h12v89h7v-55h17v55h7V82h5V72h6v-6h10v108h9v-38h12v38h6v-69h5V77h5v97h14v-50l11-9 10 9v50h13V99h5V88h13v86h8v-58h8v58h10V97h5v77" />
+    </svg>
+</div>
+
 <footer class="site-footer site-footer--simple">
     <div class="container">
         <div class="simple-footer simple-footer--with-links">
