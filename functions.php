@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
 define( 'RMT_VERSION',   '1.0.0' );
 define( 'RMT_THEME_DIR', get_template_directory());
 define( 'RMT_THEME_URI', get_template_directory_uri());
+define( 'RMT_REWRITE_VERSION', '2026-06-01-archives' );
 
 /**
  * ------------------------------------------------------------
@@ -166,6 +167,51 @@ function rmt_register_post_types() {
     ));
 }
 add_action('init', 'rmt_register_post_types');
+
+/**
+ * Keep listing archive URLs from falling through to the default page/post route.
+ *
+ * Local installs can keep stale rewrite rules after custom post type changes, which
+ * makes /roommate/ render index.php with "Nothing found" instead of the archive.
+ */
+function rmt_register_archive_rewrite_rules() {
+    add_rewrite_rule('^room/?$', 'index.php?post_type=room', 'top');
+    add_rewrite_rule('^room/page/([0-9]{1,})/?$', 'index.php?post_type=room&paged=$matches[1]', 'top');
+    add_rewrite_rule('^roommate/?$', 'index.php?post_type=roommate', 'top');
+    add_rewrite_rule('^roommate/page/([0-9]{1,})/?$', 'index.php?post_type=roommate&paged=$matches[1]', 'top');
+}
+add_action('init', 'rmt_register_archive_rewrite_rules', 20);
+
+function rmt_normalize_listing_archive_requests($query_vars) {
+    if (!isset($query_vars['pagename'])) {
+        return $query_vars;
+    }
+
+    $pagename = trim((string) $query_vars['pagename'], '/');
+
+    if (!in_array($pagename, array('room', 'roommate'), true)) {
+        return $query_vars;
+    }
+
+    unset($query_vars['pagename'], $query_vars['page']);
+    $query_vars['post_type'] = $pagename;
+
+    return $query_vars;
+}
+add_filter('request', 'rmt_normalize_listing_archive_requests');
+
+function rmt_maybe_flush_listing_archive_rewrites() {
+    if (get_option('rmt_rewrite_version') === RMT_REWRITE_VERSION) {
+        return;
+    }
+
+    rmt_register_post_types();
+    rmt_register_taxonomies();
+    rmt_register_archive_rewrite_rules();
+    flush_rewrite_rules(false);
+    update_option('rmt_rewrite_version', RMT_REWRITE_VERSION);
+}
+add_action('wp_loaded', 'rmt_maybe_flush_listing_archive_rewrites');
 
 /**
  * ------------------------------------------------------------
