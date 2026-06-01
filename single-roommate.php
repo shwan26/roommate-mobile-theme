@@ -73,13 +73,13 @@ if (have_posts()) :
         $gender               = rmt_get_meta($post_id, '_gender');
         $occupation           = rmt_get_meta($post_id, '_occupation');
         $languages            = rmt_get_meta($post_id, '_languages');
+        $zodiac_sign          = rmt_get_meta($post_id, '_zodiac_sign');
         $hobbies              = rmt_get_meta($post_id, '_hobbies');
         $bio                  = rmt_get_meta($post_id, '_bio');
 
         /*
          * Lifestyle meta
          */
-        $cleanliness          = rmt_get_meta($post_id, '_cleanliness');
         $sleep_schedule       = rmt_get_meta($post_id, '_sleep_schedule');
         $smoker               = rmt_get_meta($post_id, '_smoker');
         $has_pets             = rmt_get_meta($post_id, '_has_pets');
@@ -264,6 +264,13 @@ if (have_posts()) :
                                         </span>
                                     <?php endif; ?>
 
+                                    <?php if ($zodiac_sign) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Zodiac Sign:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($zodiac_sign); ?>
+                                        </span>
+                                    <?php endif; ?>
+
                                     <?php if ($hobbies) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Hobbies:', 'roommate-mobile-theme'); ?>
@@ -277,13 +284,6 @@ if (have_posts()) :
                                 <h2><?php esc_html_e('Lifestyle', 'roommate-mobile-theme'); ?></h2>
 
                                 <div class="single-listing__chips">
-                                    <?php if ($cleanliness) : ?>
-                                        <span class="listing-chip">
-                                            <?php esc_html_e('Cleanliness:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($cleanliness); ?>
-                                        </span>
-                                    <?php endif; ?>
-
                                     <?php if ($sleep_schedule) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Sleep Schedule:', 'roommate-mobile-theme'); ?>
@@ -308,7 +308,7 @@ if (have_posts()) :
                                     <?php if ($social_level) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Social Level:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($social_level); ?>/10
+                                            <?php echo esc_html($social_level); ?>
                                         </span>
                                     <?php endif; ?>
                                 </div>
@@ -344,7 +344,7 @@ if (have_posts()) :
 
                             <?php if ($roommate_preference) : ?>
                                 <section class="single-card">
-                                    <h2><?php esc_html_e('Preferred Roommate', 'roommate-mobile-theme'); ?></h2>
+                                    <h2><?php esc_html_e('My Ideal Roommate', 'roommate-mobile-theme'); ?></h2>
                                     <p><?php echo nl2br(esc_html($roommate_preference)); ?></p>
                                 </section>
                             <?php endif; ?>

@@ -88,14 +88,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
                 delete_post_meta($edit_id, '_rmt_done');
 
                 $room_meta_fields = [
+                    '_total_rent'        => 'total_rent',
                     '_rent'              => 'rent',
+                    '_total_deposit'     => 'total_deposit',
                     '_deposit'           => 'deposit',
                     '_available_date'    => 'available_date',
                     '_property_type'     => 'property_type',
                     '_address'           => 'address',
                     '_nearby_landmark'   => 'nearby_landmark',
                     '_map_url'           => 'map_url',
-                    '_utilities'         => 'utilities',
                     '_min_stay'          => 'min_stay',
                     '_gender_preference' => 'gender_preference',
                     '_pet_policy'        => 'pet_policy',
@@ -118,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
                     '_gender'         => 'gender',
                     '_occupation'     => 'occupation',
                     '_languages'      => 'languages',
-                    '_cleanliness'    => 'cleanliness',
+                    '_zodiac_sign'    => 'zodiac_sign',
                     '_sleep_schedule' => 'sleep_schedule',
                     '_smoker'         => 'smoker',
                     '_has_pets'       => 'has_pets',
@@ -189,14 +190,15 @@ $is_post = $_SERVER['REQUEST_METHOD'] === 'POST';
 $v_room_title = $is_post ? sanitize_text_field($_POST['room_title'] ?? '') : $post->post_title;
 $v_description = $is_post ? wp_kses_post($_POST['description'] ?? '') : $post->post_content;
 
+$v_total_rent        = $is_post ? sanitize_text_field($_POST['total_rent'] ?? '') : rmt_edit_room_get($edit_id, '_total_rent');
 $v_rent              = $is_post ? sanitize_text_field($_POST['rent'] ?? '') : rmt_edit_room_get($edit_id, '_rent');
+$v_total_deposit     = $is_post ? sanitize_text_field($_POST['total_deposit'] ?? '') : rmt_edit_room_get($edit_id, '_total_deposit');
 $v_deposit           = $is_post ? sanitize_text_field($_POST['deposit'] ?? '') : rmt_edit_room_get($edit_id, '_deposit');
 $v_available_date    = $is_post ? sanitize_text_field($_POST['available_date'] ?? '') : rmt_edit_room_get($edit_id, '_available_date');
 $v_property_type     = $is_post ? sanitize_text_field($_POST['property_type'] ?? '') : rmt_edit_room_get($edit_id, '_property_type');
 $v_address           = $is_post ? sanitize_text_field($_POST['address'] ?? '') : rmt_edit_room_get($edit_id, '_address');
 $v_nearby_landmark   = $is_post ? sanitize_text_field($_POST['nearby_landmark'] ?? '') : rmt_edit_room_get($edit_id, '_nearby_landmark');
 $v_map_url           = $is_post ? esc_url_raw($_POST['map_url'] ?? '') : rmt_edit_room_get($edit_id, '_map_url');
-$v_utilities         = $is_post ? sanitize_text_field($_POST['utilities'] ?? '') : rmt_edit_room_get($edit_id, '_utilities');
 $v_min_stay          = $is_post ? sanitize_text_field($_POST['min_stay'] ?? '') : rmt_edit_room_get($edit_id, '_min_stay');
 $v_gender_preference = $is_post ? sanitize_text_field($_POST['gender_preference'] ?? '') : rmt_edit_room_get($edit_id, '_gender_preference');
 $v_pet_policy        = $is_post ? sanitize_text_field($_POST['pet_policy'] ?? '') : rmt_edit_room_get($edit_id, '_pet_policy');
@@ -207,11 +209,11 @@ $v_age            = $is_post ? sanitize_text_field($_POST['age'] ?? '') : rmt_ed
 $v_gender         = $is_post ? sanitize_text_field($_POST['gender'] ?? '') : rmt_edit_room_get($edit_id, '_gender');
 $v_occupation     = $is_post ? sanitize_text_field($_POST['occupation'] ?? '') : rmt_edit_room_get($edit_id, '_occupation');
 $v_languages      = $is_post ? sanitize_text_field($_POST['languages'] ?? '') : rmt_edit_room_get($edit_id, '_languages');
-$v_cleanliness    = $is_post ? sanitize_text_field($_POST['cleanliness'] ?? '') : rmt_edit_room_get($edit_id, '_cleanliness');
+$v_zodiac_sign    = $is_post ? sanitize_text_field($_POST['zodiac_sign'] ?? '') : rmt_edit_room_get($edit_id, '_zodiac_sign');
 $v_sleep_schedule = $is_post ? sanitize_text_field($_POST['sleep_schedule'] ?? '') : rmt_edit_room_get($edit_id, '_sleep_schedule');
 $v_smoker         = $is_post ? sanitize_text_field($_POST['smoker'] ?? '') : rmt_edit_room_get($edit_id, '_smoker');
 $v_has_pets       = $is_post ? sanitize_text_field($_POST['has_pets'] ?? '') : rmt_edit_room_get($edit_id, '_has_pets');
-$v_social_level   = $is_post ? sanitize_text_field($_POST['social_level'] ?? '5') : (rmt_edit_room_get($edit_id, '_social_level') ?: '5');
+$v_social_level   = $is_post ? sanitize_text_field($_POST['social_level'] ?? '') : rmt_edit_room_get($edit_id, '_social_level');
 $v_hobbies        = $is_post ? sanitize_text_field($_POST['hobbies'] ?? '') : rmt_edit_room_get($edit_id, '_hobbies');
 $v_bio            = $is_post ? sanitize_textarea_field($_POST['bio'] ?? '') : rmt_edit_room_get($edit_id, '_bio');
 $v_roommate_pref  = $is_post ? sanitize_textarea_field($_POST['roommate_preference'] ?? '') : rmt_edit_room_get($edit_id, '_roommate_preference');
@@ -279,12 +281,24 @@ get_header();
 
                         <div class="par-cols-2">
                             <div class="par-field">
-                                <label for="rent">Monthly Rent <span class="required">*</span></label>
-                                <input class="par-input" type="number" id="rent" name="rent" value="<?php echo esc_attr($v_rent); ?>" required>
+                                <label for="total_rent">Total Rent</label>
+                                <input class="par-input" type="number" id="total_rent" name="total_rent" value="<?php echo esc_attr($v_total_rent); ?>">
                             </div>
 
                             <div class="par-field">
-                                <label for="deposit">Deposit</label>
+                                <label for="rent">Rent Per Person <span class="required">*</span></label>
+                                <input class="par-input" type="number" id="rent" name="rent" value="<?php echo esc_attr($v_rent); ?>" required>
+                            </div>
+                        </div>
+
+                        <div class="par-cols-2">
+                            <div class="par-field">
+                                <label for="total_deposit">Total Deposit</label>
+                                <input class="par-input" type="number" id="total_deposit" name="total_deposit" value="<?php echo esc_attr($v_total_deposit); ?>">
+                            </div>
+
+                            <div class="par-field">
+                                <label for="deposit">Deposit Per Person</label>
                                 <input class="par-input" type="number" id="deposit" name="deposit" value="<?php echo esc_attr($v_deposit); ?>">
                             </div>
                         </div>
@@ -336,16 +350,6 @@ get_header();
                         </div>
 
                         <div class="par-cols-2">
-                            <div class="par-field">
-                                <label for="utilities">Utilities</label>
-                                <select class="par-select" id="utilities" name="utilities">
-                                    <option value="">Select</option>
-                                    <option value="included" <?php selected($v_utilities, 'included'); ?>>Included</option>
-                                    <option value="not_included" <?php selected($v_utilities, 'not_included'); ?>>Not Included</option>
-                                    <option value="shared" <?php selected($v_utilities, 'shared'); ?>>Shared</option>
-                                </select>
-                            </div>
-
                             <div class="par-field">
                                 <label for="min_stay">Minimum Stay</label>
                                 <select class="par-select" id="min_stay" name="min_stay">
@@ -529,12 +533,14 @@ get_header();
 
                         <div class="par-cols-2">
                             <div class="par-field">
-                                <label for="cleanliness">Cleanliness</label>
-                                <select class="par-select" id="cleanliness" name="cleanliness">
+                                <label for="zodiac_sign">Zodiac Sign</label>
+                                <select class="par-select" id="zodiac_sign" name="zodiac_sign">
                                     <option value="">Select</option>
-                                    <option value="very_clean" <?php selected($v_cleanliness, 'very_clean'); ?>>Very Clean</option>
-                                    <option value="clean" <?php selected($v_cleanliness, 'clean'); ?>>Clean</option>
-                                    <option value="relaxed" <?php selected($v_cleanliness, 'relaxed'); ?>>Relaxed</option>
+                                    <?php foreach (['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'] as $option) : ?>
+                                        <option value="<?php echo esc_attr($option); ?>" <?php selected($v_zodiac_sign, $option); ?>>
+                                            <?php echo esc_html($option); ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
 
@@ -570,8 +576,15 @@ get_header();
                         </div>
 
                         <div class="par-field">
-                            <label for="social_level">Social Level: <?php echo esc_html($v_social_level); ?>/10</label>
-                            <input class="par-range" type="range" id="social_level" name="social_level" min="1" max="10" value="<?php echo esc_attr($v_social_level); ?>">
+                            <label for="social_level">Social Level</label>
+                            <select class="par-select" id="social_level" name="social_level">
+                                <option value="">Select</option>
+                                <?php foreach (['Extrovert', 'Introvert', 'Ambivert'] as $option) : ?>
+                                    <option value="<?php echo esc_attr($option); ?>" <?php selected($v_social_level, $option); ?>>
+                                        <?php echo esc_html($option); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
 
                         <div class="par-field">
@@ -585,7 +598,7 @@ get_header();
                         </div>
 
                         <div class="par-field">
-                            <label for="roommate_preference">Roommate Preference</label>
+                            <label for="roommate_preference">My Ideal Roommate</label>
                             <textarea class="par-textarea" id="roommate_preference" name="roommate_preference" rows="5"><?php echo esc_textarea($v_roommate_pref); ?></textarea>
                         </div>
                     </section>

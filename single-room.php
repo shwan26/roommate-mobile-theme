@@ -49,14 +49,14 @@ if (have_posts()) :
          */
         $property_name     = rmt_get_meta($post_id, '_property_name');
         $property_type     = rmt_get_meta($post_id, '_property_type');
+        $total_rent        = rmt_get_meta($post_id, '_total_rent');
         $rent              = rmt_get_meta($post_id, '_rent');
+        $total_deposit     = rmt_get_meta($post_id, '_total_deposit');
         $deposit           = rmt_get_meta($post_id, '_deposit');
         $available_date    = rmt_get_meta($post_id, '_available_date');
         $address           = rmt_get_meta($post_id, '_address');
         $nearby_landmark   = rmt_get_meta($post_id, '_nearby_landmark');
         $map_url           = rmt_get_meta($post_id, '_map_url');
-        $utilities         = rmt_get_meta($post_id, '_utilities');
-        $bills_included    = rmt_get_meta($post_id, '_bills_included');
         $min_stay          = rmt_get_meta($post_id, '_min_stay');
         $gender_preference = rmt_get_meta($post_id, '_gender_preference');
         $pet_policy        = rmt_get_meta($post_id, '_pet_policy');
@@ -70,7 +70,7 @@ if (have_posts()) :
         $gender              = rmt_get_meta($post_id, '_gender');
         $occupation          = rmt_get_meta($post_id, '_occupation');
         $languages           = rmt_get_meta($post_id, '_languages');
-        $cleanliness         = rmt_get_meta($post_id, '_cleanliness');
+        $zodiac_sign         = rmt_get_meta($post_id, '_zodiac_sign');
         $sleep_schedule      = rmt_get_meta($post_id, '_sleep_schedule');
         $smoker              = rmt_get_meta($post_id, '_smoker');
         $has_pets            = rmt_get_meta($post_id, '_has_pets');
@@ -212,25 +212,33 @@ if (have_posts()) :
                                         </span>
                                     <?php endif; ?>
 
+                                    <?php if ($total_rent) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Total Rent:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html(rmt_format_price($total_rent)); ?>
+                                            <?php esc_html_e('/month', 'roommate-mobile-theme'); ?>
+                                        </span>
+                                    <?php endif; ?>
+
                                     <?php if ($rent) : ?>
                                         <span class="listing-chip">
-                                            <?php esc_html_e('Rent:', 'roommate-mobile-theme'); ?>
+                                            <?php esc_html_e('Rent Per Person:', 'roommate-mobile-theme'); ?>
                                             <?php echo esc_html(rmt_format_price($rent)); ?>
                                             <?php esc_html_e('/month', 'roommate-mobile-theme'); ?>
                                         </span>
                                     <?php endif; ?>
 
-                                    <?php if ($deposit !== '') : ?>
+                                    <?php if ($total_deposit !== '') : ?>
                                         <span class="listing-chip">
-                                            <?php esc_html_e('Deposit:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html(rmt_format_price($deposit)); ?>
+                                            <?php esc_html_e('Total Deposit:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html(rmt_format_price($total_deposit)); ?>
                                         </span>
                                     <?php endif; ?>
 
-                                    <?php if ($bills_included) : ?>
+                                    <?php if ($deposit !== '') : ?>
                                         <span class="listing-chip">
-                                            <?php esc_html_e('Bills:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($bills_included); ?>
+                                            <?php esc_html_e('Deposit Per Person:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html(rmt_format_price($deposit)); ?>
                                         </span>
                                     <?php endif; ?>
 
@@ -259,13 +267,6 @@ if (have_posts()) :
                                         <span class="listing-chip">
                                             <?php esc_html_e('Smoking Policy:', 'roommate-mobile-theme'); ?>
                                             <?php echo esc_html($smoking_policy); ?>
-                                        </span>
-                                    <?php endif; ?>
-
-                                    <?php if ($utilities) : ?>
-                                        <span class="listing-chip">
-                                            <?php esc_html_e('Utilities:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($utilities); ?>
                                         </span>
                                     <?php endif; ?>
 
@@ -376,10 +377,10 @@ if (have_posts()) :
                                         </span>
                                     <?php endif; ?>
 
-                                    <?php if ($cleanliness) : ?>
+                                    <?php if ($zodiac_sign) : ?>
                                         <span class="listing-chip">
-                                            <?php esc_html_e('Cleanliness:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($cleanliness); ?>
+                                            <?php esc_html_e('Zodiac Sign:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($zodiac_sign); ?>
                                         </span>
                                     <?php endif; ?>
 
@@ -407,7 +408,7 @@ if (have_posts()) :
                                     <?php if ($social_level) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Social Level:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($social_level); ?>/10
+                                            <?php echo esc_html($social_level); ?>
                                         </span>
                                     <?php endif; ?>
 
@@ -443,7 +444,7 @@ if (have_posts()) :
 
                             <?php if ($roommate_preference) : ?>
                                 <section class="single-card">
-                                    <h2><?php esc_html_e('Preferred Roommate', 'roommate-mobile-theme'); ?></h2>
+                                    <h2><?php esc_html_e('My Ideal Roommate', 'roommate-mobile-theme'); ?></h2>
                                     <p><?php echo nl2br(esc_html($roommate_preference)); ?></p>
                                 </section>
                             <?php endif; ?>

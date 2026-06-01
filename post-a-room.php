@@ -42,14 +42,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
                 delete_post_meta($post_id, '_rmt_done');
 
                 $room_meta_fields = [
+                    '_total_rent'        => 'total_rent',
                     '_rent'              => 'rent',
+                    '_total_deposit'     => 'total_deposit',
                     '_deposit'           => 'deposit',
                     '_available_date'    => 'available_date',
                     '_property_type'     => 'property_type',
                     '_address'           => 'address',
                     '_nearby_landmark'   => 'nearby_landmark',
                     '_map_url'           => 'map_url',
-                    '_utilities'         => 'utilities',
                     '_min_stay'          => 'min_stay',
                     '_gender_preference' => 'gender_preference',
                     '_pet_policy'        => 'pet_policy',
@@ -72,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
                     '_gender'         => 'gender',
                     '_occupation'     => 'occupation',
                     '_languages'      => 'languages',
-                    '_cleanliness'    => 'cleanliness',
+                    '_zodiac_sign'    => 'zodiac_sign',
                     '_sleep_schedule' => 'sleep_schedule',
                     '_smoker'         => 'smoker',
                     '_has_pets'       => 'has_pets',
@@ -205,12 +206,24 @@ get_header();
 
                             <div class="par-cols-2">
                                 <div class="par-field">
-                                    <label for="rent">Monthly Rent ฿ <span class="required">*</span></label>
-                                    <input class="par-input" type="number" id="rent" name="rent" value="<?php echo esc_attr($_POST['rent'] ?? ''); ?>" min="0" required>
+                                    <label for="total_rent">Total Rent ฿</label>
+                                    <input class="par-input" type="number" id="total_rent" name="total_rent" value="<?php echo esc_attr($_POST['total_rent'] ?? ''); ?>" min="0">
                                 </div>
 
                                 <div class="par-field">
-                                    <label for="deposit">Deposit ฿</label>
+                                    <label for="rent">Rent Per Person ฿ <span class="required">*</span></label>
+                                    <input class="par-input" type="number" id="rent" name="rent" value="<?php echo esc_attr($_POST['rent'] ?? ''); ?>" min="0" required>
+                                </div>
+                            </div>
+
+                            <div class="par-cols-2">
+                                <div class="par-field">
+                                    <label for="total_deposit">Total Deposit ฿</label>
+                                    <input class="par-input" type="number" id="total_deposit" name="total_deposit" value="<?php echo esc_attr($_POST['total_deposit'] ?? ''); ?>" min="0">
+                                </div>
+
+                                <div class="par-field">
+                                    <label for="deposit">Deposit Per Person ฿</label>
                                     <input class="par-input" type="number" id="deposit" name="deposit" value="<?php echo esc_attr($_POST['deposit'] ?? ''); ?>" min="0">
                                 </div>
                             </div>
@@ -262,18 +275,6 @@ get_header();
                             </div>
 
                             <div class="par-cols-2">
-                                <div class="par-field">
-                                    <label for="utilities">Utilities</label>
-                                    <select class="par-select" id="utilities" name="utilities">
-                                        <option value="">Select</option>
-                                        <?php foreach (['Included', 'Not included', 'Partially included'] as $option) : ?>
-                                            <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['utilities'] ?? '', $option); ?>>
-                                                <?php echo esc_html($option); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
                                 <div class="par-field">
                                     <label for="min_stay">Minimum Stay</label>
                                     <select class="par-select" id="min_stay" name="min_stay">
@@ -489,11 +490,11 @@ get_header();
                                 </div>
 
                                 <div class="par-field">
-                                    <label for="cleanliness">Cleanliness</label>
-                                    <select class="par-select" id="cleanliness" name="cleanliness">
+                                    <label for="zodiac_sign">Zodiac Sign</label>
+                                    <select class="par-select" id="zodiac_sign" name="zodiac_sign">
                                         <option value="">Select</option>
-                                        <?php foreach (['Very tidy', 'Tidy', 'Average', 'Relaxed'] as $option) : ?>
-                                            <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['cleanliness'] ?? '', $option); ?>>
+                                        <?php foreach (['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'] as $option) : ?>
+                                            <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['zodiac_sign'] ?? '', $option); ?>>
                                                 <?php echo esc_html($option); ?>
                                             </option>
                                         <?php endforeach; ?>
@@ -540,8 +541,15 @@ get_header();
                             </div>
 
                             <div class="par-field">
-                                <label for="social_level">Social Level: <span id="sl_val"><?php echo esc_html($_POST['social_level'] ?? 5); ?></span>/10</label>
-                                <input class="par-range" type="range" id="social_level" name="social_level" min="1" max="10" value="<?php echo esc_attr($_POST['social_level'] ?? 5); ?>" oninput="document.getElementById('sl_val').textContent=this.value">
+                                <label for="social_level">Social Level</label>
+                                <select class="par-select" id="social_level" name="social_level">
+                                    <option value="">Select</option>
+                                    <?php foreach (['Extrovert', 'Introvert', 'Ambivert'] as $option) : ?>
+                                        <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['social_level'] ?? '', $option); ?>>
+                                            <?php echo esc_html($option); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
 
                             <div class="par-field">
@@ -559,7 +567,7 @@ get_header();
                             <div class="par-card__header">
                                 <div class="par-card__icon">🔍</div>
                                 <div>
-                                    <h2>Preferred Roommate</h2>
+                                    <h2>My Ideal Roommate</h2>
                                     <p>Describe who you want to live with.</p>
                                 </div>
                             </div>

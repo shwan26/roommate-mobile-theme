@@ -316,14 +316,14 @@ function rmt_render_room_meta_box($post) {
         '_property_type',
         '_address',
         '_map_url',
+        '_total_rent',
         '_rent',
-        '_bills_included',
+        '_total_deposit',
         '_deposit',
         '_available_date',
         '_gender_preference',
         '_pet_policy',
         '_smoking_policy',
-        '_utilities',
         '_nearby_landmark',
         '_min_stay',
 
@@ -332,7 +332,7 @@ function rmt_render_room_meta_box($post) {
         '_gender',
         '_occupation',
         '_languages',
-        '_cleanliness',
+        '_zodiac_sign',
         '_sleep_schedule',
         '_smoker',
         '_has_pets',
@@ -378,24 +378,22 @@ function rmt_render_room_meta_box($post) {
     </tr>
 
     <tr>
-        <th><label for="_rent">Rent Fees</label></th>
-        <td><input type="number" name="_rent" id="_rent" value="<?php echo esc_attr($rent); ?>" class="regular-text" placeholder="Amount roommate pays"></td>
+        <th><label for="_total_rent">Total Rent</label></th>
+        <td><input type="number" name="_total_rent" id="_total_rent" value="<?php echo esc_attr($total_rent); ?>" class="regular-text"></td>
     </tr>
 
     <tr>
-        <th><label for="_bills_included">Bills Included</label></th>
-        <td>
-            <select name="_bills_included" id="_bills_included">
-                <option value="">Select</option>
-                <option value="Included" <?php selected($bills_included, 'Included'); ?>>Included</option>
-                <option value="Not Included" <?php selected($bills_included, 'Not Included'); ?>>Not Included</option>
-                <option value="Partially Included" <?php selected($bills_included, 'Partially Included'); ?>>Partially Included</option>
-            </select>
-        </td>
+        <th><label for="_rent">Rent Per Person</label></th>
+        <td><input type="number" name="_rent" id="_rent" value="<?php echo esc_attr($rent); ?>" class="regular-text"></td>
     </tr>
 
     <tr>
-        <th><label for="_deposit">Deposit</label></th>
+        <th><label for="_total_deposit">Total Deposit</label></th>
+        <td><input type="number" name="_total_deposit" id="_total_deposit" value="<?php echo esc_attr($total_deposit); ?>" class="regular-text"></td>
+    </tr>
+
+    <tr>
+        <th><label for="_deposit">Deposit Per Person</label></th>
         <td><input type="number" name="_deposit" id="_deposit" value="<?php echo esc_attr($deposit); ?>" class="regular-text" placeholder="0 if none"></td>
     </tr>
 
@@ -439,11 +437,6 @@ function rmt_render_room_meta_box($post) {
     </tr>
 
     <tr>
-        <th><label for="_utilities">Bills / Utilities Notes</label></th>
-        <td><input type="text" name="_utilities" id="_utilities" value="<?php echo esc_attr($utilities); ?>" class="regular-text" placeholder="Water, electricity, wifi, etc."></td>
-    </tr>
-
-    <tr>
         <th><label for="_nearby_landmark">Nearby Landmark</label></th>
         <td><input type="text" name="_nearby_landmark" id="_nearby_landmark" value="<?php echo esc_attr($nearby_landmark); ?>" class="regular-text"></td>
     </tr>
@@ -474,12 +467,15 @@ function rmt_render_room_meta_box($post) {
         <tr><th><label for="_languages">Languages</label></th><td><input type="text" name="_languages" id="_languages" value="<?php echo esc_attr($languages); ?>" class="regular-text"></td></tr>
 
         <tr>
-            <th><label for="_cleanliness">Cleanliness</label></th>
+            <th><label for="_zodiac_sign">Zodiac Sign</label></th>
             <td>
-                <select name="_cleanliness" id="_cleanliness">
+                <select name="_zodiac_sign" id="_zodiac_sign">
                     <option value="">Select</option>
-                    <option value="Yes" <?php selected($cleanliness, 'Yes'); ?>>Yes</option>
-                    <option value="No" <?php selected($cleanliness, 'No'); ?>>No</option>
+                    <?php foreach (array('Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces') as $option) : ?>
+                        <option value="<?php echo esc_attr($option); ?>" <?php selected($zodiac_sign, $option); ?>>
+                            <?php echo esc_html($option); ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </td>
         </tr>
@@ -508,10 +504,10 @@ function rmt_render_room_meta_box($post) {
             </td>
         </tr>
 
-        <tr><th><label for="_social_level">Social Level</label></th><td><input type="number" min="0" max="10" name="_social_level" id="_social_level" value="<?php echo esc_attr($social_level); ?>"></td></tr>
+        <tr><th><label for="_social_level">Social Level</label></th><td><select name="_social_level" id="_social_level"><option value="">Select</option><?php foreach (array('Extrovert', 'Introvert', 'Ambivert') as $option) : ?><option value="<?php echo esc_attr($option); ?>" <?php selected($social_level, $option); ?>><?php echo esc_html($option); ?></option><?php endforeach; ?></select></td></tr>
         <tr><th><label for="_hobbies">Hobbies</label></th><td><input type="text" name="_hobbies" id="_hobbies" value="<?php echo esc_attr($hobbies); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_bio">Bio</label></th><td><textarea name="_bio" id="_bio" rows="4" class="large-text"><?php echo esc_textarea($bio); ?></textarea></td></tr>
-        <tr><th><label for="_roommate_preference">Preferred Roommate</label></th><td><textarea name="_roommate_preference" id="_roommate_preference" rows="4" class="large-text"><?php echo esc_textarea($roommate_preference); ?></textarea></td></tr>
+        <tr><th><label for="_roommate_preference">My Ideal Roommate</label></th><td><textarea name="_roommate_preference" id="_roommate_preference" rows="4" class="large-text"><?php echo esc_textarea($roommate_preference); ?></textarea></td></tr>
     </table>
     <?php
 }
@@ -542,14 +538,14 @@ function rmt_render_roommate_meta_box($post) {
         '_gender',
         '_occupation',
         '_languages',
-        '_cleanliness',
+        '_zodiac_sign',
         '_sleep_schedule',
         '_smoker',
         '_has_pets',
         '_social_level',
         '_hobbies',
         '_bio',
-        '_ideal_roommate',
+        '_roommate_preference',
     );
 
     foreach ($fields as $field) {
@@ -575,14 +571,14 @@ function rmt_render_roommate_meta_box($post) {
         <tr><th><label for="_gender">Gender</label></th><td><input type="text" name="_gender" id="_gender" value="<?php echo esc_attr($gender); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_occupation">Occupation</label></th><td><input type="text" name="_occupation" id="_occupation" value="<?php echo esc_attr($occupation); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_languages">Languages</label></th><td><input type="text" name="_languages" id="_languages" value="<?php echo esc_attr($languages); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_cleanliness">Cleanliness</label></th><td><input type="text" name="_cleanliness" id="_cleanliness" value="<?php echo esc_attr($cleanliness); ?>" class="regular-text"></td></tr>
+        <tr><th><label for="_zodiac_sign">Zodiac Sign</label></th><td><select name="_zodiac_sign" id="_zodiac_sign"><option value="">Select</option><?php foreach (array('Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces') as $option) : ?><option value="<?php echo esc_attr($option); ?>" <?php selected($zodiac_sign, $option); ?>><?php echo esc_html($option); ?></option><?php endforeach; ?></select></td></tr>
         <tr><th><label for="_sleep_schedule">Sleep Schedule</label></th><td><input type="text" name="_sleep_schedule" id="_sleep_schedule" value="<?php echo esc_attr($sleep_schedule); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_smoker">Smoker</label></th><td><input type="text" name="_smoker" id="_smoker" value="<?php echo esc_attr($smoker); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_has_pets">Has Pets</label></th><td><input type="text" name="_has_pets" id="_has_pets" value="<?php echo esc_attr($has_pets); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_social_level">Social Level</label></th><td><input type="text" name="_social_level" id="_social_level" value="<?php echo esc_attr($social_level); ?>" class="regular-text"></td></tr>
+        <tr><th><label for="_social_level">Social Level</label></th><td><select name="_social_level" id="_social_level"><option value="">Select</option><?php foreach (array('Extrovert', 'Introvert', 'Ambivert') as $option) : ?><option value="<?php echo esc_attr($option); ?>" <?php selected($social_level, $option); ?>><?php echo esc_html($option); ?></option><?php endforeach; ?></select></td></tr>
         <tr><th><label for="_hobbies">Hobbies</label></th><td><input type="text" name="_hobbies" id="_hobbies" value="<?php echo esc_attr($hobbies); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_bio">Bio</label></th><td><textarea name="_bio" id="_bio" rows="4" class="large-text"><?php echo esc_textarea($bio); ?></textarea></td></tr>
-        <tr><th><label for="_ideal_roommate">Ideal Roommate</label></th><td><textarea name="_ideal_roommate" id="_ideal_roommate" rows="4" class="large-text"><?php echo esc_textarea($ideal_roommate); ?></textarea></td></tr>
+        <tr><th><label for="_roommate_preference">My Ideal Roommate</label></th><td><textarea name="_roommate_preference" id="_roommate_preference" rows="4" class="large-text"><?php echo esc_textarea($roommate_preference); ?></textarea></td></tr>
     </table>
     <?php
 }
@@ -617,11 +613,9 @@ function rmt_save_post_meta($post_id) {
 
     $text_fields = array(
         '_property_type',
-        '_poperty_name',
-        '_bills_included',
+        '_property_name',
         '_address',
         '_nearby_landmark',
-        '_utilities',
         '_min_stay',
         '_gender_preference',
         '_pet_policy',
@@ -630,7 +624,7 @@ function rmt_save_post_meta($post_id) {
         '_gender',
         '_occupation',
         '_languages',
-        '_cleanliness',
+        '_zodiac_sign',
         '_sleep_schedule',
         '_smoker',
         '_has_pets',
@@ -649,7 +643,6 @@ function rmt_save_post_meta($post_id) {
     $textarea_fields = array(
         '_bio',
         '_roommate_preference',
-        '_ideal_roommate',
     );
 
     $url_fields = array(
@@ -657,7 +650,9 @@ function rmt_save_post_meta($post_id) {
     );
 
     $number_fields = array(
+        '_total_rent',
         '_rent',
+        '_total_deposit',
         '_deposit',
         '_bedrooms',
         '_bathrooms',
@@ -878,54 +873,6 @@ function rmt_primary_menu_fallback() {
  *    users permission to upload images via the front-end form.
  * ============================================================
  */
-
-// ---------------------------------------------------------------
-// PATCH 1 — Add to $text_fields array inside rmt_save_post_meta:
-// ---------------------------------------------------------------
-//   '_property_name',
-//   '_bills_included',
-//   '_age',          // currently in $number_fields — keep there
-//   '_gender',
-//   '_lease_duration',
-//   '_private_or_shared',
-//   '_pets_ok',
-//   '_smokers_ok',
-//   '_preferred_room_type',   // already present — confirm
-//   '_preferred_property_type', // already present — confirm
-
-// Full corrected $text_fields for copy-paste:
-/*
-$text_fields = array(
-    '_property_name',        // ← NEW
-    '_bills_included',       // ← NEW
-    '_property_type',
-    '_address',
-    '_nearby_landmark',
-    '_utilities',
-    '_min_stay',
-    '_gender_preference',
-    '_pet_policy',
-    '_smoking_policy',
-    '_nickname',
-    '_gender',
-    '_occupation',
-    '_languages',
-    '_cleanliness',
-    '_sleep_schedule',
-    '_smoker',
-    '_has_pets',
-    '_social_level',
-    '_hobbies',
-    '_preferred_property_type',
-    '_preferred_room_type',
-    '_lease_duration',
-    '_preferred_area_text',
-    '_private_or_shared',
-    '_teamup_ok',
-    '_pets_ok',
-    '_smokers_ok',
-);
-*/
 
 // ---------------------------------------------------------------
 // PATCH 2 — Allow front-end image uploads for logged-in users.

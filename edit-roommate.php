@@ -129,13 +129,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_roommate_non
                     '_gender'     => 'gender',
                     '_occupation' => 'occupation',
                     '_languages'  => 'languages',
+                    '_zodiac_sign' => 'zodiac_sign',
                     '_hobbies'    => 'hobbies',
                 ] as $meta_key => $post_key) {
                     update_post_meta($edit_id, $meta_key, sanitize_text_field($_POST[$post_key] ?? ''));
                 }
 
                 foreach ([
-                    '_cleanliness'    => 'cleanliness',
                     '_sleep_schedule' => 'sleep_schedule',
                     '_smoker'         => 'smoker',
                     '_has_pets'       => 'has_pets',
@@ -208,6 +208,10 @@ $v_languages = $is_post
     ? sanitize_text_field($_POST['languages'] ?? '')
     : rmt_edit_roommate_get($edit_id, '_languages');
 
+$v_zodiac_sign = $is_post
+    ? sanitize_text_field($_POST['zodiac_sign'] ?? '')
+    : rmt_edit_roommate_get($edit_id, '_zodiac_sign');
+
 $v_hobbies = $is_post
     ? sanitize_text_field($_POST['hobbies'] ?? '')
     : rmt_edit_roommate_get($edit_id, '_hobbies');
@@ -219,10 +223,6 @@ $v_bio = $is_post
 if (!$v_bio && !$is_post) {
     $v_bio = $post->post_content;
 }
-
-$v_cleanliness = $is_post
-    ? sanitize_text_field($_POST['cleanliness'] ?? '')
-    : rmt_edit_roommate_get($edit_id, '_cleanliness');
 
 $v_sleep_schedule = $is_post
     ? sanitize_text_field($_POST['sleep_schedule'] ?? '')
@@ -237,8 +237,8 @@ $v_has_pets = $is_post
     : rmt_edit_roommate_get($edit_id, '_has_pets');
 
 $v_social_level = $is_post
-    ? absint($_POST['social_level'] ?? 5)
-    : (rmt_edit_roommate_get($edit_id, '_social_level') ?: 5);
+    ? sanitize_text_field($_POST['social_level'] ?? '')
+    : rmt_edit_roommate_get($edit_id, '_social_level');
 
 $v_budget_min = $is_post
     ? sanitize_text_field($_POST['budget_min'] ?? '')
@@ -392,23 +392,38 @@ get_header();
                             </div>
                         </div>
 
-                        <div class="par-cols-2">
-                            <div class="par-field">
-                                <label for="languages">Languages Spoken</label>
-                                <input class="par-input" type="text" id="languages" name="languages" value="<?php echo esc_attr($v_languages); ?>">
+                            <div class="par-cols-2">
+                                <div class="par-field">
+                                    <label for="languages">Languages Spoken</label>
+                                    <input class="par-input" type="text" id="languages" name="languages" value="<?php echo esc_attr($v_languages); ?>">
+                                </div>
+
+                                <div class="par-field">
+                                    <label for="zodiac_sign">Zodiac Sign</label>
+                                    <div class="par-select-wrap">
+                                        <select class="par-select" id="zodiac_sign" name="zodiac_sign">
+                                            <option value="">— Select —</option>
+
+                                            <?php foreach (['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'] as $option) : ?>
+                                                <option value="<?php echo esc_attr($option); ?>" <?php selected($v_zodiac_sign, $option); ?>>
+                                                    <?php echo esc_html($option); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="par-field">
                                 <label for="hobbies">Hobbies / Interests</label>
                                 <input class="par-input" type="text" id="hobbies" name="hobbies" value="<?php echo esc_attr($v_hobbies); ?>">
                             </div>
-                        </div>
 
-                        <div class="par-field">
-                            <label for="bio">About Me <span class="required">*</span></label>
-                            <textarea class="par-textarea" id="bio" name="bio" rows="5" required><?php echo esc_textarea($v_bio); ?></textarea>
-                        </div>
-                    </section>
+                            <div class="par-field">
+                                <label for="bio">About Me <span class="required">*</span></label>
+                                <textarea class="par-textarea" id="bio" name="bio" rows="5" required><?php echo esc_textarea($v_bio); ?></textarea>
+                            </div>
+                        </section>
 
                     <section class="par-card">
                         <div class="par-card__header">
@@ -420,37 +435,19 @@ get_header();
                             </div>
                         </div>
 
-                        <div class="par-cols-2">
-                            <div class="par-field">
-                                <label for="cleanliness">Cleanliness Level</label>
+                        <div class="par-field">
+                            <label for="sleep_schedule">Sleep Schedule</label>
 
-                                <div class="par-select-wrap">
-                                    <select class="par-select" id="cleanliness" name="cleanliness">
-                                        <option value="">— Select —</option>
+                            <div class="par-select-wrap">
+                                <select class="par-select" id="sleep_schedule" name="sleep_schedule">
+                                    <option value="">— Select —</option>
 
-                                        <?php foreach (['Very tidy', 'Tidy', 'Average', 'Relaxed'] as $option) : ?>
-                                            <option value="<?php echo esc_attr($option); ?>" <?php selected($v_cleanliness, $option); ?>>
-                                                <?php echo esc_html($option); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="par-field">
-                                <label for="sleep_schedule">Sleep Schedule</label>
-
-                                <div class="par-select-wrap">
-                                    <select class="par-select" id="sleep_schedule" name="sleep_schedule">
-                                        <option value="">— Select —</option>
-
-                                        <?php foreach (['Early bird', 'Night owl', 'Flexible'] as $option) : ?>
-                                            <option value="<?php echo esc_attr($option); ?>" <?php selected($v_sleep_schedule, $option); ?>>
-                                                <?php echo esc_html($option); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
+                                    <?php foreach (['Early bird', 'Night owl', 'Flexible'] as $option) : ?>
+                                        <option value="<?php echo esc_attr($option); ?>" <?php selected($v_sleep_schedule, $option); ?>>
+                                            <?php echo esc_html($option); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                         </div>
 
@@ -490,21 +487,17 @@ get_header();
 
                         <div class="par-field">
                             <label for="social_level">Social Level</label>
-                            <small>1 = very private, 10 = very social</small>
 
-                            <div class="par-range-wrap par-range-wrap--spaced">
-                                <input
-                                    class="par-range"
-                                    type="range"
-                                    id="social_level"
-                                    name="social_level"
-                                    min="1"
-                                    max="10"
-                                    value="<?php echo esc_attr($v_social_level); ?>"
-                                    oninput="document.getElementById('sl_val').textContent=this.value"
-                                >
+                            <div class="par-select-wrap">
+                                <select class="par-select" id="social_level" name="social_level">
+                                    <option value="">— Select —</option>
 
-                                <span class="par-range-val" id="sl_val"><?php echo esc_html($v_social_level); ?></span>
+                                    <?php foreach (['Extrovert', 'Introvert', 'Ambivert'] as $option) : ?>
+                                        <option value="<?php echo esc_attr($option); ?>" <?php selected($v_social_level, $option); ?>>
+                                            <?php echo esc_html($option); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                         </div>
 
@@ -591,7 +584,7 @@ get_header();
                             <div class="par-card__icon">🔍</div>
 
                             <div>
-                                <h2>Preferred Roommate</h2>
+                                <h2>My Ideal Roommate</h2>
                                 <p>Describe who you want to live with.</p>
                             </div>
                         </div>

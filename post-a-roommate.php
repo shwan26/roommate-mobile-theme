@@ -70,13 +70,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
                     '_gender'     => 'gender',
                     '_occupation' => 'occupation',
                     '_languages'  => 'languages',
+                    '_zodiac_sign' => 'zodiac_sign',
                     '_hobbies'    => 'hobbies',
                 ] as $meta_key => $post_key) {
                     update_post_meta($post_id, $meta_key, sanitize_text_field($_POST[$post_key] ?? ''));
                 }
 
                 foreach ([
-                    '_cleanliness'    => 'cleanliness',
                     '_sleep_schedule' => 'sleep_schedule',
                     '_smoker'         => 'smoker',
                     '_has_pets'       => 'has_pets',
@@ -297,16 +297,31 @@ get_header();
                                 </div>
 
                                 <div class="par-field">
-                                    <label for="hobbies">Hobbies / Interests</label>
-                                    <input
-                                        class="par-input"
-                                        type="text"
-                                        id="hobbies"
-                                        name="hobbies"
-                                        value="<?php echo esc_attr($_POST['hobbies'] ?? ''); ?>"
-                                        placeholder="Gym, cooking, gaming..."
-                                    >
+                                    <label for="zodiac_sign">Zodiac Sign</label>
+                                    <div class="par-select-wrap">
+                                        <select class="par-select" id="zodiac_sign" name="zodiac_sign">
+                                            <option value="">— Select —</option>
+
+                                            <?php foreach (['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'] as $option) : ?>
+                                                <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['zodiac_sign'] ?? '', $option); ?>>
+                                                    <?php echo esc_html($option); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <div class="par-field">
+                                <label for="hobbies">Hobbies / Interests</label>
+                                <input
+                                    class="par-input"
+                                    type="text"
+                                    id="hobbies"
+                                    name="hobbies"
+                                    value="<?php echo esc_attr($_POST['hobbies'] ?? ''); ?>"
+                                    placeholder="Gym, cooking, gaming..."
+                                >
                             </div>
 
                             <div class="par-field">
@@ -332,37 +347,19 @@ get_header();
                                 </div>
                             </div>
 
-                            <div class="par-cols-2">
-                                <div class="par-field">
-                                    <label for="cleanliness">Cleanliness Level</label>
+                            <div class="par-field">
+                                <label for="sleep_schedule">Sleep Schedule</label>
 
-                                    <div class="par-select-wrap">
-                                        <select class="par-select" id="cleanliness" name="cleanliness">
-                                            <option value="">— Select —</option>
+                                <div class="par-select-wrap">
+                                    <select class="par-select" id="sleep_schedule" name="sleep_schedule">
+                                        <option value="">— Select —</option>
 
-                                            <?php foreach (['Very tidy', 'Tidy', 'Average', 'Relaxed'] as $option) : ?>
-                                                <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['cleanliness'] ?? '', $option); ?>>
-                                                    <?php echo esc_html($option); ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="par-field">
-                                    <label for="sleep_schedule">Sleep Schedule</label>
-
-                                    <div class="par-select-wrap">
-                                        <select class="par-select" id="sleep_schedule" name="sleep_schedule">
-                                            <option value="">— Select —</option>
-
-                                            <?php foreach (['Early bird', 'Night owl', 'Flexible'] as $option) : ?>
-                                                <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['sleep_schedule'] ?? '', $option); ?>>
-                                                    <?php echo esc_html($option); ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
+                                        <?php foreach (['Early bird', 'Night owl', 'Flexible'] as $option) : ?>
+                                            <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['sleep_schedule'] ?? '', $option); ?>>
+                                                <?php echo esc_html($option); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                             </div>
 
@@ -402,23 +399,17 @@ get_header();
 
                             <div class="par-field">
                                 <label for="social_level">Social Level</label>
-                                <small>1 = very private, 10 = very social</small>
 
-                                <div class="par-range-wrap par-range-wrap--spaced">
-                                    <input
-                                        class="par-range"
-                                        type="range"
-                                        id="social_level"
-                                        name="social_level"
-                                        min="1"
-                                        max="10"
-                                        value="<?php echo esc_attr($_POST['social_level'] ?? 5); ?>"
-                                        oninput="document.getElementById('sl_val').textContent=this.value"
-                                    >
+                                <div class="par-select-wrap">
+                                    <select class="par-select" id="social_level" name="social_level">
+                                        <option value="">— Select —</option>
 
-                                    <span class="par-range-val" id="sl_val">
-                                        <?php echo esc_html($_POST['social_level'] ?? 5); ?>
-                                    </span>
+                                        <?php foreach (['Extrovert', 'Introvert', 'Ambivert'] as $option) : ?>
+                                            <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['social_level'] ?? '', $option); ?>>
+                                                <?php echo esc_html($option); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                             </div>
 
@@ -532,7 +523,7 @@ get_header();
                                 <div class="par-card__icon">🔍</div>
 
                                 <div>
-                                    <h2>Preferred Roommate</h2>
+                                    <h2>My Ideal Roommate</h2>
                                     <p>Describe who you want to live with.</p>
                                 </div>
                             </div>
@@ -544,7 +535,7 @@ get_header();
                                     id="roommate_preference"
                                     name="roommate_preference"
                                     rows="5"
-                                    placeholder="Example: quiet, clean, respectful, okay with guests sometimes..."
+                                    placeholder="Example: quiet, respectful, okay with guests sometimes..."
                                 ><?php echo esc_textarea($_POST['roommate_preference'] ?? ''); ?></textarea>
                             </div>
                         </section>

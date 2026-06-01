@@ -272,7 +272,7 @@ $latest_roommates = new WP_Query(array(
 
                                     <?php if ($rent) : ?>
                                         <span class="listing-chip">
-                                            <?php esc_html_e('Rent:', 'roommate-mobile-theme'); ?>
+                                            <?php esc_html_e('Rent Per Person:', 'roommate-mobile-theme'); ?>
                                             <?php echo esc_html(rmt_front_format_price($rent)); ?>
                                         </span>
                                     <?php endif; ?>

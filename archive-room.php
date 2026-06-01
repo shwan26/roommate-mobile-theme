@@ -343,7 +343,7 @@ $room_query = new WP_Query($room_query_args);
 
                                     <?php if ($rent) : ?>
                                         <span class="listing-chip">
-                                            <?php esc_html_e('Rent:', 'roommate-mobile-theme'); ?>
+                                            <?php esc_html_e('Rent Per Person:', 'roommate-mobile-theme'); ?>
                                             <?php echo esc_html(number_format_i18n((int) $rent)); ?>
                                             <?php esc_html_e(' THB/month', 'roommate-mobile-theme'); ?>
                                         </span>
