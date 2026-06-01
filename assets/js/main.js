@@ -61,4 +61,38 @@ document.addEventListener("DOMContentLoaded", function () {
       card.classList.remove("is-hovered");
     });
   });
+
+  const deleteAccountModal = document.getElementById("rmt-delete-account-modal");
+  const deleteAccountOpen = document.querySelector("[data-delete-account-open]");
+  const deleteAccountCloseButtons = document.querySelectorAll("[data-delete-account-close]");
+  const deleteAccountPassword = document.getElementById("rmt-delete-account-password");
+
+  if (deleteAccountModal && deleteAccountOpen) {
+    const setDeleteAccountModal = function (isOpen) {
+      deleteAccountModal.hidden = !isOpen;
+      document.body.classList.toggle("dashboard-delete-modal-open", isOpen);
+
+      if (isOpen && deleteAccountPassword) {
+        window.setTimeout(function () {
+          deleteAccountPassword.focus();
+        }, 0);
+      }
+    };
+
+    deleteAccountOpen.addEventListener("click", function () {
+      setDeleteAccountModal(true);
+    });
+
+    deleteAccountCloseButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        setDeleteAccountModal(false);
+      });
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !deleteAccountModal.hidden) {
+        setDeleteAccountModal(false);
+      }
+    });
+  }
 });

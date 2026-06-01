@@ -43,6 +43,27 @@ function rmt_dashboard_edit_url($post_id) {
     return home_url('/dashboard/');
 }
 
+function rmt_dashboard_request_account_deletion($user_id, $password) {
+    $user_id = absint($user_id);
+    $password = (string) $password;
+
+    if (!$user_id || user_can($user_id, 'manage_options') || (function_exists('is_super_admin') && is_super_admin($user_id))) {
+        return new WP_Error('not_allowed', 'This account cannot be deleted from the frontend dashboard.');
+    }
+
+    $user = get_userdata($user_id);
+
+    if (!$user || $password === '' || !wp_check_password($password, $user->user_pass, $user_id)) {
+        return new WP_Error('invalid_password', 'Please enter your current password to delete your account.');
+    }
+
+    if (!function_exists('rmt_schedule_account_deletion')) {
+        return new WP_Error('schedule_unavailable', 'Account deletion is unavailable right now. Please try again later.');
+    }
+
+    return rmt_schedule_account_deletion($user_id);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_dashboard_action_type'])) {
     if (!isset($_POST['rmt_dashboard_nonce']) || !wp_verify_nonce($_POST['rmt_dashboard_nonce'], 'rmt_dashboard_action')) {
         $error_message = 'Security check failed.';
@@ -50,7 +71,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_dashboard_action_
         $action  = sanitize_key($_POST['rmt_dashboard_action_type']);
         $post_id = absint($_POST['post_id'] ?? 0);
 
-        if (!$post_id || !rmt_dashboard_can_manage($post_id, $current_user->ID)) {
+        if ($action === 'delete_account') {
+            $scheduled_for = rmt_dashboard_request_account_deletion($current_user->ID, wp_unslash($_POST['rmt_delete_account_password'] ?? ''));
+
+            if (is_wp_error($scheduled_for)) {
+                $error_message = $scheduled_for->get_error_message();
+            } else {
+                wp_logout();
+                wp_safe_redirect(add_query_arg('account_deletion_scheduled', '1', home_url('/')));
+                exit;
+            }
+        } elseif (!$post_id || !rmt_dashboard_can_manage($post_id, $current_user->ID)) {
             $error_message = 'You are not allowed to manage this listing.';
         } else {
             if ($action === 'publish') {
@@ -209,11 +240,44 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                         <?php endif; ?>
                         <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn dashboard-quick-btn">Log Out</a>
                         <a href="<?php echo esc_url(wp_lostpassword_url(home_url('/dashboard/'))); ?>" class="btn dashboard-quick-btn">Change Password</a>
-                        <button class="btn dashboard-quick-btn dashboard-quick-btn--danger" type="button" disabled title="Account deletion is not available from this dashboard yet.">
+                        <button
+                            class="btn dashboard-quick-btn dashboard-quick-btn--danger"
+                            type="button"
+                            data-delete-account-open
+                        >
                             Delete Account
                         </button>
                     </div>
                 </div>
+            </div>
+
+            <div class="dashboard-delete-modal" id="rmt-delete-account-modal" hidden>
+                <div class="dashboard-delete-modal__overlay" data-delete-account-close></div>
+                <form method="post" class="dashboard-delete-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="rmt-delete-account-title">
+                    <button class="dashboard-delete-modal__close" type="button" aria-label="Close delete account confirmation" data-delete-account-close>&times;</button>
+                    <h2 id="rmt-delete-account-title">Please confirm deletion</h2>
+                    <p>Type your password to schedule account deletion. Your account will be deleted in 7 days.</p>
+                    <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
+                    <input type="hidden" name="rmt_dashboard_action_type" value="delete_account">
+                    <label for="rmt-delete-account-password">Current password</label>
+                    <input
+                        type="password"
+                        id="rmt-delete-account-password"
+                        name="rmt_delete_account_password"
+                        class="dashboard-delete-password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+                    <div class="dashboard-delete-modal__actions">
+                        <button class="btn btn-secondary" type="button" data-delete-account-close>
+                            Cancel
+                        </button>
+                        <button class="btn dashboard-quick-btn dashboard-quick-btn--danger" type="submit">
+                            Confirm Deletion
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <?php $rmt_conversations = function_exists('rmt_get_user_conversations') ? rmt_get_user_conversations($current_user->ID, 10) : array(); ?>

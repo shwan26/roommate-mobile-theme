@@ -1991,3 +1991,124 @@ function bkkroomie_enforce_listing_limit_before_insert($data, $postarr) {
     return $data;
 }
 add_filter('wp_insert_post_data', 'bkkroomie_enforce_listing_limit_before_insert', 10, 2);
+
+/**
+ * Scheduled frontend account deletion.
+ */
+function rmt_delete_account_data($user_id) {
+    global $wpdb;
+
+    $user_id = absint($user_id);
+
+    if (!$user_id) {
+        return false;
+    }
+
+    if (function_exists('rmt_messages_table_name')) {
+        $wpdb->query(
+            $wpdb->prepare(
+                'DELETE FROM ' . rmt_messages_table_name() . ' WHERE sender_id = %d OR recipient_id = %d',
+                $user_id,
+                $user_id
+            )
+        );
+    }
+
+    require_once ABSPATH . 'wp-admin/includes/user.php';
+
+    return (bool) wp_delete_user($user_id);
+}
+
+function rmt_schedule_account_deletion($user_id) {
+    $user_id = absint($user_id);
+
+    if (!$user_id || user_can($user_id, 'manage_options') || (function_exists('is_super_admin') && is_super_admin($user_id))) {
+        return new WP_Error('not_allowed', 'This account cannot be deleted from the frontend dashboard.');
+    }
+
+    $delete_at = time() + WEEK_IN_SECONDS;
+
+    update_user_meta($user_id, '_rmt_account_deletion_requested_at', current_time('mysql'));
+    update_user_meta($user_id, '_rmt_account_deletion_scheduled_for', $delete_at);
+
+    wp_clear_scheduled_hook('rmt_delete_scheduled_account', array($user_id));
+    $scheduled = wp_schedule_single_event($delete_at, 'rmt_delete_scheduled_account', array($user_id));
+
+    if (!$scheduled) {
+        delete_user_meta($user_id, '_rmt_account_deletion_requested_at');
+        delete_user_meta($user_id, '_rmt_account_deletion_scheduled_for');
+
+        return new WP_Error('schedule_failed', 'Account deletion could not be scheduled. Please try again.');
+    }
+
+    rmt_send_account_deletion_scheduled_email($user_id, $delete_at);
+
+    return $delete_at;
+}
+
+function rmt_send_account_deletion_scheduled_email($user_id, $delete_at) {
+    $user = get_userdata($user_id);
+
+    if (!$user || empty($user->user_email)) {
+        return false;
+    }
+
+    $site_name   = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
+    $delete_date = wp_date(get_option('date_format') . ' ' . get_option('time_format'), $delete_at);
+    $login_url   = wp_login_url(home_url('/dashboard/'));
+    $subject     = sprintf('[%s] Account deletion scheduled', $site_name);
+    $message     = sprintf(
+        "Hi %s,\n\nYour account deletion has been scheduled. Your account will be deleted in 7 days, on %s.\n\nIf you change your mind, just log in again before that date and the deletion request will be cancelled automatically:\n%s\n\nIf you did not request this, log in now to cancel the deletion.\n\n%s",
+        $user->display_name ?: $user->user_login,
+        $delete_date,
+        $login_url,
+        $site_name
+    );
+
+    return wp_mail($user->user_email, $subject, $message);
+}
+
+function rmt_cancel_account_deletion($user_id) {
+    $user_id = absint($user_id);
+
+    if (!$user_id) {
+        return false;
+    }
+
+    $scheduled_for = (int) get_user_meta($user_id, '_rmt_account_deletion_scheduled_for', true);
+
+    if (!$scheduled_for) {
+        return false;
+    }
+
+    wp_clear_scheduled_hook('rmt_delete_scheduled_account', array($user_id));
+    delete_user_meta($user_id, '_rmt_account_deletion_requested_at');
+    delete_user_meta($user_id, '_rmt_account_deletion_scheduled_for');
+
+    return true;
+}
+
+function rmt_cancel_account_deletion_on_login($user_login, $user) {
+    if ($user instanceof WP_User) {
+        rmt_cancel_account_deletion($user->ID);
+    }
+}
+add_action('wp_login', 'rmt_cancel_account_deletion_on_login', 10, 2);
+
+function rmt_delete_scheduled_account($user_id) {
+    $user_id = absint($user_id);
+    $user    = get_userdata($user_id);
+
+    if (!$user || user_can($user_id, 'manage_options') || (function_exists('is_super_admin') && is_super_admin($user_id))) {
+        return;
+    }
+
+    $scheduled_for = (int) get_user_meta($user_id, '_rmt_account_deletion_scheduled_for', true);
+
+    if (!$scheduled_for || $scheduled_for > time()) {
+        return;
+    }
+
+    rmt_delete_account_data($user_id);
+}
+add_action('rmt_delete_scheduled_account', 'rmt_delete_scheduled_account');
