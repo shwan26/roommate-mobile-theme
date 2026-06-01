@@ -126,7 +126,7 @@ $latest_roommates = new WP_Query(array(
 
                     <span class="rmt-card__meta">
                         <span class="rmt-card__label rmt-card__label--light">
-                            <?php esc_html_e('Need Room', 'roommate-mobile-theme'); ?>
+                            <?php esc_html_e('Need Room?', 'roommate-mobile-theme'); ?>
                         </span>
 
                         <span class="rmt-card__title rmt-card__title--light">
@@ -144,7 +144,7 @@ $latest_roommates = new WP_Query(array(
 
                     <span class="rmt-card__meta">
                         <span class="rmt-card__label rmt-card__label--dark">
-                            <?php esc_html_e('Have Room', 'roommate-mobile-theme'); ?>
+                            <?php esc_html_e('Need Roommate?', 'roommate-mobile-theme'); ?>
                         </span>
 
                         <span class="rmt-card__title rmt-card__title--dark">

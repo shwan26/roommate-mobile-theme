@@ -674,6 +674,30 @@ p { margin-top: 0; color: var(--color-text-soft); }
   font-size: 0.82rem; font-weight: 600;
 }
 
+.single-page .single-listing__chips,
+.single-page .listing-card__chips {
+  display: grid;
+  gap: 0;
+}
+
+.single-page .listing-chip {
+  display: block;
+  width: 100%;
+  padding: 0.68rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text-soft);
+  font-size: 0.94rem;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+.single-page .listing-chip:last-child {
+  border-bottom: 0;
+}
+
 .listing-card__person { background: var(--color-surface-alt); border-radius: var(--radius-md); padding: 0.85rem; }
 .listing-card__person strong { display: inline-block; margin-bottom: 0.4rem; font-size: 0.9rem; }
 .listing-card__person ul { margin: 0; padding-left: 1rem; color: var(--color-text-soft); font-size: 0.88rem; }
