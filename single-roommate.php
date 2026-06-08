@@ -121,10 +121,10 @@ if (have_posts()) :
                 <p class="u-mb-4">
                     <a
                         href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>"
-                        class="btn btn-secondary"
+                        class="btn btn-secondary single-listing__back"
                         aria-label="<?php esc_attr_e('Back to roommates', 'roommate-mobile-theme'); ?>"
                     >
-                        ←
+                        ← Back to Roommate Listing
                     </a>
                 </p>
 
@@ -159,11 +159,13 @@ if (have_posts()) :
                                     data-share-url="<?php echo esc_url($share_url); ?>"
                                     data-share-modal="listing-share-modal-<?php echo esc_attr($post_id); ?>"
                                 >
-                                    🔗 <?php esc_html_e('Share', 'roommate-mobile-theme'); ?>
+                                    <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>
+                                    <span class="listing-action-text"><?php esc_html_e('Share', 'roommate-mobile-theme'); ?></span>
                                 </button>
 
                                 <a href="<?php echo esc_url(add_query_arg('edit_id', $post_id, home_url('/edit-roommate/'))); ?>" class="btn btn-outline">
-                                    ✏️ Edit
+                                    <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                    <span class="listing-action-text"><?php esc_html_e('Edit', 'roommate-mobile-theme'); ?></span>
                                 </a>
 
                                 <button
@@ -172,7 +174,8 @@ if (have_posts()) :
                                     data-post-id="<?php echo esc_attr($post_id); ?>"
                                     data-nonce="<?php echo esc_attr(wp_create_nonce('rmt_mark_closed_' . $post_id)); ?>"
                                 >
-                                    ✅ <?php esc_html_e('Mark as closed', 'roommate-mobile-theme'); ?>
+                                    <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>
+                                    <span class="listing-action-text"><?php esc_html_e('Mark as closed', 'roommate-mobile-theme'); ?></span>
                                 </button>
 
                                 <button
@@ -181,7 +184,8 @@ if (have_posts()) :
                                     data-post-id="<?php echo esc_attr($post_id); ?>"
                                     data-nonce="<?php echo esc_attr(wp_create_nonce('rmt_unpublish_' . $post_id)); ?>"
                                 >
-                                    🔒 <?php esc_html_e('Unpublish', 'roommate-mobile-theme'); ?>
+                                    <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                                    <span class="listing-action-text"><?php esc_html_e('Unpublish', 'roommate-mobile-theme'); ?></span>
                                 </button>
                             </div>
                         </div>
@@ -197,7 +201,8 @@ if (have_posts()) :
                                 data-share-url="<?php echo esc_url($share_url); ?>"
                                 data-share-modal="listing-share-modal-<?php echo esc_attr($post_id); ?>"
                             >
-                                🔗 <?php esc_html_e('Share', 'roommate-mobile-theme'); ?>
+                                <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>
+                                <span class="listing-action-text"><?php esc_html_e('Share', 'roommate-mobile-theme'); ?></span>
                             </button>
 
                             <?php if (is_user_logged_in()) : ?>
@@ -205,14 +210,16 @@ if (have_posts()) :
                                     href="<?php echo esc_url(rmt_get_chat_url($post_author_id, $post_id)); ?>"
                                     class="btn btn-primary btn--chat"
                                 >
-                                    💬 <?php esc_html_e('Chat with roommate', 'roommate-mobile-theme'); ?>
+                                    <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>
+                                    <span class="listing-action-text"><?php esc_html_e('Chat with roommate', 'roommate-mobile-theme'); ?></span>
                                 </a>
                             <?php else : ?>
                                 <a
                                     href="<?php echo esc_url(wp_login_url(get_permalink($post_id))); ?>"
                                     class="btn btn-primary btn--chat"
                                 >
-                                    💬 <?php esc_html_e('Login to message', 'roommate-mobile-theme'); ?>
+                                    <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>
+                                    <span class="listing-action-text"><?php esc_html_e('Login to message', 'roommate-mobile-theme'); ?></span>
                                 </a>
                             <?php endif; ?>
 
@@ -222,7 +229,8 @@ if (have_posts()) :
                                 data-post-id="<?php echo esc_attr($post_id); ?>"
                                 data-nonce="<?php echo esc_attr(wp_create_nonce('rmt_report_' . $post_id)); ?>"
                             >
-                                🚩 <?php esc_html_e('Report to Admin', 'roommate-mobile-theme'); ?>
+                                <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V4s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22V15"/></svg>
+                                <span class="listing-action-text"><?php esc_html_e('Report to Admin', 'roommate-mobile-theme'); ?></span>
                             </button>
                         </div>
                     <?php endif; ?>
@@ -562,7 +570,10 @@ if (have_posts()) :
                     );
 
                     if (data.success) {
-                        button.textContent = '✅ Marked as closed';
+                        const buttonText = button.querySelector('.listing-action-text');
+                        if (buttonText) {
+                            buttonText.textContent = 'Marked as closed';
+                        }
 
                         const header = document.querySelector('.single-listing__header');
 
@@ -618,7 +629,10 @@ if (have_posts()) :
                     );
 
                     if (data.success) {
-                        button.textContent = '🚩 Reported — thanks!';
+                        const buttonText = button.querySelector('.listing-action-text');
+                        if (buttonText) {
+                            buttonText.textContent = 'Reported - thanks!';
+                        }
                     } else {
                         alert(data.data || 'Something went wrong.');
                         button.disabled = false;
