@@ -313,7 +313,6 @@ $roommate_query = new WP_Query($roommate_query_args);
                         $gender          = rmt_archive_get_meta($post_id, '_gender');
                         $occupation      = rmt_archive_get_meta($post_id, '_occupation');
                         $budget_min      = rmt_archive_get_meta($post_id, '_budget_min');
-                        $budget_max      = rmt_archive_get_meta($post_id, '_budget_max');
                         $move_in_date    = rmt_archive_get_meta($post_id, '_move_in_date');
                         $preferred_area  = rmt_archive_get_meta($post_id, '_preferred_area_text');
 
@@ -321,7 +320,7 @@ $roommate_query = new WP_Query($roommate_query_args);
                         $lifestyle_text  = rmt_archive_terms_text($post_id, 'lifestyle');
 
                         $display_area    = $location_text ? $location_text : $preferred_area;
-                        $display_budget  = rmt_archive_format_budget_range($budget_min, $budget_max);
+                        $display_budget  = $budget_min ? number_format_i18n((int) $budget_min) . ' THB' : '';
                         ?>
 
                         <article <?php post_class('listing-card'); ?>>
@@ -346,36 +345,31 @@ $roommate_query = new WP_Query($roommate_query_args);
                                     </a>
                                 </h2>
 
-                                <div class="listing-card__chips">
+                                <div class="listing-card__details">
                                     <?php if ($move_in_date) : ?>
-                                        <span class="listing-chip">
-                                            <?php esc_html_e('Move-in:', 'roommate-mobile-theme'); ?>
+                                        <span>
                                             <?php echo esc_html(rmt_archive_format_date($move_in_date)); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if ($display_area) : ?>
-                                        <span class="listing-chip">
-                                            <?php esc_html_e('Preferred Area:', 'roommate-mobile-theme'); ?>
+                                        <span>
                                             <?php echo esc_html($display_area); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if ($display_budget) : ?>
-                                        <span class="listing-chip">
-                                            <?php esc_html_e('Budget:', 'roommate-mobile-theme'); ?>
+                                        <span>
                                             <?php echo esc_html($display_budget); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if ($gender) : ?>
-                                        <span class="listing-chip">
-                                            <?php esc_html_e('Gender:', 'roommate-mobile-theme'); ?>
+                                        <span>
                                             <?php echo esc_html($gender); ?>
                                         </span>
                                     <?php endif; ?>
                                 </div>
-
 
                                 <a href="<?php the_permalink(); ?>" class="btn btn-secondary">
                                     <?php esc_html_e('View Roommate', 'roommate-mobile-theme'); ?>
