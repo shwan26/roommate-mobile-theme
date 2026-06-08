@@ -118,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
                     '_age'            => 'age',
                     '_gender'         => 'gender',
                     '_occupation'     => 'occupation',
+                    '_nationality'    => 'nationality',
                     '_languages'      => 'languages',
                     '_zodiac_sign'    => 'zodiac_sign',
                     '_sleep_schedule' => 'sleep_schedule',
@@ -208,6 +209,7 @@ $v_nickname       = $is_post ? sanitize_text_field($_POST['nickname'] ?? '') : r
 $v_age            = $is_post ? sanitize_text_field($_POST['age'] ?? '') : rmt_edit_room_get($edit_id, '_age');
 $v_gender         = $is_post ? sanitize_text_field($_POST['gender'] ?? '') : rmt_edit_room_get($edit_id, '_gender');
 $v_occupation     = $is_post ? sanitize_text_field($_POST['occupation'] ?? '') : rmt_edit_room_get($edit_id, '_occupation');
+$v_nationality    = $is_post ? sanitize_text_field($_POST['nationality'] ?? '') : rmt_edit_room_get($edit_id, '_nationality');
 $v_languages      = $is_post ? sanitize_text_field($_POST['languages'] ?? '') : rmt_edit_room_get($edit_id, '_languages');
 $v_zodiac_sign    = $is_post ? sanitize_text_field($_POST['zodiac_sign'] ?? '') : rmt_edit_room_get($edit_id, '_zodiac_sign');
 $v_sleep_schedule = $is_post ? sanitize_text_field($_POST['sleep_schedule'] ?? '') : rmt_edit_room_get($edit_id, '_sleep_schedule');
@@ -360,9 +362,7 @@ get_header();
                                     <option value="1_year" <?php selected($v_min_stay, '1_year'); ?>>1 Year</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <div class="par-cols-3">
                             <div class="par-field">
                                 <label for="gender_preference">Gender Preference</label>
                                 <select class="par-select" id="gender_preference" name="gender_preference">
@@ -372,7 +372,9 @@ get_header();
                                     <option value="any" <?php selected($v_gender_preference, 'any'); ?>>Any</option>
                                 </select>
                             </div>
+                        </div>
 
+                        <div class="par-cols-2">
                             <div class="par-field">
                                 <label for="pet_policy">Pet Policy</label>
                                 <select class="par-select" id="pet_policy" name="pet_policy">
@@ -526,18 +528,44 @@ get_header();
                             </div>
                         </div>
 
+                        <div class="par-cols-2">
+                            <div class="par-field">
+                                <label for="nationality">Nationality</label>
+                                <input class="par-input" type="text" id="nationality" name="nationality" value="<?php echo esc_attr($v_nationality); ?>">
+                            </div>
+                        </div>
+
                         <div class="par-field">
-                            <label for="languages">Languages</label>
-                            <input class="par-input" type="text" id="languages" name="languages" value="<?php echo esc_attr($v_languages); ?>">
+                            <label for="bio">Bio</label>
+                            <textarea class="par-textarea" id="bio" name="bio" rows="4"><?php echo esc_textarea($v_bio); ?></textarea>
                         </div>
 
                         <div class="par-cols-2">
+                            <div class="par-field">
+                                <label for="languages">Languages Spoken</label>
+                                <input class="par-input" type="text" id="languages" name="languages" value="<?php echo esc_attr($v_languages); ?>">
+                            </div>
+
                             <div class="par-field">
                                 <label for="zodiac_sign">Zodiac Sign</label>
                                 <select class="par-select" id="zodiac_sign" name="zodiac_sign">
                                     <option value="">Select</option>
                                     <?php foreach (['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'] as $option) : ?>
                                         <option value="<?php echo esc_attr($option); ?>" <?php selected($v_zodiac_sign, $option); ?>>
+                                            <?php echo esc_html($option); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="par-cols-2">
+                            <div class="par-field">
+                                <label for="social_level">Social Level</label>
+                                <select class="par-select" id="social_level" name="social_level">
+                                    <option value="">Select</option>
+                                    <?php foreach (['Extrovert', 'Introvert', 'Ambivert'] as $option) : ?>
+                                        <option value="<?php echo esc_attr($option); ?>" <?php selected($v_social_level, $option); ?>>
                                             <?php echo esc_html($option); ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -576,25 +604,8 @@ get_header();
                         </div>
 
                         <div class="par-field">
-                            <label for="social_level">Social Level</label>
-                            <select class="par-select" id="social_level" name="social_level">
-                                <option value="">Select</option>
-                                <?php foreach (['Extrovert', 'Introvert', 'Ambivert'] as $option) : ?>
-                                    <option value="<?php echo esc_attr($option); ?>" <?php selected($v_social_level, $option); ?>>
-                                        <?php echo esc_html($option); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div class="par-field">
                             <label for="hobbies">Hobbies</label>
                             <input class="par-input" type="text" id="hobbies" name="hobbies" value="<?php echo esc_attr($v_hobbies); ?>">
-                        </div>
-
-                        <div class="par-field">
-                            <label for="bio">Bio</label>
-                            <textarea class="par-textarea" id="bio" name="bio" rows="4"><?php echo esc_textarea($v_bio); ?></textarea>
                         </div>
 
                         <div class="par-field">

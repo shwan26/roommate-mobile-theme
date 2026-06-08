@@ -331,14 +331,15 @@ function rmt_render_room_meta_box($post) {
         '_age',
         '_gender',
         '_occupation',
+        '_nationality',
+        '_bio',
         '_languages',
         '_zodiac_sign',
+        '_social_level',
         '_sleep_schedule',
         '_smoker',
         '_has_pets',
-        '_social_level',
         '_hobbies',
-        '_bio',
         '_roommate_preference',
     );
 
@@ -464,7 +465,9 @@ function rmt_render_room_meta_box($post) {
         </tr>
 
         <tr><th><label for="_occupation">Occupation</label></th><td><input type="text" name="_occupation" id="_occupation" value="<?php echo esc_attr($occupation); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_languages">Languages</label></th><td><input type="text" name="_languages" id="_languages" value="<?php echo esc_attr($languages); ?>" class="regular-text"></td></tr>
+        <tr><th><label for="_nationality">Nationality</label></th><td><input type="text" name="_nationality" id="_nationality" value="<?php echo esc_attr($nationality); ?>" class="regular-text"></td></tr>
+        <tr><th><label for="_bio">Bio</label></th><td><textarea name="_bio" id="_bio" rows="4" class="large-text"><?php echo esc_textarea($bio); ?></textarea></td></tr>
+        <tr><th><label for="_languages">Languages Spoken</label></th><td><input type="text" name="_languages" id="_languages" value="<?php echo esc_attr($languages); ?>" class="regular-text"></td></tr>
 
         <tr>
             <th><label for="_zodiac_sign">Zodiac Sign</label></th>
@@ -480,6 +483,7 @@ function rmt_render_room_meta_box($post) {
             </td>
         </tr>
 
+        <tr><th><label for="_social_level">Social Level</label></th><td><select name="_social_level" id="_social_level"><option value="">Select</option><?php foreach (array('Extrovert', 'Introvert', 'Ambivert') as $option) : ?><option value="<?php echo esc_attr($option); ?>" <?php selected($social_level, $option); ?>><?php echo esc_html($option); ?></option><?php endforeach; ?></select></td></tr>
         <tr><th><label for="_sleep_schedule">Sleep Schedule</label></th><td><input type="text" name="_sleep_schedule" id="_sleep_schedule" value="<?php echo esc_attr($sleep_schedule); ?>" class="regular-text" placeholder="11 PM to 7 AM"></td></tr>
 
         <tr>
@@ -504,9 +508,7 @@ function rmt_render_room_meta_box($post) {
             </td>
         </tr>
 
-        <tr><th><label for="_social_level">Social Level</label></th><td><select name="_social_level" id="_social_level"><option value="">Select</option><?php foreach (array('Extrovert', 'Introvert', 'Ambivert') as $option) : ?><option value="<?php echo esc_attr($option); ?>" <?php selected($social_level, $option); ?>><?php echo esc_html($option); ?></option><?php endforeach; ?></select></td></tr>
         <tr><th><label for="_hobbies">Hobbies</label></th><td><input type="text" name="_hobbies" id="_hobbies" value="<?php echo esc_attr($hobbies); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_bio">Bio</label></th><td><textarea name="_bio" id="_bio" rows="4" class="large-text"><?php echo esc_textarea($bio); ?></textarea></td></tr>
         <tr><th><label for="_roommate_preference">My Ideal Roommate</label></th><td><textarea name="_roommate_preference" id="_roommate_preference" rows="4" class="large-text"><?php echo esc_textarea($roommate_preference); ?></textarea></td></tr>
     </table>
     <?php
@@ -537,14 +539,15 @@ function rmt_render_roommate_meta_box($post) {
         '_age',
         '_gender',
         '_occupation',
+        '_nationality',
+        '_bio',
         '_languages',
         '_zodiac_sign',
+        '_social_level',
         '_sleep_schedule',
         '_smoker',
         '_has_pets',
-        '_social_level',
         '_hobbies',
-        '_bio',
         '_roommate_preference',
     );
 
@@ -570,14 +573,15 @@ function rmt_render_roommate_meta_box($post) {
         <tr><th><label for="_age">Age</label></th><td><input type="number" name="_age" id="_age" value="<?php echo esc_attr($age); ?>"></td></tr>
         <tr><th><label for="_gender">Gender</label></th><td><input type="text" name="_gender" id="_gender" value="<?php echo esc_attr($gender); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_occupation">Occupation</label></th><td><input type="text" name="_occupation" id="_occupation" value="<?php echo esc_attr($occupation); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_languages">Languages</label></th><td><input type="text" name="_languages" id="_languages" value="<?php echo esc_attr($languages); ?>" class="regular-text"></td></tr>
+        <tr><th><label for="_nationality">Nationality</label></th><td><input type="text" name="_nationality" id="_nationality" value="<?php echo esc_attr($nationality); ?>" class="regular-text"></td></tr>
+        <tr><th><label for="_bio">Bio</label></th><td><textarea name="_bio" id="_bio" rows="4" class="large-text"><?php echo esc_textarea($bio); ?></textarea></td></tr>
+        <tr><th><label for="_languages">Languages Spoken</label></th><td><input type="text" name="_languages" id="_languages" value="<?php echo esc_attr($languages); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_zodiac_sign">Zodiac Sign</label></th><td><select name="_zodiac_sign" id="_zodiac_sign"><option value="">Select</option><?php foreach (array('Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces') as $option) : ?><option value="<?php echo esc_attr($option); ?>" <?php selected($zodiac_sign, $option); ?>><?php echo esc_html($option); ?></option><?php endforeach; ?></select></td></tr>
+        <tr><th><label for="_social_level">Social Level</label></th><td><select name="_social_level" id="_social_level"><option value="">Select</option><?php foreach (array('Extrovert', 'Introvert', 'Ambivert') as $option) : ?><option value="<?php echo esc_attr($option); ?>" <?php selected($social_level, $option); ?>><?php echo esc_html($option); ?></option><?php endforeach; ?></select></td></tr>
         <tr><th><label for="_sleep_schedule">Sleep Schedule</label></th><td><input type="text" name="_sleep_schedule" id="_sleep_schedule" value="<?php echo esc_attr($sleep_schedule); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_smoker">Smoker</label></th><td><input type="text" name="_smoker" id="_smoker" value="<?php echo esc_attr($smoker); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_has_pets">Has Pets</label></th><td><input type="text" name="_has_pets" id="_has_pets" value="<?php echo esc_attr($has_pets); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_social_level">Social Level</label></th><td><select name="_social_level" id="_social_level"><option value="">Select</option><?php foreach (array('Extrovert', 'Introvert', 'Ambivert') as $option) : ?><option value="<?php echo esc_attr($option); ?>" <?php selected($social_level, $option); ?>><?php echo esc_html($option); ?></option><?php endforeach; ?></select></td></tr>
         <tr><th><label for="_hobbies">Hobbies</label></th><td><input type="text" name="_hobbies" id="_hobbies" value="<?php echo esc_attr($hobbies); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_bio">Bio</label></th><td><textarea name="_bio" id="_bio" rows="4" class="large-text"><?php echo esc_textarea($bio); ?></textarea></td></tr>
         <tr><th><label for="_roommate_preference">My Ideal Roommate</label></th><td><textarea name="_roommate_preference" id="_roommate_preference" rows="4" class="large-text"><?php echo esc_textarea($roommate_preference); ?></textarea></td></tr>
     </table>
     <?php
@@ -623,6 +627,7 @@ function rmt_save_post_meta($post_id) {
         '_nickname',
         '_gender',
         '_occupation',
+        '_nationality',
         '_languages',
         '_zodiac_sign',
         '_sleep_schedule',

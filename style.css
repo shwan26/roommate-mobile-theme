@@ -1138,7 +1138,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .required { color: #e63946; }
 
 .par-cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.par-cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.par-cols-3 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 @media (max-width: 700px) { .par-cols-2, .par-cols-3 { grid-template-columns: 1fr; } }
 
 .par-input, .par-select, .par-textarea {

@@ -72,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
                     '_age'            => 'age',
                     '_gender'         => 'gender',
                     '_occupation'     => 'occupation',
+                    '_nationality'    => 'nationality',
                     '_languages'      => 'languages',
                     '_zodiac_sign'    => 'zodiac_sign',
                     '_sleep_schedule' => 'sleep_schedule',
@@ -286,9 +287,7 @@ get_header();
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                            </div>
 
-                            <div class="par-cols-3">
                                 <div class="par-field">
                                     <label for="gender_preference">Gender Preference</label>
                                     <select class="par-select" id="gender_preference" name="gender_preference">
@@ -300,7 +299,9 @@ get_header();
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
+                            </div>
 
+                            <div class="par-cols-2">
                                 <div class="par-field">
                                     <label for="pet_policy">Pet Policy</label>
                                     <select class="par-select" id="pet_policy" name="pet_policy">
@@ -485,7 +486,19 @@ get_header();
 
                             <div class="par-cols-2">
                                 <div class="par-field">
-                                    <label for="languages">Languages</label>
+                                    <label for="nationality">Nationality</label>
+                                    <input class="par-input" type="text" id="nationality" name="nationality" value="<?php echo esc_attr($_POST['nationality'] ?? ''); ?>">
+                                </div>
+                            </div>
+
+                            <div class="par-field">
+                                <label for="bio">Bio</label>
+                                <textarea class="par-textarea" id="bio" name="bio" rows="4"><?php echo esc_textarea($_POST['bio'] ?? ''); ?></textarea>
+                            </div>
+
+                            <div class="par-cols-2">
+                                <div class="par-field">
+                                    <label for="languages">Languages Spoken</label>
                                     <input class="par-input" type="text" id="languages" name="languages" value="<?php echo esc_attr($_POST['languages'] ?? ''); ?>">
                                 </div>
 
@@ -502,7 +515,19 @@ get_header();
                                 </div>
                             </div>
 
-                            <div class="par-cols-3">
+                            <div class="par-cols-2">
+                                <div class="par-field">
+                                    <label for="social_level">Social Level</label>
+                                    <select class="par-select" id="social_level" name="social_level">
+                                        <option value="">Select</option>
+                                        <?php foreach (['Extrovert', 'Introvert', 'Ambivert'] as $option) : ?>
+                                            <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['social_level'] ?? '', $option); ?>>
+                                                <?php echo esc_html($option); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
                                 <div class="par-field">
                                     <label for="sleep_schedule">Sleep Schedule</label>
                                     <select class="par-select" id="sleep_schedule" name="sleep_schedule">
@@ -514,7 +539,9 @@ get_header();
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
+                            </div>
 
+                            <div class="par-cols-2">
                                 <div class="par-field">
                                     <label for="smoker">Smoker</label>
                                     <select class="par-select" id="smoker" name="smoker">
@@ -541,26 +568,10 @@ get_header();
                             </div>
 
                             <div class="par-field">
-                                <label for="social_level">Social Level</label>
-                                <select class="par-select" id="social_level" name="social_level">
-                                    <option value="">Select</option>
-                                    <?php foreach (['Extrovert', 'Introvert', 'Ambivert'] as $option) : ?>
-                                        <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['social_level'] ?? '', $option); ?>>
-                                            <?php echo esc_html($option); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <div class="par-field">
                                 <label for="hobbies">Hobbies</label>
                                 <input class="par-input" type="text" id="hobbies" name="hobbies" value="<?php echo esc_attr($_POST['hobbies'] ?? ''); ?>">
                             </div>
 
-                            <div class="par-field">
-                                <label for="bio">Bio</label>
-                                <textarea class="par-textarea" id="bio" name="bio" rows="4"><?php echo esc_textarea($_POST['bio'] ?? ''); ?></textarea>
-                            </div>
                         </section>
 
                         <section class="par-card">

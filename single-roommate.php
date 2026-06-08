@@ -72,6 +72,7 @@ if (have_posts()) :
         $age                  = rmt_get_meta($post_id, '_age');
         $gender               = rmt_get_meta($post_id, '_gender');
         $occupation           = rmt_get_meta($post_id, '_occupation');
+        $nationality          = rmt_get_meta($post_id, '_nationality');
         $languages            = rmt_get_meta($post_id, '_languages');
         $zodiac_sign          = rmt_get_meta($post_id, '_zodiac_sign');
         $hobbies              = rmt_get_meta($post_id, '_hobbies');
@@ -254,6 +255,13 @@ if (have_posts()) :
                                         <span class="listing-chip">
                                             <?php esc_html_e('Occupation:', 'roommate-mobile-theme'); ?>
                                             <?php echo esc_html($occupation); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($nationality) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Nationality:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($nationality); ?>
                                         </span>
                                     <?php endif; ?>
 

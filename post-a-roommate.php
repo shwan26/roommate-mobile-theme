@@ -69,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
                     '_age'        => 'age',
                     '_gender'     => 'gender',
                     '_occupation' => 'occupation',
+                    '_nationality' => 'nationality',
                     '_languages'  => 'languages',
                     '_zodiac_sign' => 'zodiac_sign',
                     '_hobbies'    => 'hobbies',
@@ -285,6 +286,32 @@ get_header();
 
                             <div class="par-cols-2">
                                 <div class="par-field">
+                                    <label for="nationality">Nationality</label>
+                                    <input
+                                        class="par-input"
+                                        type="text"
+                                        id="nationality"
+                                        name="nationality"
+                                        value="<?php echo esc_attr($_POST['nationality'] ?? ''); ?>"
+                                        placeholder="Thai, Filipino, British..."
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="par-field">
+                                <label for="bio">About Me <span class="required">*</span></label>
+                                <textarea
+                                    class="par-textarea"
+                                    id="bio"
+                                    name="bio"
+                                    rows="5"
+                                    required
+                                    placeholder="Write a short introduction about yourself."
+                                ><?php echo esc_textarea($_POST['bio'] ?? ''); ?></textarea>
+                            </div>
+
+                            <div class="par-cols-2">
+                                <div class="par-field">
                                     <label for="languages">Languages Spoken</label>
                                     <input
                                         class="par-input"
@@ -311,30 +338,6 @@ get_header();
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="par-field">
-                                <label for="hobbies">Hobbies / Interests</label>
-                                <input
-                                    class="par-input"
-                                    type="text"
-                                    id="hobbies"
-                                    name="hobbies"
-                                    value="<?php echo esc_attr($_POST['hobbies'] ?? ''); ?>"
-                                    placeholder="Gym, cooking, gaming..."
-                                >
-                            </div>
-
-                            <div class="par-field">
-                                <label for="bio">About Me <span class="required">*</span></label>
-                                <textarea
-                                    class="par-textarea"
-                                    id="bio"
-                                    name="bio"
-                                    rows="5"
-                                    required
-                                    placeholder="Write a short introduction about yourself."
-                                ><?php echo esc_textarea($_POST['bio'] ?? ''); ?></textarea>
-                            </div>
                         </section>
 
                         <section class="par-card">
@@ -347,19 +350,37 @@ get_header();
                                 </div>
                             </div>
 
-                            <div class="par-field">
-                                <label for="sleep_schedule">Sleep Schedule</label>
+                            <div class="par-cols-2">
+                                <div class="par-field">
+                                    <label for="social_level">Social Level</label>
 
-                                <div class="par-select-wrap">
-                                    <select class="par-select" id="sleep_schedule" name="sleep_schedule">
-                                        <option value="">— Select —</option>
+                                    <div class="par-select-wrap">
+                                        <select class="par-select" id="social_level" name="social_level">
+                                            <option value="">— Select —</option>
 
-                                        <?php foreach (['Early bird', 'Night owl', 'Flexible'] as $option) : ?>
-                                            <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['sleep_schedule'] ?? '', $option); ?>>
-                                                <?php echo esc_html($option); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
+                                            <?php foreach (['Extrovert', 'Introvert', 'Ambivert'] as $option) : ?>
+                                                <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['social_level'] ?? '', $option); ?>>
+                                                    <?php echo esc_html($option); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="par-field">
+                                    <label for="sleep_schedule">Sleep Schedule</label>
+
+                                    <div class="par-select-wrap">
+                                        <select class="par-select" id="sleep_schedule" name="sleep_schedule">
+                                            <option value="">— Select —</option>
+
+                                            <?php foreach (['Early bird', 'Night owl', 'Flexible'] as $option) : ?>
+                                                <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['sleep_schedule'] ?? '', $option); ?>>
+                                                    <?php echo esc_html($option); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
@@ -398,19 +419,15 @@ get_header();
                             </div>
 
                             <div class="par-field">
-                                <label for="social_level">Social Level</label>
-
-                                <div class="par-select-wrap">
-                                    <select class="par-select" id="social_level" name="social_level">
-                                        <option value="">— Select —</option>
-
-                                        <?php foreach (['Extrovert', 'Introvert', 'Ambivert'] as $option) : ?>
-                                            <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['social_level'] ?? '', $option); ?>>
-                                                <?php echo esc_html($option); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
+                                <label for="hobbies">Hobbies / Interests</label>
+                                <input
+                                    class="par-input"
+                                    type="text"
+                                    id="hobbies"
+                                    name="hobbies"
+                                    value="<?php echo esc_attr($_POST['hobbies'] ?? ''); ?>"
+                                    placeholder="Gym, cooking, gaming..."
+                                >
                             </div>
 
                             <?php if (!empty($lifestyle_terms) && !is_wp_error($lifestyle_terms)) : ?>
