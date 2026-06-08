@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 define( 'RMT_VERSION',   '1.0.0' );
 define( 'RMT_THEME_DIR', get_template_directory());
 define( 'RMT_THEME_URI', get_template_directory_uri());
-define( 'RMT_REWRITE_VERSION', '2026-06-01-archives' );
+define( 'RMT_REWRITE_VERSION', '2026-06-08-listing-id-links' );
 
 /**
  * ------------------------------------------------------------
@@ -175,12 +175,23 @@ add_action('init', 'rmt_register_post_types');
  * makes /roommate/ render index.php with "Nothing found" instead of the archive.
  */
 function rmt_register_archive_rewrite_rules() {
+    add_rewrite_rule('^room/([0-9]+)/?$', 'index.php?post_type=room&p=$matches[1]', 'top');
     add_rewrite_rule('^room/?$', 'index.php?post_type=room', 'top');
     add_rewrite_rule('^room/page/([0-9]{1,})/?$', 'index.php?post_type=room&paged=$matches[1]', 'top');
+    add_rewrite_rule('^roommate/([0-9]+)/?$', 'index.php?post_type=roommate&p=$matches[1]', 'top');
     add_rewrite_rule('^roommate/?$', 'index.php?post_type=roommate', 'top');
     add_rewrite_rule('^roommate/page/([0-9]{1,})/?$', 'index.php?post_type=roommate&paged=$matches[1]', 'top');
 }
 add_action('init', 'rmt_register_archive_rewrite_rules', 20);
+
+function rmt_use_listing_id_permalink($post_link, $post) {
+    if ($post instanceof WP_Post && in_array($post->post_type, array('room', 'roommate'), true)) {
+        return home_url(user_trailingslashit($post->post_type . '/' . $post->ID));
+    }
+
+    return $post_link;
+}
+add_filter('post_type_link', 'rmt_use_listing_id_permalink', 10, 2);
 
 function rmt_normalize_listing_archive_requests($query_vars) {
     if (!isset($query_vars['pagename'])) {

@@ -109,6 +109,10 @@ if (have_posts()) :
          */
         $display_area   = $location_text ? $location_text : ($preferred_area_text ? $preferred_area_text : $preferred_area);
         $display_budget = rmt_single_roommate_format_budget_range($budget_min, $budget_max);
+        $share_url      = get_permalink($post_id);
+        $share_title    = get_the_title($post_id);
+        $share_text     = sprintf(__('Check out this roommate profile on Bkkroomie: %s', 'roommate-mobile-theme'), $share_title);
+        $share_message  = $share_text . ' ' . $share_url;
         ?>
 
         <main id="primary" class="site-main single-page single-roommate">
@@ -147,6 +151,17 @@ if (have_posts()) :
                             </span>
 
                             <div class="listing-owner-bar__actions">
+                                <button
+                                    type="button"
+                                    class="btn btn-outline btn--share js-listing-share"
+                                    data-share-title="<?php echo esc_attr($share_title); ?>"
+                                    data-share-text="<?php echo esc_attr($share_text); ?>"
+                                    data-share-url="<?php echo esc_url($share_url); ?>"
+                                    data-share-modal="listing-share-modal-<?php echo esc_attr($post_id); ?>"
+                                >
+                                    🔗 <?php esc_html_e('Share', 'roommate-mobile-theme'); ?>
+                                </button>
+
                                 <a href="<?php echo esc_url(add_query_arg('edit_id', $post_id, home_url('/edit-roommate/'))); ?>" class="btn btn-outline">
                                     ✏️ Edit
                                 </a>
@@ -174,6 +189,17 @@ if (have_posts()) :
 
                     <?php if ($is_visitor) : ?>
                         <div class="listing-visitor-actions">
+                            <button
+                                type="button"
+                                class="btn btn-outline btn--share js-listing-share"
+                                data-share-title="<?php echo esc_attr($share_title); ?>"
+                                data-share-text="<?php echo esc_attr($share_text); ?>"
+                                data-share-url="<?php echo esc_url($share_url); ?>"
+                                data-share-modal="listing-share-modal-<?php echo esc_attr($post_id); ?>"
+                            >
+                                🔗 <?php esc_html_e('Share', 'roommate-mobile-theme'); ?>
+                            </button>
+
                             <?php if (is_user_logged_in()) : ?>
                                 <a
                                     href="<?php echo esc_url(rmt_get_chat_url($post_author_id, $post_id)); ?>"
@@ -432,6 +458,75 @@ if (have_posts()) :
 
             </div>
         </main>
+
+        <div
+            class="listing-share-modal"
+            id="listing-share-modal-<?php echo esc_attr($post_id); ?>"
+            hidden
+            aria-hidden="true"
+        >
+            <div class="listing-share-modal__overlay" data-share-close></div>
+            <div
+                class="listing-share-modal__dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="listing-share-title-<?php echo esc_attr($post_id); ?>"
+            >
+                <button
+                    type="button"
+                    class="listing-share-modal__close"
+                    data-share-close
+                    aria-label="<?php esc_attr_e('Close share dialog', 'roommate-mobile-theme'); ?>"
+                >
+                    ×
+                </button>
+
+                <h2 id="listing-share-title-<?php echo esc_attr($post_id); ?>">
+                    <?php esc_html_e('Share this roommate', 'roommate-mobile-theme'); ?>
+                </h2>
+
+                <p class="listing-share-modal__listing-title"><?php echo esc_html($share_title); ?></p>
+
+                <label class="listing-share-modal__label" for="listing-share-url-<?php echo esc_attr($post_id); ?>">
+                    <?php esc_html_e('Link to share', 'roommate-mobile-theme'); ?>
+                </label>
+
+                <div class="listing-share-modal__copy-row">
+                    <input
+                        id="listing-share-url-<?php echo esc_attr($post_id); ?>"
+                        type="text"
+                        value="<?php echo esc_url($share_url); ?>"
+                        readonly
+                    >
+                    <button type="button" class="btn btn-primary js-copy-share-link" data-share-url="<?php echo esc_url($share_url); ?>">
+                        <?php esc_html_e('Copy Link', 'roommate-mobile-theme'); ?>
+                    </button>
+                </div>
+
+                <div class="listing-share-modal__socials" aria-label="<?php esc_attr_e('Share options', 'roommate-mobile-theme'); ?>">
+                    <a class="listing-share-modal__social listing-share-modal__social--whatsapp" href="<?php echo esc_url('https://wa.me/?text=' . rawurlencode($share_message)); ?>" target="_blank" rel="noopener noreferrer">
+                        <svg class="listing-share-modal__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.54 2 2.08 6.43 2.08 11.9c0 1.89.54 3.66 1.47 5.16L2 22l5.08-1.5a10.03 10.03 0 0 0 4.96 1.3c5.5 0 9.96-4.43 9.96-9.9S17.54 2 12.04 2Zm0 18.08a8.24 8.24 0 0 1-4.2-1.15l-.3-.18-3 .89.9-2.9-.2-.31a8.08 8.08 0 1 1 6.8 3.65Zm4.53-6.04c-.25-.12-1.46-.72-1.68-.8-.23-.08-.39-.12-.56.12-.16.25-.64.8-.78.96-.14.17-.29.19-.54.07-.25-.13-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.39.11-.52.12-.11.25-.29.38-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.83-.2-.48-.4-.41-.56-.42h-.48c-.17 0-.44.06-.66.31-.23.25-.87.85-.87 2.07 0 1.22.9 2.4 1.02 2.57.12.17 1.76 2.67 4.27 3.75.6.26 1.06.41 1.42.52.6.19 1.14.16 1.57.1.48-.07 1.46-.6 1.67-1.17.2-.58.2-1.07.14-1.17-.06-.11-.22-.17-.47-.29Z"/></svg>
+                        <span>WhatsApp</span>
+                    </a>
+                    <a class="listing-share-modal__social listing-share-modal__social--x" href="<?php echo esc_url('https://twitter.com/intent/tweet?text=' . rawurlencode($share_text) . '&url=' . rawurlencode($share_url)); ?>" target="_blank" rel="noopener noreferrer">
+                        <svg class="listing-share-modal__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.9 10.47 21.35 2h-1.76l-6.37 7.24L8.13 2H2.17l7.82 11.14L2.17 22h1.76l6.76-7.68L16.09 22h5.96l-8.15-11.53Zm-2.39 2.71-.78-1.1L4.43 3.3h2.88l5.01 6.99.78 1.1 6.62 9.24h-2.88l-5.33-7.45Z"/></svg>
+                        <span>X</span>
+                    </a>
+                    <a class="listing-share-modal__social listing-share-modal__social--facebook" href="<?php echo esc_url('https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($share_url)); ?>" target="_blank" rel="noopener noreferrer">
+                        <svg class="listing-share-modal__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8.6V6.7c0-.8.18-1.2 1.42-1.2H17V2.2c-.77-.08-1.55-.13-2.32-.13-2.98 0-5.03 1.82-5.03 5.16V8.6H6.5v3.7h3.15V22H14v-9.7h3.16l.48-3.7H14Z"/></svg>
+                        <span>Facebook</span>
+                    </a>
+                    <a class="listing-share-modal__social listing-share-modal__social--line" href="<?php echo esc_url('https://social-plugins.line.me/lineit/share?url=' . rawurlencode($share_url)); ?>" target="_blank" rel="noopener noreferrer">
+                        <svg class="listing-share-modal__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C6.49 3 2 6.67 2 11.18c0 4.04 3.58 7.43 8.42 8.08.33.07.78.22.9.5.1.26.07.66.03.92l-.14.87c-.04.26-.2 1.02.87.56 1.07-.45 5.76-3.39 7.86-5.8A7.34 7.34 0 0 0 22 11.18C22 6.67 17.51 3 12 3Zm-5.4 11.1H5.2V8.25h1.4v4.55h2.33v1.3H6.6Zm4.06 0H9.26V8.25h1.4v5.85Zm5.05 0h-1.25l-2.3-3.13v3.13h-1.39V8.25h1.25l2.3 3.15V8.25h1.39v5.85Zm3.92-3.86h-2.35v.98h2.1v1.23h-2.1v.8h2.35v1.25h-3.75V8.25h3.75v1.24Z"/></svg>
+                        <span>LINE</span>
+                    </a>
+                    <a class="listing-share-modal__social listing-share-modal__social--email" href="<?php echo esc_url('mailto:?subject=' . rawurlencode($share_title) . '&body=' . rawurlencode($share_message)); ?>">
+                        <svg class="listing-share-modal__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm0 3.24V17h16V8.24l-7.36 5.14a1.12 1.12 0 0 1-1.28 0L4 8.24Zm.83-1.24L12 12l7.17-5H4.83Z"/></svg>
+                        <span>Email</span>
+                    </a>
+                </div>
+            </div>
+        </div>
 
         <script>
         (function () {
