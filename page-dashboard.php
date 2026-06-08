@@ -43,6 +43,15 @@ function rmt_dashboard_edit_url($post_id) {
     return home_url('/dashboard/');
 }
 
+function rmt_dashboard_terms_text($post_id, $taxonomy) {
+    $terms = get_the_terms($post_id, $taxonomy);
+    if (empty($terms) || is_wp_error($terms)) {
+        return '';
+    }
+
+    return implode(', ', wp_list_pluck($terms, 'name'));
+}
+
 function rmt_dashboard_request_account_deletion($user_id, $password) {
     $user_id = absint($user_id);
     $password = (string) $password;
@@ -332,13 +341,17 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                 <div class="listing-grid">
                     <?php while ($room_posts->have_posts()) : $room_posts->the_post(); ?>
                         <?php
-                        $post_id        = get_the_ID();
-                        $rent           = rmt_get_meta($post_id, '_rent');
-                        $available_date = rmt_get_meta($post_id, '_available_date');
-                        $address        = rmt_get_meta($post_id, '_address');
-                        $post_status    = get_post_status($post_id);
-                        $is_published   = $post_status === 'publish';
-                        $is_done        = (bool) get_post_meta($post_id, '_rmt_done', true);
+                        $post_id          = get_the_ID();
+                        $rent             = rmt_get_meta($post_id, '_rent');
+                        $available_date   = rmt_get_meta($post_id, '_available_date');
+                        $property_type    = rmt_get_meta($post_id, '_property_type');
+                        $nearby_landmark  = rmt_get_meta($post_id, '_nearby_landmark');
+                        $room_type_text   = rmt_dashboard_terms_text($post_id, 'room_type');
+                        $location_text    = rmt_dashboard_terms_text($post_id, 'location_area');
+                        $display_property = $room_type_text ? $room_type_text : $property_type;
+                        $post_status      = get_post_status($post_id);
+                        $is_published     = $post_status === 'publish';
+                        $is_done          = (bool) get_post_meta($post_id, '_rmt_done', true);
                         ?>
 
                         <article class="listing-card">
@@ -351,29 +364,33 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                             <?php endif; ?>
 
                             <div class="listing-card__content">
-                                <div class="listing-card__top">
-                                    <span class="listing-chip <?php echo !$is_published ? 'listing-chip--draft' : ''; ?> <?php echo $is_done ? 'listing-chip--done' : ''; ?>">
-                                        <?php echo esc_html(rmt_dashboard_status_label($post_id)); ?>
-                                    </span>
-
-                                    <?php if ($rent) : ?>
-                                        <div class="listing-card__price">
-                                            <?php echo esc_html(rmt_format_price($rent)); ?>/month
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-
                                 <h3 class="listing-card__title">
                                     <a href="<?php echo esc_url(get_permalink()); ?>"><?php the_title(); ?></a>
                                 </h3>
 
-                                <?php if ($address) : ?>
-                                    <p class="listing-card__address"><?php echo esc_html($address); ?></p>
-                                <?php endif; ?>
+                                <div class="listing-card__details">
+                                    <?php if ($display_property) : ?>
+                                        <span><?php echo esc_html($display_property); ?></span>
+                                    <?php endif; ?>
 
-                                <?php if ($available_date) : ?>
-                                    <p class="listing-card__address">Available: <?php echo esc_html($available_date); ?></p>
-                                <?php endif; ?>
+                                    <?php if ($location_text) : ?>
+                                        <span><?php echo esc_html($location_text); ?></span>
+                                    <?php endif; ?>
+
+                                    <?php if ($rent) : ?>
+                                        <span><?php echo esc_html(rmt_format_price($rent)); ?>/person</span>
+                                    <?php endif; ?>
+
+                                    <?php if ($available_date) : ?>
+                                        <span><?php echo esc_html($available_date); ?></span>
+                                    <?php endif; ?>
+
+                                    <?php if ($nearby_landmark) : ?>
+                                        <span><?php echo esc_html($nearby_landmark); ?></span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <p class="listing-card__post-id">#<?php echo esc_html($post_id); ?></p>
 
                                 <div class="cta-actions dashboard-card-actions">
                                     <?php if ($is_published) : ?>
