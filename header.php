@@ -5,8 +5,9 @@
 
 defined('ABSPATH') || exit;
 
-$is_room_active      = is_post_type_archive('room') || is_singular('room') || is_page(array('post-a-room', 'edit-room'));
-$is_roommate_active  = is_post_type_archive('roommate') || is_singular('roommate') || is_page(array('post-a-roommate', 'edit-roommate'));
+$request_path        = function_exists('rmt_get_frontend_request_path') ? rmt_get_frontend_request_path() : '';
+$is_room_active      = is_post_type_archive('room') || is_singular('room') || is_page(array('post-a-room', 'edit-room')) || $request_path === 'post-a-room';
+$is_roommate_active  = is_post_type_archive('roommate') || is_singular('roommate') || is_page(array('post-a-roommate', 'edit-roommate')) || $request_path === 'post-a-roommate';
 $is_dashboard_active = is_page(array('dashboard', 'edit-profile', 'messages'));
 
 $custom_logo_id = get_theme_mod('custom_logo');

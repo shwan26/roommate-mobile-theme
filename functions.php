@@ -1243,6 +1243,97 @@ function rmt_allow_frontend_user_uploads($allcaps, $caps, $args) {
     return $allcaps;
 }
 
+function rmt_get_frontend_request_path() {
+    $request_uri  = isset($_SERVER['REQUEST_URI']) ? stripslashes((string) $_SERVER['REQUEST_URI']) : '';
+    $request_path = (string) parse_url($request_uri, PHP_URL_PATH);
+    $home_path    = (string) parse_url(home_url('/'), PHP_URL_PATH);
+
+    if ($home_path && $home_path !== '/' && strpos($request_path, $home_path) === 0) {
+        $request_path = substr($request_path, strlen($home_path));
+    }
+
+    return trim($request_path, '/');
+}
+
+function rmt_is_frontend_request_path($paths) {
+    return in_array(rmt_get_frontend_request_path(), (array) $paths, true);
+}
+
+add_action('template_redirect', 'rmt_prepare_frontend_listing_form_routes', 0);
+
+function rmt_prepare_frontend_listing_form_routes() {
+    if (!rmt_is_frontend_request_path(array('post-a-room', 'post-a-roommate'))) {
+        return;
+    }
+
+    global $wp_query;
+
+    if ($wp_query instanceof WP_Query) {
+        $wp_query->is_404 = false;
+    }
+
+    status_header(200);
+}
+
+add_filter('template_include', 'rmt_route_frontend_listing_form_templates', 20);
+
+function rmt_route_frontend_listing_form_templates($template) {
+    $form_templates = array(
+        'post-a-room'     => 'post-a-room.php',
+        'post-a-roommate' => 'post-a-roommate.php',
+    );
+
+    $request_path = rmt_get_frontend_request_path();
+
+    if (empty($form_templates[$request_path])) {
+        return $template;
+    }
+
+    $form_template = locate_template($form_templates[$request_path]);
+
+    return $form_template ? $form_template : $template;
+}
+
+/**
+ * Allow logged-in frontend users to create and update their own listings.
+ * Subscribers do not have the default post capabilities WordPress maps to
+ * custom post types, but these forms are the intended publishing surface.
+ */
+add_filter('user_has_cap', 'rmt_allow_frontend_listing_capabilities', 10, 3);
+
+function rmt_allow_frontend_listing_capabilities($allcaps, $caps, $args) {
+    if (!is_user_logged_in() || is_admin()) {
+        return $allcaps;
+    }
+
+    $frontend_listing_paths = array('post-a-room', 'post-a-roommate', 'edit-room', 'edit-roommate', 'dashboard');
+
+    if (!rmt_is_frontend_request_path($frontend_listing_paths)) {
+        return $allcaps;
+    }
+
+    $requested_cap = $args[0] ?? '';
+    $post_id       = isset($args[2]) ? absint($args[2]) : 0;
+
+    if (in_array($requested_cap, array('edit_post', 'delete_post', 'read_post'), true)) {
+        $post = $post_id ? get_post($post_id) : null;
+
+        if (!$post || !in_array($post->post_type, array('room', 'roommate'), true)) {
+            return $allcaps;
+        }
+
+        if ((int) $post->post_author !== get_current_user_id()) {
+            return $allcaps;
+        }
+    }
+
+    foreach (array('edit_posts', 'edit_published_posts', 'publish_posts', 'delete_posts', 'read') as $cap) {
+        $allcaps[$cap] = true;
+    }
+
+    return $allcaps;
+}
+
 /**
  * Protect frontend edit pages.
  * Logged-out users go to login page.
@@ -1257,10 +1348,11 @@ function rmt_protect_frontend_edit_pages() {
         is_page('edit-profile') ||
         is_page('post-a-room') ||
         is_page('post-a-roommate') ||
-        is_page('messages')
+        is_page('messages') ||
+        rmt_is_frontend_request_path(array('post-a-room', 'post-a-roommate'))
     ) {
         if (!is_user_logged_in()) {
-            wp_redirect(wp_login_url(get_permalink()));
+            wp_redirect(wp_login_url(home_url('/' . rmt_get_frontend_request_path() . '/')));
             exit;
         }
     }
@@ -1811,8 +1903,16 @@ function bkkroomie_user_is_unlimited_poster($user_id = 0) {
 }
 
 function bkkroomie_get_user_post_count_by_type($user_id, $post_type) {
-    $counts = count_user_posts((int) $user_id, $post_type, true);
-    return (int) $counts;
+    $listing_query = new WP_Query(array(
+        'post_type'      => $post_type,
+        'author'         => (int) $user_id,
+        'post_status'    => array('publish', 'pending', 'draft'),
+        'posts_per_page' => 1,
+        'fields'         => 'ids',
+        'no_found_rows'  => false,
+    ));
+
+    return (int) $listing_query->found_posts;
 }
 
 function bkkroomie_get_listing_limit($post_type) {
@@ -1869,11 +1969,11 @@ function bkkroomie_block_limited_listing_pages() {
 
     $blocked_post_type = '';
 
-    if (is_page('post-a-room')) {
+    if (is_page('post-a-room') || rmt_is_frontend_request_path('post-a-room')) {
         $blocked_post_type = 'room';
     }
 
-    if (is_page('post-a-roommate')) {
+    if (is_page('post-a-roommate') || rmt_is_frontend_request_path('post-a-roommate')) {
         $blocked_post_type = 'roommate';
     }
 
