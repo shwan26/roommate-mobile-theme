@@ -361,7 +361,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
         <div class="container">
             <div class="section-heading">
                 <h2>My Room Listings</h2>
-                <p>Edit, publish, unpublish, mark done, or delete room listings.</p>
+                <p>Edit, publish, mark done, or delete room listings.</p>
             </div>
 
             <?php if ($room_posts->have_posts()) : ?>
@@ -437,15 +437,6 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                         <form method="post">
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
                                             <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
-                                            <input type="hidden" name="rmt_dashboard_action_type" value="unpublish">
-                                            <button type="submit" class="btn btn-secondary" onclick="return confirm('Unpublish this listing?');">
-                                                Unpublish
-                                            </button>
-                                        </form>
-
-                                        <form method="post">
-                                            <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
-                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
                                             <input type="hidden" name="rmt_dashboard_action_type" value="done">
                                             <button type="submit" class="btn btn-secondary" onclick="return confirm('Mark this listing as done?');">
                                                 Done
@@ -481,7 +472,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
         <div class="container">
             <div class="section-heading">
                 <h2>My Roommate Profiles</h2>
-                <p>Edit, publish, unpublish, mark done, or delete roommate profiles.</p>
+                <p>Edit, publish, mark done, or delete roommate profiles.</p>
             </div>
 
             <?php if ($roommate_posts->have_posts()) : ?>
@@ -564,15 +555,6 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                     <?php endif; ?>
 
                                     <?php if ($is_published) : ?>
-                                        <form method="post">
-                                            <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
-                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
-                                            <input type="hidden" name="rmt_dashboard_action_type" value="unpublish">
-                                            <button type="submit" class="btn btn-secondary" onclick="return confirm('Unpublish this profile?');">
-                                                Unpublish
-                                            </button>
-                                        </form>
-
                                         <form method="post">
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
                                             <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">

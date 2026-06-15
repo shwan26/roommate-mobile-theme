@@ -1047,7 +1047,7 @@ add_filter( 'user_has_cap', 'rmt_allow_subscriber_uploads', 10, 3 );
 
 
 /* ================================================================
-   1. MARK AS CLOSED
+   1. MARK AS DONE
    Stores a post meta flag and re-labels the post status visually.
 ================================================================ */
 add_action('wp_ajax_rmt_mark_closed',        'rmt_ajax_mark_closed');
@@ -1061,14 +1061,20 @@ function rmt_ajax_mark_closed() {
         wp_send_json_error('Invalid request.');
     }
  
-    // Only the author (or admin) may close their own listing
+    // Only the author (or admin) may mark their own listing as done.
     $author_id = (int) get_post_field('post_author', $post_id);
     if (get_current_user_id() !== $author_id && !current_user_can('manage_options')) {
         wp_send_json_error('Permission denied.');
     }
  
-    update_post_meta($post_id, '_listing_closed', 1);
-    wp_send_json_success('Marked as closed.');
+    wp_update_post([
+        'ID'          => $post_id,
+        'post_status' => 'draft',
+    ]);
+
+    update_post_meta($post_id, '_rmt_done', 1);
+    delete_post_meta($post_id, '_listing_closed');
+    wp_send_json_success('Marked as done.');
 }
  
 /* ================================================================

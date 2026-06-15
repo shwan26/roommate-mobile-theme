@@ -156,18 +156,9 @@ if (have_posts()) :
                                     data-nonce="<?php echo esc_attr(wp_create_nonce('rmt_mark_closed_' . $post_id)); ?>"
                                 >
                                     <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>
-                                    <span class="listing-action-text"><?php esc_html_e('Mark as closed', 'roommate-mobile-theme'); ?></span>
+                                    <span class="listing-action-text"><?php esc_html_e('Done', 'roommate-mobile-theme'); ?></span>
                                 </button>
 
-                                <button
-                                    type="button"
-                                    class="btn btn-outline btn--unpublish js-unpublish"
-                                    data-post-id="<?php echo esc_attr($post_id); ?>"
-                                    data-nonce="<?php echo esc_attr(wp_create_nonce('rmt_unpublish_' . $post_id)); ?>"
-                                >
-                                    <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-                                    <span class="listing-action-text"><?php esc_html_e('Unpublish', 'roommate-mobile-theme'); ?></span>
-                                </button>
                             </div>
                         </div>
                     <?php endif; ?>
@@ -588,7 +579,7 @@ if (have_posts()) :
 
             document.querySelectorAll('.js-mark-closed').forEach(function (button) {
                 button.addEventListener('click', async function () {
-                    if (!confirm('Mark this listing as closed? It will stay visible but show a "Room Taken" badge.')) {
+                    if (!confirm('Mark this listing as done?')) {
                         return;
                     }
 
@@ -601,43 +592,7 @@ if (have_posts()) :
                     );
 
                     if (data.success) {
-                        const buttonText = button.querySelector('.listing-action-text');
-                        if (buttonText) {
-                            buttonText.textContent = 'Marked as closed';
-                        }
-
-                        const header = document.querySelector('.single-listing__header');
-
-                        if (header) {
-                            const badge = document.createElement('span');
-                            badge.className = 'archive-badge archive-badge--closed';
-                            badge.textContent = 'Room Taken';
-                            header.prepend(badge);
-                        }
-                    } else {
-                        alert(data.data || 'Something went wrong.');
-                        button.disabled = false;
-                    }
-                });
-            });
-
-            document.querySelectorAll('.js-unpublish').forEach(function (button) {
-                button.addEventListener('click', async function () {
-                    if (!confirm('Unpublish this listing? It will be moved to drafts and hidden from visitors.')) {
-                        return;
-                    }
-
-                    button.disabled = true;
-
-                    const data = await postAction(
-                        'rmt_unpublish',
-                        button.dataset.postId,
-                        button.dataset.nonce
-                    );
-
-                    if (data.success) {
-                        alert('Listing unpublished. Redirecting…');
-                        window.location.href = <?php echo wp_json_encode(home_url('/dashboard/')); ?>;
+                        window.location.href = '<?php echo esc_js(home_url('/dashboard/')); ?>';
                     } else {
                         alert(data.data || 'Something went wrong.');
                         button.disabled = false;
