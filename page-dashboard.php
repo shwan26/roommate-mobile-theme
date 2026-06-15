@@ -216,7 +216,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                         <a href="<?php echo esc_url(home_url('/edit-profile/')); ?>" class="dashboard-edit-link" aria-label="Edit account details">
                             <span>Edit</span>
                         </a>
-                    </div>
+	                    </div>
                     <ul class="detail-list">
                         <li><strong>Name:</strong> <?php echo esc_html($current_user->display_name); ?></li>
                         <li><strong>Email:</strong> <?php echo esc_html($current_user->user_email); ?></li>
@@ -225,36 +225,42 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                     </ul>
                 </div>
 
-                <div class="single-card dashboard-quick-card">
-                    <h2>Quick Actions</h2>
-                    <div class="cta-actions dashboard-quick-actions">
-                        <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'room')) : ?>
-                            <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="btn dashboard-quick-btn">
-                                + Post a Room
-                            </a>
-                        <?php else : ?>
-                            <button class="btn dashboard-quick-btn" type="button" disabled>
-                                Room Limit Reached
-                            </button>
-                        <?php endif; ?>
+	                <div class="single-card dashboard-quick-card">
+	                    <h2>Quick Actions</h2>
+	                    <div class="cta-actions dashboard-quick-actions">
+	                        <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'room')) : ?>
+	                            <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="btn dashboard-quick-btn">
+	                                <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/><path d="M9 20v-6h6v6"/></svg>
+	                                <span>Post a Room</span>
+	                            </a>
+	                        <?php else : ?>
+	                            <button class="btn dashboard-quick-btn" type="button" disabled>
+	                                Room Limit Reached
+	                            </button>
+	                        <?php endif; ?>
 
-                        <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'roommate')) : ?>
-                            <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="btn dashboard-quick-btn">
-                                + Post a Roommate
-                            </a>
-                        <?php else : ?>
-                            <button class="btn dashboard-quick-btn" type="button" disabled>
-                                Roommate Limit Reached
-                            </button>
-                        <?php endif; ?>
-                        <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn dashboard-quick-btn dashboard-quick-btn--logout">Log Out</a>
-                        <button
-                            class="btn dashboard-quick-btn dashboard-quick-btn--danger"
-                            type="button"
-                            data-delete-account-open
-                        >
-                            Delete Account
-                        </button>
+	                        <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'roommate')) : ?>
+	                            <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="btn dashboard-quick-btn">
+	                                <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+	                                <span>Post a Roommate</span>
+	                            </a>
+	                        <?php else : ?>
+	                            <button class="btn dashboard-quick-btn" type="button" disabled>
+	                                Roommate Limit Reached
+	                            </button>
+	                        <?php endif; ?>
+	                        <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn dashboard-quick-btn dashboard-quick-btn--logout">
+	                            <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 17 15 12l-5-5"/><path d="M15 12H3"/><path d="M13 4h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/></svg>
+	                            <span>Log Out</span>
+	                        </a>
+	                        <button
+	                            class="btn dashboard-quick-btn dashboard-quick-btn--danger"
+	                            type="button"
+	                            data-delete-account-open
+	                        >
+	                            <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
+	                            <span>Delete Account</span>
+	                        </button>
                     </div>
                 </div>
             </div>
