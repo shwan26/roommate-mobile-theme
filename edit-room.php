@@ -177,6 +177,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
                     if (!is_wp_error($attachment_id)) {
                         set_post_thumbnail($edit_id, $attachment_id);
                     }
+                } elseif (!has_post_thumbnail($edit_id)) {
+                    $default_room_photo_id = rmt_get_default_room_photo_id();
+
+                    if ($default_room_photo_id) {
+                        set_post_thumbnail($edit_id, $default_room_photo_id);
+                    }
                 }
 
                 wp_redirect(add_query_arg('listing_updated', '1', home_url('/dashboard/')));

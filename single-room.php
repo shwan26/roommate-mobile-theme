@@ -121,11 +121,9 @@ if (have_posts()) :
                         </div>
                     </header>
 
-                    <?php if (has_post_thumbnail()) : ?>
-                        <div class="single-listing__media">
-                            <?php the_post_thumbnail('large'); ?>
-                        </div>
-                    <?php endif; ?>
+                    <div class="single-listing__media">
+                        <?php echo rmt_get_room_photo_html(get_the_ID(), 'large'); ?>
+                    </div>
 
                     <?php if ($is_author) : ?>
                         <div class="listing-owner-bar">

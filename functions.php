@@ -803,6 +803,100 @@ function rmt_get_default_profile_photo_id() {
 }
 
 /**
+ * Get default room photo attachment ID.
+ * Source file:
+ * /wp-content/themes/roommate-mobile-theme/images/default-room.png
+ */
+function rmt_get_default_room_photo_id() {
+    $existing_id = absint(get_option('rmt_default_room_photo_id'));
+    $source_file = 'default-room.png';
+    $upload_file = 'rmt-default-room.png';
+
+    if ($existing_id && get_post($existing_id) && basename((string) get_attached_file($existing_id)) === $upload_file) {
+        return $existing_id;
+    }
+
+    $file_path = get_template_directory() . '/images/' . $source_file;
+
+    if (!file_exists($file_path)) {
+        return 0;
+    }
+
+    $file_type = wp_check_filetype(basename($file_path), null);
+
+    $upload_dir = wp_upload_dir();
+    $new_file_path = $upload_dir['path'] . '/' . $upload_file;
+
+    copy($file_path, $new_file_path);
+
+    $attachment = [
+        'guid'           => $upload_dir['url'] . '/' . $upload_file,
+        'post_mime_type' => $file_type['type'],
+        'post_title'     => 'Default Room Photo',
+        'post_content'   => '',
+        'post_status'    => 'inherit',
+    ];
+
+    $attachment_id = wp_insert_attachment($attachment, $new_file_path);
+
+    if (is_wp_error($attachment_id) || !$attachment_id) {
+        return 0;
+    }
+
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+
+    $attachment_data = wp_generate_attachment_metadata($attachment_id, $new_file_path);
+    wp_update_attachment_metadata($attachment_id, $attachment_data);
+
+    update_option('rmt_default_room_photo_id', $attachment_id);
+
+    return $attachment_id;
+}
+
+function rmt_is_default_room_photo_id($attachment_id) {
+    $attachment_id = absint($attachment_id);
+
+    if (!$attachment_id) {
+        return false;
+    }
+
+    $current_default_id = absint(get_option('rmt_default_room_photo_id'));
+
+    if ($current_default_id && $attachment_id === $current_default_id) {
+        return true;
+    }
+
+    $attachment = get_post($attachment_id);
+
+    return $attachment
+        && $attachment->post_type === 'attachment'
+        && $attachment->post_title === 'Default Room Photo';
+}
+
+function rmt_get_room_photo_html($post_id = null, $size = 'large', $attr = []) {
+    $post_id = $post_id ? absint($post_id) : get_the_ID();
+    $thumbnail_id = get_post_thumbnail_id($post_id);
+
+    if ($thumbnail_id && !rmt_is_default_room_photo_id($thumbnail_id)) {
+        return get_the_post_thumbnail($post_id, $size, $attr);
+    }
+
+    $default_id = rmt_get_default_room_photo_id();
+
+    if ($default_id) {
+        return wp_get_attachment_image($default_id, $size, false, array_merge([
+            'alt' => __('Default room photo', 'roommate-mobile-theme'),
+        ], $attr));
+    }
+
+    return sprintf(
+        '<img src="%s" alt="%s">',
+        esc_url(get_template_directory_uri() . '/images/default-room.png'),
+        esc_attr__('Default room photo', 'roommate-mobile-theme')
+    );
+}
+
+/**
  * Upload profile photo if user uploaded one.
  * Otherwise return default profile photo ID.
  */

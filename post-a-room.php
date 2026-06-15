@@ -131,6 +131,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
                     if (!is_wp_error($attachment_id)) {
                         set_post_thumbnail($post_id, $attachment_id);
                     }
+                } else {
+                    $default_room_photo_id = rmt_get_default_room_photo_id();
+
+                    if ($default_room_photo_id) {
+                        set_post_thumbnail($post_id, $default_room_photo_id);
+                    }
                 }
 
                 $profile_photo_id = rmt_get_uploaded_or_default_profile_photo_id('profile_photo', $post_id);

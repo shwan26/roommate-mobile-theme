@@ -368,13 +368,11 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                         ?>
 
                         <article class="listing-card">
-                            <?php if (has_post_thumbnail()) : ?>
-                                <a href="<?php echo esc_url(get_permalink()); ?>" class="listing-card__image-link">
-                                    <div class="listing-card__image">
-                                        <?php the_post_thumbnail('large'); ?>
-                                    </div>
-                                </a>
-                            <?php endif; ?>
+                            <a href="<?php echo esc_url(get_permalink()); ?>" class="listing-card__image-link">
+                                <div class="listing-card__image">
+                                    <?php echo rmt_get_room_photo_html($post_id, 'large'); ?>
+                                </div>
+                            </a>
 
                             <div class="listing-card__content">
                                 <h3 class="listing-card__title">
