@@ -56,72 +56,32 @@ function rmt_archive_format_budget_range($min, $max) {
 }
 
 $q             = sanitize_text_field(wp_unslash($_GET['q'] ?? ''));
-$budget_min_q  = sanitize_text_field(wp_unslash($_GET['budget_min'] ?? ''));
-$budget_max_q  = sanitize_text_field(wp_unslash($_GET['budget_max'] ?? ''));
-$move_in_q     = sanitize_text_field(wp_unslash($_GET['move_in'] ?? ''));
-$location_q    = absint($_GET['location_area'] ?? 0);
-$gender_q      = sanitize_text_field(wp_unslash($_GET['gender'] ?? ''));
-$sort_q        = sanitize_text_field(wp_unslash($_GET['sort'] ?? 'newest'));
+$rent_min_q    = sanitize_text_field(wp_unslash($_GET['rent_min'] ?? ($_GET['budget_min'] ?? '')));
+$available_q   = sanitize_text_field(wp_unslash($_GET['available_from'] ?? ($_GET['move_in'] ?? '')));
 
 $paged = max(1, get_query_var('paged') ? get_query_var('paged') : get_query_var('page'));
-
-$location_terms_all = get_terms([
-    'taxonomy'   => 'location_area',
-    'hide_empty' => false,
-]);
 
 $meta_query = [
     'relation' => 'AND',
 ];
 
-if ($budget_min_q !== '') {
+if ($rent_min_q !== '') {
     $meta_query[] = [
         'key'     => '_budget_max',
-        'value'   => absint($budget_min_q),
+        'value'   => absint($rent_min_q),
         'compare' => '>=',
         'type'    => 'NUMERIC',
     ];
 }
 
-if ($budget_max_q !== '') {
-    $meta_query[] = [
-        'key'     => '_budget_min',
-        'value'   => absint($budget_max_q),
-        'compare' => '<=',
-        'type'    => 'NUMERIC',
-    ];
-}
-
-if ($move_in_q !== '') {
+if ($available_q !== '') {
     $meta_query[] = [
         'key'     => '_move_in_date',
-        'value'   => $move_in_q,
+        'value'   => $available_q,
         'compare' => '>=',
         'type'    => 'DATE',
     ];
 }
-
-if ($gender_q !== '') {
-    $meta_query[] = [
-        'key'     => '_gender',
-        'value'   => $gender_q,
-        'compare' => '=',
-    ];
-}
-
-$tax_query = [
-    'relation' => 'AND',
-];
-
-if ($location_q) {
-    $tax_query[] = [
-        'taxonomy' => 'location_area',
-        'field'    => 'term_id',
-        'terms'    => [$location_q],
-    ];
-}
-
-$order = $sort_q === 'oldest' ? 'ASC' : 'DESC';
 
 $roommate_query_args = [
     'post_type'      => 'roommate',
@@ -129,7 +89,7 @@ $roommate_query_args = [
     'posts_per_page' => 9,
     'paged'          => $paged,
     'orderby'        => 'date',
-    'order'          => $order,
+    'order'          => 'DESC',
 ];
 
 if ($q !== '') {
@@ -138,10 +98,6 @@ if ($q !== '') {
 
 if (count($meta_query) > 1) {
     $roommate_query_args['meta_query'] = $meta_query;
-}
-
-if (count($tax_query) > 1) {
-    $roommate_query_args['tax_query'] = $tax_query;
 }
 
 $roommate_query = new WP_Query($roommate_query_args);
@@ -168,7 +124,7 @@ $roommate_query = new WP_Query($roommate_query_args);
             <form method="get" class="filter-form" action="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>">
                 <div class="filter-grid">
 
-                    <div class="filter-group" style="grid-column:1/-1;">
+                    <div class="filter-group filter-group--search">
                         <label for="q">
                             <?php esc_html_e('Search', 'roommate-mobile-theme'); ?>
                         </label>
@@ -183,115 +139,37 @@ $roommate_query = new WP_Query($roommate_query_args);
                     </div>
 
                     <div class="filter-group">
-                        <label for="budget_min">
-                            <?php esc_html_e('Budget Min', 'roommate-mobile-theme'); ?>
+                        <label for="rent_min">
+                            <?php esc_html_e('Rent Price', 'roommate-mobile-theme'); ?>
                         </label>
 
                         <input
                             type="number"
-                            id="budget_min"
-                            name="budget_min"
+                            id="rent_min"
+                            name="rent_min"
                             min="0"
-                            value="<?php echo esc_attr($budget_min_q); ?>"
+                            value="<?php echo esc_attr($rent_min_q); ?>"
                             placeholder="<?php esc_attr_e('e.g. 6000', 'roommate-mobile-theme'); ?>"
                         >
                     </div>
 
                     <div class="filter-group">
-                        <label for="budget_max">
-                            <?php esc_html_e('Budget Max', 'roommate-mobile-theme'); ?>
-                        </label>
-
-                        <input
-                            type="number"
-                            id="budget_max"
-                            name="budget_max"
-                            min="0"
-                            value="<?php echo esc_attr($budget_max_q); ?>"
-                            placeholder="<?php esc_attr_e('e.g. 12000', 'roommate-mobile-theme'); ?>"
-                        >
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="move_in">
-                            <?php esc_html_e('Move-in On/After', 'roommate-mobile-theme'); ?>
+                        <label for="available_from">
+                            <?php esc_html_e('Available From', 'roommate-mobile-theme'); ?>
                         </label>
 
                         <input
                             type="date"
-                            id="move_in"
-                            name="move_in"
-                            value="<?php echo esc_attr($move_in_q); ?>"
+                            id="available_from"
+                            name="available_from"
+                            value="<?php echo esc_attr($available_q); ?>"
                         >
                     </div>
 
-                    <div class="filter-group">
-                        <label for="location_area">
-                            <?php esc_html_e('Location Area', 'roommate-mobile-theme'); ?>
-                        </label>
-
-                        <select id="location_area" name="location_area">
-                            <option value="">
-                                <?php esc_html_e('— Any —', 'roommate-mobile-theme'); ?>
-                            </option>
-
-                            <?php if (!is_wp_error($location_terms_all)) : ?>
-                                <?php foreach ($location_terms_all as $term) : ?>
-                                    <option value="<?php echo esc_attr($term->term_id); ?>" <?php selected($location_q, $term->term_id); ?>>
-                                        <?php echo esc_html($term->name); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="gender">
-                            <?php esc_html_e('Gender', 'roommate-mobile-theme'); ?>
-                        </label>
-
-                        <select id="gender" name="gender">
-                            <option value="">
-                                <?php esc_html_e('— Any —', 'roommate-mobile-theme'); ?>
-                            </option>
-                            <option value="Male" <?php selected($gender_q, 'Male'); ?>>
-                                <?php esc_html_e('Male', 'roommate-mobile-theme'); ?>
-                            </option>
-                            <option value="Female" <?php selected($gender_q, 'Female'); ?>>
-                                <?php esc_html_e('Female', 'roommate-mobile-theme'); ?>
-                            </option>
-                            <option value="Other" <?php selected($gender_q, 'Other'); ?>>
-                                <?php esc_html_e('Other', 'roommate-mobile-theme'); ?>
-                            </option>
-                            <option value="Prefer not to say" <?php selected($gender_q, 'Prefer not to say'); ?>>
-                                <?php esc_html_e('Prefer not to say', 'roommate-mobile-theme'); ?>
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="sort">
-                            <?php esc_html_e('Sort', 'roommate-mobile-theme'); ?>
-                        </label>
-
-                        <select id="sort" name="sort">
-                            <option value="newest" <?php selected($sort_q, 'newest'); ?>>
-                                <?php esc_html_e('Newest', 'roommate-mobile-theme'); ?>
-                            </option>
-                            <option value="oldest" <?php selected($sort_q, 'oldest'); ?>>
-                                <?php esc_html_e('Oldest', 'roommate-mobile-theme'); ?>
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="filter-actions" style="grid-column:1/-1;">
+                    <div class="filter-actions">
                         <button type="submit" class="btn btn-primary">
                             <?php esc_html_e('Search Roommates', 'roommate-mobile-theme'); ?>
                         </button>
-
-                        <a class="btn btn-secondary" href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>">
-                            <?php esc_html_e('Reset', 'roommate-mobile-theme'); ?>
-                        </a>
                     </div>
 
                 </div>

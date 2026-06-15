@@ -77,12 +77,12 @@ $theme_logo_path = get_template_directory() . '/assets/images/bkkroomie-logo.png
             </nav>
 
             <div class="site-header__actions">
-                <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn <?php echo $is_room_active ? 'btn-primary' : 'btn-secondary'; ?> header-btn">
-                    Browse Rooms
-                </a>
-
                 <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn <?php echo $is_roommate_active ? 'btn-primary' : 'btn-secondary'; ?> header-btn">
                     Browse Roommates
+                </a>
+
+                <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn <?php echo $is_room_active ? 'btn-primary' : 'btn-secondary'; ?> header-btn">
+                    Browse Rooms
                 </a>
 
                 <?php if (is_user_logged_in()) : ?>

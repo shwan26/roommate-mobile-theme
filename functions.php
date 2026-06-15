@@ -1105,9 +1105,8 @@ add_action('pre_get_posts', function ($query) {
     }
 
     // Default order: newest listing first
-    $sort = sanitize_text_field($_GET['sort'] ?? 'newest');
     $query->set('orderby', 'date');
-    $query->set('order', $sort === 'oldest' ? 'ASC' : 'DESC');
+    $query->set('order', 'DESC');
 
     // Search (q)
     if (!empty($_GET['q'])) {
@@ -1117,10 +1116,10 @@ add_action('pre_get_posts', function ($query) {
     // Meta filters
     $meta_query = ['relation' => 'AND'];
 
-    // Budget filtering: keep it simple (posts with _budget_min/_budget_max)
-    // budget_min param means: listing budget_max >= budget_min OR budget_min >= budget_min (fallback)
-    $budget_min = isset($_GET['budget_min']) ? floatval($_GET['budget_min']) : null;
-    if ($budget_min !== null && $_GET['budget_min'] !== '') {
+    // Rent price filtering maps to roommate budget fields.
+    $budget_min_raw = $_GET['rent_min'] ?? ($_GET['budget_min'] ?? '');
+    $budget_min     = $budget_min_raw !== '' ? floatval($budget_min_raw) : null;
+    if ($budget_min !== null) {
         $meta_query[] = [
             'relation' => 'OR',
             [
@@ -1138,31 +1137,12 @@ add_action('pre_get_posts', function ($query) {
         ];
     }
 
-    // budget_max param means: listing budget_min <= budget_max OR budget_max <= budget_max (fallback)
-    $budget_max = isset($_GET['budget_max']) ? floatval($_GET['budget_max']) : null;
-    if ($budget_max !== null && $_GET['budget_max'] !== '') {
-        $meta_query[] = [
-            'relation' => 'OR',
-            [
-                'key'     => '_budget_min',
-                'value'   => $budget_max,
-                'type'    => 'NUMERIC',
-                'compare' => '<=',
-            ],
-            [
-                'key'     => '_budget_max',
-                'value'   => $budget_max,
-                'type'    => 'NUMERIC',
-                'compare' => '<=',
-            ],
-        ];
-    }
-
-    // Move-in date (on/after)
-    if (!empty($_GET['move_in'])) {
+    // Available from date maps to the roommate move-in date field.
+    $available_from = sanitize_text_field($_GET['available_from'] ?? ($_GET['move_in'] ?? ''));
+    if ($available_from !== '') {
         $meta_query[] = [
             'key'     => '_move_in_date',
-            'value'   => sanitize_text_field($_GET['move_in']),
+            'value'   => $available_from,
             'type'    => 'DATE',
             'compare' => '>=',
         ];
@@ -1171,22 +1151,6 @@ add_action('pre_get_posts', function ($query) {
 
     if (count($meta_query) > 1) {
         $query->set('meta_query', $meta_query);
-    }
-
-    // Taxonomy filters
-    $tax_query = ['relation' => 'AND'];
-
-    if (!empty($_GET['location_area'])) {
-        $tax_query[] = [
-            'taxonomy' => 'location_area',
-            'field'    => 'term_id',
-            'terms'    => [absint($_GET['location_area'])],
-        ];
-    }
-
-
-    if (count($tax_query) > 1) {
-        $query->set('tax_query', $tax_query);
     }
 });
 
