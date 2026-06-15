@@ -788,18 +788,27 @@ p { margin-top: 0; color: var(--color-text-soft); }
 }
 .single-listing__price { font-size: 1.2rem; font-weight: 700; color: var(--green); }
 
-.single-listing__media { overflow: hidden; border-radius: var(--radius-xl); margin-bottom: 1.5rem; box-shadow: var(--shadow-md); }
-.single-listing__media img { width: 100%; max-height: 520px; object-fit: cover; }
+.single-listing__media { overflow: hidden; border-radius: var(--radius-xl); margin: 0 auto 1.1rem; box-shadow: var(--shadow-md); }
+.single-listing__media img { width: 100%; max-height: 300px; object-fit: cover; }
+.single-room .single-listing__media {
+  max-width: 680px;
+}
 .single-roommate .single-listing__media {
-  max-width: 360px;
+  max-width: 260px;
   margin-left: auto;
   margin-right: auto;
 }
 .single-roommate .single-listing__media img {
-  max-height: 360px;
+  max-height: 260px;
 }
 
 .single-listing__grid { display: grid; gap: 1.25rem; }
+.single-room .single-listing__main,
+.single-room .single-listing__sidebar {
+  display: grid;
+  align-content: start;
+  gap: 1.35rem;
+}
 .single-roommate .single-listing__grid {
   gap: 1.65rem;
 }
@@ -990,20 +999,20 @@ p { margin-top: 0; color: var(--color-text-soft); }
    9. ARCHIVE FILTERS
    ========================================================= */
 .filter-form {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--green);
+  border: 1px solid rgba(47, 122, 6, 0.24);
   border-radius: var(--radius-xl);
   padding: 1.25rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 14px 32px rgba(47, 122, 6, 0.16);
 }
 .filter-grid { display: grid; gap: 1rem; }
 .filter-group--search { grid-column: 1 / -1; }
 
-.filter-group label { display: inline-block; margin-bottom: 0.42rem; font-weight: 600; font-size: 0.88rem; color: var(--color-text); }
+.filter-group label { display: inline-block; margin-bottom: 0.42rem; font-weight: 600; font-size: 0.88rem; color: var(--white); }
 .filter-group input, .filter-group select, .filter-group textarea {
   width: 100%;
   min-height: 48px;
-  border: 1.5px solid var(--color-border);
+  border: 1.5px solid rgba(255, 255, 255, 0.72);
   border-radius: 12px;
   background: var(--white);
   padding: 0.75rem 0.95rem;
@@ -1021,40 +1030,26 @@ p { margin-top: 0; color: var(--color-text-soft); }
 
 .filter-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; }
 
-.archive-roommate .filter-form {
-  background: var(--green);
-  border-color: rgba(47, 122, 6, 0.24);
-  box-shadow: 0 14px 32px rgba(47, 122, 6, 0.16);
-}
-
-.archive-roommate .filter-group label {
-  color: var(--white);
-}
-
-.archive-roommate .filter-group input,
-.archive-roommate .filter-group select {
-  border-color: rgba(255, 255, 255, 0.72);
-  background: var(--white);
-}
-
-.archive-roommate .filter-actions .btn-primary {
+.filter-actions .btn-primary {
   background: var(--charcoal);
   color: var(--white);
   border-color: var(--charcoal);
+  box-shadow: none;
 }
 
-.archive-roommate .filter-actions .btn-primary:hover {
+.filter-actions .btn-primary:hover {
   background: #202a27;
   border-color: #202a27;
+  box-shadow: 0 6px 18px rgba(17, 24, 21, 0.22);
 }
 
-.archive-roommate .filter-actions .btn-outline {
+.filter-actions .btn-outline {
   background: rgba(255, 255, 255, 0.94);
   color: var(--color-text);
   border-color: rgba(255, 255, 255, 0.94);
 }
 
-.archive-roommate .filter-actions .btn-outline:hover {
+.filter-actions .btn-outline:hover {
   background: var(--white);
   color: var(--color-text);
   border-color: var(--white);
@@ -2063,6 +2058,11 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   .par-eyebrow, .archive-badge, .section-badge, .hero-badge { font-size: 0.72rem; }
   .par-page-header h1, .single-listing__header h1 { font-size: clamp(1.85rem,9vw,2.5rem); line-height: 1.05; }
   .par-page-header > p { font-size: 0.96rem; }
+  .single-listing__media { margin-bottom: 0.9rem; border-radius: 18px; }
+  .single-listing__media img { max-height: 190px; }
+  .single-room .single-listing__media { max-width: 100%; }
+  .single-roommate .single-listing__media { max-width: 190px; }
+  .single-roommate .single-listing__media img { max-height: 190px; }
 
   .par-card, .single-card, .quick-search-card, .step-card,
   .filter-form, .rmt-dashboard-messages, .rmt-chat-panel {
@@ -2110,6 +2110,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   .single-roommate .single-listing__grid {
     gap: 1.15rem;
   }
+  .single-room .single-listing__main,
+  .single-room .single-listing__sidebar,
   .single-roommate .single-listing__main,
   .single-roommate .single-listing__sidebar {
     gap: 1rem;

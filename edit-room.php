@@ -335,8 +335,8 @@ get_header();
                             </div>
 
                             <div class="par-field">
-                                <label for="available_date">Available Date</label>
-                                <input class="par-input" type="date" id="available_date" name="available_date" value="<?php echo esc_attr($v_available_date); ?>">
+                                <label for="available_date">Available Date <span class="required">*</span></label>
+                                <input class="par-input" type="date" id="available_date" name="available_date" value="<?php echo esc_attr($v_available_date); ?>" required>
                             </div>
                         </div>
 

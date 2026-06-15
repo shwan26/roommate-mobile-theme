@@ -407,7 +407,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                     <?php endif; ?>
 
                                     <?php if ($available_date) : ?>
-                                        <span><?php echo esc_html(rmt_dashboard_format_date($available_date)); ?></span>
+                                        <span><?php echo esc_html(sprintf(__('Starting from %s', 'roommate-mobile-theme'), rmt_dashboard_format_date($available_date))); ?></span>
                                     <?php endif; ?>
 
                                     <?php if ($nearby_landmark) : ?>

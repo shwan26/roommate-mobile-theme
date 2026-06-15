@@ -626,6 +626,11 @@ function rmt_validate_required_room_fields($posted) {
     $errors  = array();
     $address = sanitize_text_field($posted['address'] ?? '');
     $map_url = esc_url_raw($posted['map_url'] ?? '');
+    $available_date = sanitize_text_field($posted['available_date'] ?? '');
+
+    if ($available_date === '') {
+        $errors[] = __('Available from date is required.', 'roommate-mobile-theme');
+    }
 
     if ($address === '') {
         $errors[] = __('Room address is required.', 'roommate-mobile-theme');

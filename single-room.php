@@ -93,7 +93,7 @@ if (have_posts()) :
          * Display values matching archive room card spans
          */
         $display_property_type = $room_type_text ? $room_type_text : $property_type;
-        $display_location      = $location_text ? $location_text : $address;
+        $display_location      = $location_text;
         $share_url             = get_permalink($post_id);
         $share_title           = get_the_title($post_id);
         $share_text            = sprintf(__('Check out this room on Bkkroomie: %s', 'roommate-mobile-theme'), $share_title);
@@ -307,16 +307,14 @@ if (have_posts()) :
                                             <?php echo esc_html($nearby_landmark); ?>
                                         </span>
                                     <?php endif; ?>
-                                </div>
 
-                                <?php if ($address) : ?>
-                                    <ul class="detail-list u-mt-4">
-                                        <li>
-                                            <strong><?php esc_html_e('Full Address:', 'roommate-mobile-theme'); ?></strong>
+                                    <?php if ($address) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Full Address:', 'roommate-mobile-theme'); ?>
                                             <?php echo esc_html($address); ?>
-                                        </li>
-                                    </ul>
-                                <?php endif; ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
 
                                 <?php if ($map_url) : ?>
                                     <p class="u-mt-4">

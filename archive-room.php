@@ -133,7 +133,7 @@ $room_query = new WP_Query($room_query_args);
 
                     <div class="filter-group">
                         <label for="rent_min">
-                            <?php esc_html_e('Rent Price', 'roommate-mobile-theme'); ?>
+                            <?php esc_html_e('Minimum Rent Price (THB)', 'roommate-mobile-theme'); ?>
                         </label>
 
                         <input
@@ -161,8 +161,11 @@ $room_query = new WP_Query($room_query_args);
 
                     <div class="filter-actions">
                         <button type="submit" class="btn btn-primary">
-                            <?php esc_html_e('Search Rooms', 'roommate-mobile-theme'); ?>
+                            <?php esc_html_e('Search', 'roommate-mobile-theme'); ?>
                         </button>
+                        <a class="btn btn-outline" href="<?php echo esc_url(get_post_type_archive_link('room')); ?>">
+                            <?php esc_html_e('Clear filters', 'roommate-mobile-theme'); ?>
+                        </a>
                     </div>
 
                 </div>
@@ -229,7 +232,7 @@ $room_query = new WP_Query($room_query_args);
 
                                     <?php if ($available_date) : ?>
                                         <span>
-                                            <?php echo esc_html(rmt_archive_format_date($available_date)); ?>
+                                            <?php echo esc_html(sprintf(__('Starting from %s', 'roommate-mobile-theme'), rmt_archive_format_date($available_date))); ?>
                                         </span>
                                     <?php endif; ?>
 

@@ -259,13 +259,14 @@ get_header();
                                 </div>
 
                                 <div class="par-field">
-                                    <label for="available_date">Available From</label>
+                                    <label for="available_date">Available From <span class="required">*</span></label>
                                     <input
                                         class="par-input"
                                         type="date"
                                         id="available_date"
                                         name="available_date"
                                         value="<?php echo esc_attr($_POST['available_date'] ?? ''); ?>"
+                                        required
                                     >
                                 </div>
                             </div>
