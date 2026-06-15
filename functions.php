@@ -734,6 +734,40 @@ function rmt_format_price($amount) {
     return number_format((float) $amount) . ' THB';
 }
 
+function rmt_format_date_for_form($date) {
+    if (!$date) {
+        return '';
+    }
+
+    $timestamp = strtotime($date);
+
+    if (!$timestamp) {
+        return $date;
+    }
+
+    return date_i18n('d/m/Y', $timestamp);
+}
+
+function rmt_normalize_form_date($date) {
+    $date = trim((string) $date);
+
+    if ($date === '') {
+        return '';
+    }
+
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+        $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+        return $parsed && $parsed->format('Y-m-d') === $date ? $date : '';
+    }
+
+    if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $date)) {
+        $parsed = DateTime::createFromFormat('!d/m/Y', $date);
+        return $parsed && $parsed->format('d/m/Y') === $date ? $parsed->format('Y-m-d') : '';
+    }
+
+    return '';
+}
+
 /**
  * ------------------------------------------------------------
  * 11. SIDEBARS / WIDGET AREAS

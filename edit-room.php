@@ -57,6 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
     } else {
         $title = sanitize_text_field($_POST['room_title'] ?? '');
         $rent  = sanitize_text_field($_POST['rent'] ?? '');
+        $available_date_raw = sanitize_text_field($_POST['available_date'] ?? '');
+        $available_date = rmt_normalize_form_date($available_date_raw);
 
         if (empty($title)) {
             $errors[] = 'Room title is required.';
@@ -66,7 +68,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
             $errors[] = 'A valid monthly rent amount is required.';
         }
 
+        if ($available_date_raw !== '' && $available_date === '') {
+            $errors[] = 'Please select a valid available date.';
+        }
+
         if (empty($errors)) {
+            $_POST['available_date'] = $available_date;
+
             if (isset($_POST['save_draft'])) {
                 $new_status = 'draft';
             } elseif (isset($_POST['publish_listing'])) {

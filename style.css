@@ -748,8 +748,25 @@ p { margin-top: 0; color: var(--color-text-soft); }
 
 .single-listing__media { overflow: hidden; border-radius: var(--radius-xl); margin-bottom: 1.5rem; box-shadow: var(--shadow-md); }
 .single-listing__media img { width: 100%; max-height: 520px; object-fit: cover; }
+.single-roommate .single-listing__media {
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.single-roommate .single-listing__media img {
+  max-height: 360px;
+}
 
 .single-listing__grid { display: grid; gap: 1.25rem; }
+.single-roommate .single-listing__grid {
+  gap: 1.65rem;
+}
+.single-roommate .single-listing__main,
+.single-roommate .single-listing__sidebar {
+  display: grid;
+  align-content: start;
+  gap: 1.35rem;
+}
 
 .single-listing__back {
   min-height: 38px;
@@ -2008,6 +2025,13 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   .single-roommate .single-card h2 {
     margin-bottom: 0.75rem;
     font-size: 0.95rem;
+  }
+  .single-roommate .single-listing__grid {
+    gap: 1.15rem;
+  }
+  .single-roommate .single-listing__main,
+  .single-roommate .single-listing__sidebar {
+    gap: 1rem;
   }
 
   .cta-actions, .hero-actions, .filter-actions,

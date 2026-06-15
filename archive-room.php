@@ -33,7 +33,7 @@ function rmt_archive_format_date($date) {
         return $date;
     }
 
-    return date_i18n('M j, Y', $timestamp);
+    return date_i18n('d/m/Y', $timestamp);
 }
 
 $q               = sanitize_text_field(wp_unslash($_GET['q'] ?? ''));

@@ -16,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
     } else {
         $title = sanitize_text_field($_POST['room_title'] ?? '');
         $rent  = sanitize_text_field($_POST['rent'] ?? '');
+        $available_date_raw = sanitize_text_field($_POST['available_date'] ?? '');
+        $available_date = rmt_normalize_form_date($available_date_raw);
 
         if (empty($title)) {
             $errors[] = 'Room title is required.';
@@ -25,7 +27,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
             $errors[] = 'A valid monthly rent amount is required.';
         }
 
+        if ($available_date_raw !== '' && $available_date === '') {
+            $errors[] = 'Please select a valid available from date.';
+        }
+
         if (empty($errors)) {
+            $_POST['available_date'] = $available_date;
+
             $post_status = isset($_POST['save_draft']) ? 'draft' : 'publish';
 
             $post_id = wp_insert_post([
@@ -250,7 +258,13 @@ get_header();
 
                                 <div class="par-field">
                                     <label for="available_date">Available From</label>
-                                    <input class="par-input" type="date" id="available_date" name="available_date" value="<?php echo esc_attr($_POST['available_date'] ?? ''); ?>">
+                                    <input
+                                        class="par-input"
+                                        type="date"
+                                        id="available_date"
+                                        name="available_date"
+                                        value="<?php echo esc_attr($_POST['available_date'] ?? ''); ?>"
+                                    >
                                 </div>
                             </div>
 

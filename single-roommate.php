@@ -31,7 +31,7 @@ if (!function_exists('rmt_single_roommate_format_date')) {
             return $date;
         }
 
-        return date_i18n('M j, Y', $timestamp);
+        return date_i18n('d/m/Y', $timestamp);
     }
 }
 
@@ -264,13 +264,6 @@ if (have_posts()) :
                                         </span>
                                     <?php endif; ?>
 
-                                    <?php if ($gender) : ?>
-                                        <span class="listing-chip">
-                                            <?php esc_html_e('Gender:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($gender); ?>
-                                        </span>
-                                    <?php endif; ?>
-
                                     <?php if ($nickname) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Name:', 'roommate-mobile-theme'); ?>
@@ -282,6 +275,13 @@ if (have_posts()) :
                                         <span class="listing-chip">
                                             <?php esc_html_e('Age:', 'roommate-mobile-theme'); ?>
                                             <?php echo esc_html($age); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($gender) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Gender:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($gender); ?>
                                         </span>
                                     <?php endif; ?>
 
@@ -428,35 +428,6 @@ if (have_posts()) :
                                     <?php endif; ?>
                                 </div>
                             </section>
-
-                            <?php if ($nickname || $age || $occupation) : ?>
-                                <section class="single-card">
-                                    <h2><?php esc_html_e('About', 'roommate-mobile-theme'); ?></h2>
-
-                                    <ul class="detail-list">
-                                        <?php if ($nickname) : ?>
-                                            <li>
-                                                <strong><?php esc_html_e('Name:', 'roommate-mobile-theme'); ?></strong>
-                                                <?php echo esc_html($nickname); ?>
-                                            </li>
-                                        <?php endif; ?>
-
-                                        <?php if ($age) : ?>
-                                            <li>
-                                                <strong><?php esc_html_e('Age:', 'roommate-mobile-theme'); ?></strong>
-                                                <?php echo esc_html($age); ?>
-                                            </li>
-                                        <?php endif; ?>
-
-                                        <?php if ($occupation) : ?>
-                                            <li>
-                                                <strong><?php esc_html_e('Occupation:', 'roommate-mobile-theme'); ?></strong>
-                                                <?php echo esc_html($occupation); ?>
-                                            </li>
-                                        <?php endif; ?>
-                                    </ul>
-                                </section>
-                            <?php endif; ?>
 
                         </aside>
 

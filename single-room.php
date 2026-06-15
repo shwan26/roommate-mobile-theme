@@ -31,7 +31,7 @@ if (!function_exists('rmt_single_format_date')) {
             return $date;
         }
 
-        return date_i18n('M j, Y', $timestamp);
+        return date_i18n('d/m/Y', $timestamp);
     }
 }
 

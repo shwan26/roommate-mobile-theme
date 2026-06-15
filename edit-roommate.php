@@ -67,6 +67,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_roommate_non
         $gender   = sanitize_text_field($_POST['gender'] ?? '');
         $bio      = sanitize_textarea_field($_POST['bio'] ?? '');
         $age      = absint($_POST['age'] ?? 0);
+        $budget_min = sanitize_text_field($_POST['budget_min'] ?? '');
+        $move_in_date_raw = sanitize_text_field($_POST['move_in_date'] ?? '');
+        $move_in_date = rmt_normalize_form_date($move_in_date_raw);
+        $preferred_area = sanitize_text_field($_POST['preferred_area'] ?? '');
 
         if (empty($nickname)) {
             $errors[] = 'Nickname / name is required.';
@@ -82,6 +86,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_roommate_non
 
         if ($age < 18 || $age > 80) {
             $errors[] = 'Please enter a valid age between 18 and 80.';
+        }
+
+        if ($budget_min === '' || !is_numeric($budget_min) || (float) $budget_min < 0) {
+            $errors[] = 'Minimum budget is required.';
+        }
+
+        if (empty($move_in_date_raw)) {
+            $errors[] = 'Move-in date is required.';
+        } elseif ($move_in_date === '') {
+            $errors[] = 'Please select a valid move-in date.';
+        }
+
+        if (empty($preferred_area)) {
+            $errors[] = 'Preferred area is required.';
         }
 
         if (empty($errors)) {
@@ -148,7 +166,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_roommate_non
                 update_post_meta($edit_id, '_bio', $bio);
                 update_post_meta($edit_id, '_roommate_preference', sanitize_textarea_field($_POST['roommate_preference'] ?? ''));
 
-                $budget_min = sanitize_text_field($_POST['budget_min'] ?? '');
                 $budget_max = sanitize_text_field($_POST['budget_max'] ?? '');
 
                 update_post_meta($edit_id, '_budget_min', $budget_min);
@@ -158,9 +175,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_roommate_non
                     update_post_meta($edit_id, '_budget', $budget_min);
                 }
 
-                update_post_meta($edit_id, '_move_in_date', sanitize_text_field($_POST['move_in_date'] ?? ''));
+                update_post_meta($edit_id, '_move_in_date', $move_in_date);
 
-                $preferred_area = sanitize_text_field($_POST['preferred_area'] ?? '');
                 update_post_meta($edit_id, '_preferred_area_text', $preferred_area);
                 update_post_meta($edit_id, '_preferred_area', $preferred_area);
 
@@ -430,7 +446,63 @@ get_header();
                                 </div>
                             </div>
                         </div>
-                        </section>
+                    </section>
+
+                    <section class="par-card">
+                        <div class="par-card__header">
+                            <div class="par-card__icon">🏠</div>
+
+                            <div>
+                                <h2>Room Preferences</h2>
+                                <p>What kind of room are you looking for?</p>
+                            </div>
+                        </div>
+
+                        <div class="par-cols-2">
+                            <div class="par-field">
+                                <label for="budget_min">Budget Min <span class="required">*</span></label>
+                                <input class="par-input" type="number" id="budget_min" name="budget_min" min="0" value="<?php echo esc_attr($v_budget_min); ?>" required>
+                            </div>
+
+                            <div class="par-field">
+                                <label for="budget_max">Budget Max</label>
+                                <input class="par-input" type="number" id="budget_max" name="budget_max" min="0" value="<?php echo esc_attr($v_budget_max); ?>">
+                            </div>
+                        </div>
+
+                        <div class="par-cols-2">
+                            <div class="par-field">
+                                <label for="move_in_date">Preferred Move-in Date <span class="required">*</span></label>
+                                <input class="par-input" type="date" id="move_in_date" name="move_in_date" value="<?php echo esc_attr($v_move_in_date); ?>" required>
+                            </div>
+
+                            <div class="par-field">
+                                <label for="preferred_area">Preferred Area <span class="required">*</span></label>
+                                <input class="par-input" type="text" id="preferred_area" name="preferred_area" value="<?php echo esc_attr($v_preferred_area); ?>" required>
+                            </div>
+                        </div>
+
+                        <?php if (!empty($location_area_terms) && !is_wp_error($location_area_terms)) : ?>
+                            <div class="par-field">
+                                <label>Location Areas</label>
+
+                                <div class="par-checkbox-group">
+                                    <?php foreach ($location_area_terms as $term) : ?>
+                                        <label class="par-checkbox-label">
+                                            <input
+                                                type="checkbox"
+                                                name="location_area[]"
+                                                value="<?php echo esc_attr($term->term_id); ?>"
+                                                <?php checked(in_array($term->term_id, $selected_locations, true)); ?>
+                                            >
+
+                                            <span><?php echo esc_html($term->name); ?></span>
+                                        </label>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </section>
 
                     <section class="par-card">
                         <div class="par-card__header">
@@ -525,62 +597,6 @@ get_header();
                                                 name="lifestyle[]"
                                                 value="<?php echo esc_attr($term->term_id); ?>"
                                                 <?php checked(in_array($term->term_id, $selected_lifestyles, true)); ?>
-                                            >
-
-                                            <span><?php echo esc_html($term->name); ?></span>
-                                        </label>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-                    </section>
-
-                    <section class="par-card">
-                        <div class="par-card__header">
-                            <div class="par-card__icon">🏠</div>
-
-                            <div>
-                                <h2>Room Preferences</h2>
-                                <p>What kind of room are you looking for?</p>
-                            </div>
-                        </div>
-
-                        <div class="par-cols-2">
-                            <div class="par-field">
-                                <label for="budget_min">Budget Min</label>
-                                <input class="par-input" type="number" id="budget_min" name="budget_min" min="0" value="<?php echo esc_attr($v_budget_min); ?>">
-                            </div>
-
-                            <div class="par-field">
-                                <label for="budget_max">Budget Max</label>
-                                <input class="par-input" type="number" id="budget_max" name="budget_max" min="0" value="<?php echo esc_attr($v_budget_max); ?>">
-                            </div>
-                        </div>
-
-                        <div class="par-cols-2">
-                            <div class="par-field">
-                                <label for="move_in_date">Preferred Move-in Date</label>
-                                <input class="par-input" type="date" id="move_in_date" name="move_in_date" value="<?php echo esc_attr($v_move_in_date); ?>">
-                            </div>
-
-                            <div class="par-field">
-                                <label for="preferred_area">Preferred Area</label>
-                                <input class="par-input" type="text" id="preferred_area" name="preferred_area" value="<?php echo esc_attr($v_preferred_area); ?>">
-                            </div>
-                        </div>
-
-                        <?php if (!empty($location_area_terms) && !is_wp_error($location_area_terms)) : ?>
-                            <div class="par-field">
-                                <label>Location Areas</label>
-
-                                <div class="par-checkbox-group">
-                                    <?php foreach ($location_area_terms as $term) : ?>
-                                        <label class="par-checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                name="location_area[]"
-                                                value="<?php echo esc_attr($term->term_id); ?>"
-                                                <?php checked(in_array($term->term_id, $selected_locations, true)); ?>
                                             >
 
                                             <span><?php echo esc_html($term->name); ?></span>

@@ -54,6 +54,20 @@ function rmt_dashboard_terms_text($post_id, $taxonomy) {
     return implode(', ', wp_list_pluck($terms, 'name'));
 }
 
+function rmt_dashboard_format_date($date) {
+    if (!$date) {
+        return '';
+    }
+
+    $timestamp = strtotime($date);
+
+    if (!$timestamp) {
+        return $date;
+    }
+
+    return date_i18n('d/m/Y', $timestamp);
+}
+
 function rmt_dashboard_request_account_deletion($user_id, $password) {
     $user_id = absint($user_id);
     $password = (string) $password;
@@ -393,7 +407,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                     <?php endif; ?>
 
                                     <?php if ($available_date) : ?>
-                                        <span><?php echo esc_html($available_date); ?></span>
+                                        <span><?php echo esc_html(rmt_dashboard_format_date($available_date)); ?></span>
                                     <?php endif; ?>
 
                                     <?php if ($nearby_landmark) : ?>
@@ -530,7 +544,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                 <?php endif; ?>
 
                                 <?php if ($move_in_date) : ?>
-                                    <p class="listing-card__address">Move-in: <?php echo esc_html($move_in_date); ?></p>
+                                    <p class="listing-card__address">Move-in: <?php echo esc_html(rmt_dashboard_format_date($move_in_date)); ?></p>
                                 <?php endif; ?>
 
                                 <div class="cta-actions dashboard-card-actions">
