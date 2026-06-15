@@ -55,9 +55,15 @@ function rmt_archive_format_budget_range($min, $max) {
     return '';
 }
 
-$q             = sanitize_text_field(wp_unslash($_GET['q'] ?? ''));
-$rent_min_q    = sanitize_text_field(wp_unslash($_GET['rent_min'] ?? ($_GET['budget_min'] ?? '')));
-$available_q   = sanitize_text_field(wp_unslash($_GET['available_from'] ?? ($_GET['move_in'] ?? '')));
+$q               = sanitize_text_field(wp_unslash($_GET['q'] ?? ''));
+$gender_q        = sanitize_text_field(wp_unslash($_GET['gender'] ?? ''));
+$rent_min_q      = sanitize_text_field(wp_unslash($_GET['rent_min'] ?? ($_GET['budget_min'] ?? '')));
+$move_in_month_q = sanitize_text_field(wp_unslash($_GET['move_in_month'] ?? ''));
+$available_q     = sanitize_text_field(wp_unslash($_GET['available_from'] ?? ($_GET['move_in'] ?? '')));
+
+if ($move_in_month_q === '' && preg_match('/^\d{4}-\d{2}/', $available_q)) {
+    $move_in_month_q = substr($available_q, 0, 7);
+}
 
 $paged = max(1, get_query_var('paged') ? get_query_var('paged') : get_query_var('page'));
 
@@ -67,14 +73,40 @@ $meta_query = [
 
 if ($rent_min_q !== '') {
     $meta_query[] = [
-        'key'     => '_budget_max',
-        'value'   => absint($rent_min_q),
-        'compare' => '>=',
-        'type'    => 'NUMERIC',
+        'relation' => 'OR',
+        [
+            'key'     => '_budget_max',
+            'value'   => absint($rent_min_q),
+            'compare' => '>=',
+            'type'    => 'NUMERIC',
+        ],
+        [
+            'key'     => '_budget_min',
+            'value'   => absint($rent_min_q),
+            'compare' => '>=',
+            'type'    => 'NUMERIC',
+        ],
     ];
 }
 
-if ($available_q !== '') {
+if ($gender_q !== '') {
+    $meta_query[] = [
+        'key'     => '_gender',
+        'value'   => $gender_q,
+        'compare' => '=',
+    ];
+}
+
+if ($move_in_month_q !== '' && preg_match('/^\d{4}-\d{2}$/', $move_in_month_q)) {
+    $month_start = $move_in_month_q . '-01';
+
+    $meta_query[] = [
+        'key'     => '_move_in_date',
+        'value'   => $month_start,
+        'compare' => '>=',
+        'type'    => 'DATE',
+    ];
+} elseif ($available_q !== '') {
     $meta_query[] = [
         'key'     => '_move_in_date',
         'value'   => $available_q,
@@ -139,8 +171,23 @@ $roommate_query = new WP_Query($roommate_query_args);
                     </div>
 
                     <div class="filter-group">
+                        <label for="gender">
+                            <?php esc_html_e('Gender', 'roommate-mobile-theme'); ?>
+                        </label>
+
+                        <select id="gender" name="gender">
+                            <option value=""><?php esc_html_e('Any gender', 'roommate-mobile-theme'); ?></option>
+                            <?php foreach (['Male', 'Female', 'Non-binary', 'Prefer not to say'] as $gender_option) : ?>
+                                <option value="<?php echo esc_attr($gender_option); ?>" <?php selected($gender_q, $gender_option); ?>>
+                                    <?php echo esc_html($gender_option); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
                         <label for="rent_min">
-                            <?php esc_html_e('Rent Price', 'roommate-mobile-theme'); ?>
+                            <?php esc_html_e('Min Budget (THB)', 'roommate-mobile-theme'); ?>
                         </label>
 
                         <input
@@ -154,22 +201,25 @@ $roommate_query = new WP_Query($roommate_query_args);
                     </div>
 
                     <div class="filter-group">
-                        <label for="available_from">
-                            <?php esc_html_e('Available From', 'roommate-mobile-theme'); ?>
+                        <label for="move_in_month">
+                            <?php esc_html_e('Move-in Month', 'roommate-mobile-theme'); ?>
                         </label>
 
                         <input
-                            type="date"
-                            id="available_from"
-                            name="available_from"
-                            value="<?php echo esc_attr($available_q); ?>"
+                            type="month"
+                            id="move_in_month"
+                            name="move_in_month"
+                            value="<?php echo esc_attr($move_in_month_q); ?>"
                         >
                     </div>
 
                     <div class="filter-actions">
                         <button type="submit" class="btn btn-primary">
-                            <?php esc_html_e('Search Roommates', 'roommate-mobile-theme'); ?>
+                            <?php esc_html_e('Search', 'roommate-mobile-theme'); ?>
                         </button>
+                        <a class="btn btn-outline" href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>">
+                            <?php esc_html_e('Clear filters', 'roommate-mobile-theme'); ?>
+                        </a>
                     </div>
 
                 </div>
@@ -188,17 +238,28 @@ $roommate_query = new WP_Query($roommate_query_args);
                         $post_id = get_the_ID();
 
                         $nickname        = rmt_archive_get_meta($post_id, '_nickname');
+                        $age             = rmt_archive_get_meta($post_id, '_age');
                         $gender          = rmt_archive_get_meta($post_id, '_gender');
-                        $occupation      = rmt_archive_get_meta($post_id, '_occupation');
                         $budget_min      = rmt_archive_get_meta($post_id, '_budget_min');
                         $move_in_date    = rmt_archive_get_meta($post_id, '_move_in_date');
                         $preferred_area  = rmt_archive_get_meta($post_id, '_preferred_area_text');
 
                         $location_text   = rmt_archive_terms_text($post_id, 'location_area');
-                        $lifestyle_text  = rmt_archive_terms_text($post_id, 'lifestyle');
 
                         $display_area    = $location_text ? $location_text : $preferred_area;
                         $display_budget  = $budget_min ? number_format_i18n((int) $budget_min) . ' THB' : '';
+                        $display_name    = $nickname ? $nickname : get_the_title();
+                        $title_parts     = array_filter([$display_name, $age]);
+                        $gender_key      = strtolower(trim($gender));
+                        $gender_symbol   = '';
+
+                        if ($gender_key === 'male') {
+                            $gender_symbol = '♂';
+                        } elseif ($gender_key === 'female') {
+                            $gender_symbol = '♀';
+                        } elseif ($gender_key === 'non-binary') {
+                            $gender_symbol = '⚧';
+                        }
                         ?>
 
                         <article <?php post_class('listing-card'); ?>>
@@ -219,34 +280,35 @@ $roommate_query = new WP_Query($roommate_query_args);
 
                                 <h2 class="listing-card__title">
                                     <a href="<?php the_permalink(); ?>">
-                                        <?php the_title(); ?>
+                                        <?php echo esc_html(implode(', ', $title_parts)); ?>
                                     </a>
                                 </h2>
 
                                 <div class="listing-card__details">
                                     <?php if ($move_in_date) : ?>
                                         <span>
-                                            <?php echo esc_html(rmt_archive_format_date($move_in_date)); ?>
-                                        </span>
-                                    <?php endif; ?>
-
-                                    <?php if ($display_area) : ?>
-                                        <span>
-                                            <?php echo esc_html($display_area); ?>
+                                            <?php echo esc_html(sprintf(__('Starting from %s', 'roommate-mobile-theme'), rmt_archive_format_date($move_in_date))); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if ($display_budget) : ?>
                                         <span>
-                                            <?php echo esc_html($display_budget); ?>
+                                            <?php echo esc_html(sprintf(__('Min budget: %s', 'roommate-mobile-theme'), $display_budget)); ?>
                                         </span>
                                     <?php endif; ?>
 
-                                    <?php if ($gender) : ?>
-                                        <span>
-                                            <?php echo esc_html($gender); ?>
+                                </div>
+
+                                <div class="listing-card__mini-meta">
+                                    <?php if ($display_area || $gender_symbol) : ?>
+                                        <span class="listing-card__area-gender">
+                                            <?php echo esc_html(implode(' ', array_filter([$display_area, $gender_symbol]))); ?>
                                         </span>
                                     <?php endif; ?>
+
+                                    <span class="listing-card__post-id">
+                                        <?php echo esc_html('#' . $post_id); ?>
+                                    </span>
                                 </div>
 
                                 <a href="<?php the_permalink(); ?>" class="btn btn-secondary">

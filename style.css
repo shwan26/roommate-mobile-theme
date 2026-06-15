@@ -686,11 +686,53 @@ p { margin-top: 0; color: var(--color-text-soft); }
   background: var(--color-text-muted);
   opacity: 0.65;
 }
+.archive-roommate .listing-card__details,
+.listing-card--roommate .listing-card__details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.archive-roommate .listing-card__details span,
+.listing-card--roommate .listing-card__details span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.archive-roommate .listing-card__details span:first-child,
+.listing-card--roommate .listing-card__details span:first-child {
+  grid-column: 1 / -1;
+}
+.archive-roommate .listing-card__details span:not(:last-child)::after,
+.listing-card--roommate .listing-card__details span:not(:last-child)::after {
+  content: none;
+}
+.listing-card__mini-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+  margin-top: -0.2rem;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+.listing-card__area-gender {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .listing-card__post-id {
   margin: -0.25rem 0 0;
   color: var(--color-text-muted);
   font-size: 0.72rem;
   line-height: 1.2;
+}
+.listing-card__mini-meta .listing-card__post-id {
+  flex: 0 0 auto;
+  margin: 0;
 }
 
 .listing-card__chips, .single-listing__chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
@@ -978,6 +1020,45 @@ p { margin-top: 0; color: var(--color-text-soft); }
 }
 
 .filter-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; }
+
+.archive-roommate .filter-form {
+  background: var(--green);
+  border-color: rgba(47, 122, 6, 0.24);
+  box-shadow: 0 14px 32px rgba(47, 122, 6, 0.16);
+}
+
+.archive-roommate .filter-group label {
+  color: var(--white);
+}
+
+.archive-roommate .filter-group input,
+.archive-roommate .filter-group select {
+  border-color: rgba(255, 255, 255, 0.72);
+  background: var(--white);
+}
+
+.archive-roommate .filter-actions .btn-primary {
+  background: var(--charcoal);
+  color: var(--white);
+  border-color: var(--charcoal);
+}
+
+.archive-roommate .filter-actions .btn-primary:hover {
+  background: #202a27;
+  border-color: #202a27;
+}
+
+.archive-roommate .filter-actions .btn-outline {
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--color-text);
+  border-color: rgba(255, 255, 255, 0.94);
+}
+
+.archive-roommate .filter-actions .btn-outline:hover {
+  background: var(--white);
+  color: var(--color-text);
+  border-color: var(--white);
+}
 
 /* =========================================================
    10. CTA
@@ -2453,51 +2534,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     font-size: 0.76rem;
   }
 
-  .filter-group input[type="search"] {
-    padding-left: 1.95rem;
-  }
-
-  .filter-group:has(input[type="search"])::before {
-    content: "⌕";
-    position: absolute;
-    left: 0.68rem;
-    bottom: 0.44rem;
-    color: var(--color-text-muted);
-    font-size: 0.86rem;
-    line-height: 1;
-    pointer-events: none;
-  }
-
-  .filter-group:has(input[type="number"])::before {
-    content: "฿";
-    position: absolute;
-    left: 0.66rem;
-    bottom: 0.43rem;
-    color: var(--color-text-muted);
-    font-size: 0.74rem;
-    font-weight: 700;
-    line-height: 1;
-    pointer-events: none;
-  }
-
-  .filter-group:has(input[type="number"]) input {
-    padding-left: 1.45rem;
-  }
-
-  .filter-group:has(input[type="date"])::before {
-    content: "📅";
-    position: absolute;
-    left: 0.62rem;
-    bottom: 0.38rem;
-    font-size: 0.72rem;
-    line-height: 1;
-    pointer-events: none;
-  }
-
-  .filter-group:has(input[type="date"]) input {
-    padding-left: 1.7rem;
-  }
-
   .filter-group select {
     padding-left: 0.62rem;
     padding-right: 1.4rem;
@@ -2508,15 +2544,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     min-height: 36px;
     padding: 0.4rem 0.6rem;
     font-size: 0.74rem;
-  }
-
-  .filter-actions .btn-primary::before {
-    content: "🔎";
-  }
-
-  .filter-actions .btn-secondary::before,
-  .filter-actions .btn-outline::before {
-    content: "↺";
   }
 
   .listing-grid {

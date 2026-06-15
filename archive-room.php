@@ -39,6 +39,11 @@ function rmt_archive_format_date($date) {
 $q               = sanitize_text_field(wp_unslash($_GET['q'] ?? ''));
 $rent_min_q      = sanitize_text_field(wp_unslash($_GET['rent_min'] ?? ''));
 $available_q     = sanitize_text_field(wp_unslash($_GET['available_from'] ?? ''));
+$move_in_month_q = sanitize_text_field(wp_unslash($_GET['move_in_month'] ?? ''));
+
+if ($move_in_month_q === '' && preg_match('/^\d{4}-\d{2}/', $available_q)) {
+    $move_in_month_q = substr($available_q, 0, 7);
+}
 
 $paged = max(1, get_query_var('paged') ? get_query_var('paged') : get_query_var('page'));
 
@@ -55,7 +60,14 @@ if ($rent_min_q !== '') {
     ];
 }
 
-if ($available_q !== '') {
+if ($move_in_month_q !== '' && preg_match('/^\d{4}-\d{2}$/', $move_in_month_q)) {
+    $meta_query[] = [
+        'key'     => '_available_date',
+        'value'   => $move_in_month_q . '-01',
+        'compare' => '>=',
+        'type'    => 'DATE',
+    ];
+} elseif ($available_q !== '') {
     $meta_query[] = [
         'key'     => '_available_date',
         'value'   => $available_q,
@@ -135,15 +147,15 @@ $room_query = new WP_Query($room_query_args);
                     </div>
 
                     <div class="filter-group">
-                        <label for="available_from">
-                            <?php esc_html_e('Available From', 'roommate-mobile-theme'); ?>
+                        <label for="move_in_month">
+                            <?php esc_html_e('Starting from', 'roommate-mobile-theme'); ?>
                         </label>
 
                         <input
-                            type="date"
-                            id="available_from"
-                            name="available_from"
-                            value="<?php echo esc_attr($available_q); ?>"
+                            type="month"
+                            id="move_in_month"
+                            name="move_in_month"
+                            value="<?php echo esc_attr($move_in_month_q); ?>"
                         >
                     </div>
 

@@ -480,63 +480,78 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                     <?php while ($roommate_posts->have_posts()) : $roommate_posts->the_post(); ?>
                         <?php
                         $post_id        = get_the_ID();
+                        $nickname       = rmt_get_meta($post_id, '_nickname');
+                        $age            = rmt_get_meta($post_id, '_age');
+                        $gender         = rmt_get_meta($post_id, '_gender');
                         $budget_min     = rmt_get_meta($post_id, '_budget_min');
-                        $budget_max     = rmt_get_meta($post_id, '_budget_max');
                         $legacy_budget  = rmt_get_meta($post_id, '_budget');
                         $move_in_date   = rmt_get_meta($post_id, '_move_in_date');
                         $preferred_area = rmt_get_meta($post_id, '_preferred_area_text') ?: rmt_get_meta($post_id, '_preferred_area');
+                        $location_text  = rmt_dashboard_terms_text($post_id, 'location_area');
+                        $display_area   = $location_text ? $location_text : $preferred_area;
+                        $display_budget = $budget_min ? rmt_format_price($budget_min) : ($legacy_budget ? rmt_format_price($legacy_budget) : '');
+                        $display_name   = $nickname ? $nickname : get_the_title();
+                        $title_parts    = array_filter([$display_name, $age]);
+                        $gender_key     = strtolower(trim($gender));
+                        $gender_symbol  = '';
                         $post_status    = get_post_status($post_id);
                         $is_published   = $post_status === 'publish';
                         $is_done        = (bool) get_post_meta($post_id, '_rmt_done', true);
+
+                        if ($gender_key === 'male') {
+                            $gender_symbol = '♂';
+                        } elseif ($gender_key === 'female') {
+                            $gender_symbol = '♀';
+                        } elseif ($gender_key === 'non-binary') {
+                            $gender_symbol = '⚧';
+                        }
                         ?>
 
-                        <article class="listing-card">
-                            <?php if (has_post_thumbnail()) : ?>
-                                <a href="<?php echo esc_url(get_permalink()); ?>" class="listing-card__image-link">
-                                    <div class="listing-card__image">
+                        <article class="listing-card listing-card--roommate">
+                            <a href="<?php echo esc_url(get_permalink()); ?>" class="listing-card__image-link">
+                                <div class="listing-card__image">
+                                    <?php if (has_post_thumbnail()) : ?>
                                         <?php the_post_thumbnail('large'); ?>
-                                    </div>
-                                </a>
-                            <?php endif; ?>
+                                    <?php else : ?>
+                                        <div class="listing-card__image listing-card__image--placeholder">
+                                            <?php esc_html_e('No Image', 'roommate-mobile-theme'); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </a>
 
                             <div class="listing-card__content">
-                                <div class="listing-card__top">
-                                    <span class="listing-chip <?php echo !$is_published ? 'listing-chip--draft' : ''; ?> <?php echo $is_done ? 'listing-chip--done' : ''; ?>">
-                                        <?php echo esc_html(rmt_dashboard_status_label($post_id)); ?>
-                                    </span>
-
-                                    <div class="listing-card__price">
-                                        <?php
-                                        if ($budget_min || $budget_max) {
-                                            if ($budget_min) {
-                                                echo esc_html(rmt_format_price($budget_min));
-                                            }
-
-                                            if ($budget_min && $budget_max) {
-                                                echo ' – ';
-                                            }
-
-                                            if ($budget_max) {
-                                                echo esc_html(rmt_format_price($budget_max));
-                                            }
-                                        } elseif ($legacy_budget) {
-                                            echo esc_html(rmt_format_price($legacy_budget));
-                                        }
-                                        ?>
-                                    </div>
-                                </div>
-
                                 <h3 class="listing-card__title">
-                                    <a href="<?php echo esc_url(get_permalink()); ?>"><?php the_title(); ?></a>
+                                    <a href="<?php echo esc_url(get_permalink()); ?>">
+                                        <?php echo esc_html(implode(', ', $title_parts)); ?>
+                                    </a>
                                 </h3>
 
-                                <?php if ($preferred_area) : ?>
-                                    <p class="listing-card__address">Preferred Area: <?php echo esc_html($preferred_area); ?></p>
-                                <?php endif; ?>
+                                <div class="listing-card__details">
+                                    <?php if ($move_in_date) : ?>
+                                        <span>
+                                            <?php echo esc_html(sprintf(__('Starting from %s', 'roommate-mobile-theme'), rmt_dashboard_format_date($move_in_date))); ?>
+                                        </span>
+                                    <?php endif; ?>
 
-                                <?php if ($move_in_date) : ?>
-                                    <p class="listing-card__address">Move-in: <?php echo esc_html(rmt_dashboard_format_date($move_in_date)); ?></p>
-                                <?php endif; ?>
+                                    <?php if ($display_budget) : ?>
+                                        <span>
+                                            <?php echo esc_html(sprintf(__('Min budget: %s', 'roommate-mobile-theme'), $display_budget)); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="listing-card__mini-meta">
+                                    <?php if ($display_area || $gender_symbol) : ?>
+                                        <span class="listing-card__area-gender">
+                                            <?php echo esc_html(implode(' ', array_filter([$display_area, $gender_symbol]))); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <span class="listing-card__post-id">
+                                        <?php echo esc_html('#' . $post_id); ?>
+                                    </span>
+                                </div>
 
                                 <div class="cta-actions dashboard-card-actions">
                                     <?php if ($is_published) : ?>

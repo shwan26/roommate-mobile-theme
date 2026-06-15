@@ -1271,9 +1271,33 @@ add_action('pre_get_posts', function ($query) {
         ];
     }
 
+    $gender = sanitize_text_field($_GET['gender'] ?? '');
+    if ($gender !== '') {
+        $meta_query[] = [
+            'key'     => '_gender',
+            'value'   => $gender,
+            'compare' => '=',
+        ];
+    }
+
+    $move_in_month = sanitize_text_field($_GET['move_in_month'] ?? '');
+
     // Available from date maps to the roommate move-in date field.
     $available_from = sanitize_text_field($_GET['available_from'] ?? ($_GET['move_in'] ?? ''));
-    if ($available_from !== '') {
+    if ($move_in_month === '' && preg_match('/^\d{4}-\d{2}/', $available_from)) {
+        $move_in_month = substr($available_from, 0, 7);
+    }
+
+    if ($move_in_month !== '' && preg_match('/^\d{4}-\d{2}$/', $move_in_month)) {
+        $month_start = $move_in_month . '-01';
+
+        $meta_query[] = [
+            'key'     => '_move_in_date',
+            'value'   => $month_start,
+            'type'    => 'DATE',
+            'compare' => '>=',
+        ];
+    } elseif ($available_from !== '') {
         $meta_query[] = [
             'key'     => '_move_in_date',
             'value'   => $available_from,
