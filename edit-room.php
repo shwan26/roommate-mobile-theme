@@ -72,6 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
             $errors[] = 'Please select a valid available date.';
         }
 
+        $errors = array_merge($errors, rmt_validate_required_room_fields($_POST));
+
         if (empty($errors)) {
             $_POST['available_date'] = $available_date;
 
@@ -339,8 +341,8 @@ get_header();
                         </div>
 
                         <div class="par-field">
-                            <label for="address">Address / Area</label>
-                            <input class="par-input" type="text" id="address" name="address" value="<?php echo esc_attr($v_address); ?>">
+                            <label for="address">Address / Area <span class="required">*</span></label>
+                            <input class="par-input" type="text" id="address" name="address" value="<?php echo esc_attr($v_address); ?>" required>
                         </div>
 
                         <div class="par-cols-2">
@@ -350,9 +352,26 @@ get_header();
                             </div>
 
                             <div class="par-field">
-                                <label for="map_url">Google Map URL</label>
-                                <input class="par-input" type="url" id="map_url" name="map_url" value="<?php echo esc_attr($v_map_url); ?>">
+                                <label for="map_url">Google Map URL <span class="required">*</span></label>
+                                <input class="par-input" type="url" id="map_url" name="map_url" value="<?php echo esc_attr($v_map_url); ?>" required>
                             </div>
+                        </div>
+
+                        <div class="par-field">
+                            <label for="description">Room Description</label>
+                            <textarea class="par-textarea" id="description" name="description" rows="6"><?php echo esc_textarea($v_description); ?></textarea>
+                        </div>
+
+                        <div class="par-field">
+                            <label for="room_image">Room Photo</label>
+                            <label for="room_image" class="btn btn-secondary par-file-btn">Add Room Photo</label>
+                            <input class="par-file-input-hidden" type="file" id="room_image" name="room_image" accept="image/*">
+
+                            <?php if (has_post_thumbnail($edit_id)) : ?>
+                                <div class="par-current-image">
+                                    <?php echo get_the_post_thumbnail($edit_id, 'medium'); ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </section>
 
@@ -479,32 +498,6 @@ get_header();
 
                     <section class="par-card">
                         <div class="par-card__header">
-                            <div class="par-card__icon">📝</div>
-                            <div>
-                                <h2>Description</h2>
-                                <p>Tell people about the room and living situation.</p>
-                            </div>
-                        </div>
-
-                        <div class="par-field">
-                            <label for="description">Room Description</label>
-                            <textarea class="par-textarea" id="description" name="description" rows="6"><?php echo esc_textarea($v_description); ?></textarea>
-                        </div>
-
-                        <div class="par-field">
-                            <label for="room_image">Change Room Image</label>
-                            <input class="par-file-input" type="file" id="room_image" name="room_image" accept="image/*">
-
-                            <?php if (has_post_thumbnail($edit_id)) : ?>
-                                <div class="par-current-image">
-                                    <?php echo get_the_post_thumbnail($edit_id, 'medium'); ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </section>
-
-                    <section class="par-card">
-                        <div class="par-card__header">
                             <div class="par-card__icon">🙂</div>
                             <div>
                                 <h2>About You</h2>
@@ -514,20 +507,20 @@ get_header();
 
                         <div class="par-cols-2">
                             <div class="par-field">
-                                <label for="nickname">Nickname / Name</label>
-                                <input class="par-input" type="text" id="nickname" name="nickname" value="<?php echo esc_attr($v_nickname); ?>">
+                                <label for="nickname">Nickname / Name <span class="required">*</span></label>
+                                <input class="par-input" type="text" id="nickname" name="nickname" value="<?php echo esc_attr($v_nickname); ?>" required>
                             </div>
 
                             <div class="par-field">
-                                <label for="age">Age</label>
-                                <input class="par-input" type="number" id="age" name="age" value="<?php echo esc_attr($v_age); ?>">
+                                <label for="age">Age <span class="required">*</span></label>
+                                <input class="par-input" type="number" id="age" name="age" value="<?php echo esc_attr($v_age); ?>" min="18" max="99" required>
                             </div>
                         </div>
 
                         <div class="par-cols-2">
                             <div class="par-field">
-                                <label for="gender">Gender</label>
-                                <select class="par-select" id="gender" name="gender">
+                                <label for="gender">Gender <span class="required">*</span></label>
+                                <select class="par-select" id="gender" name="gender" required>
                                     <option value="">Select</option>
                                     <option value="male" <?php selected($v_gender, 'male'); ?>>Male</option>
                                     <option value="female" <?php selected($v_gender, 'female'); ?>>Female</option>
@@ -550,8 +543,8 @@ get_header();
                         </div>
 
                         <div class="par-field">
-                            <label for="bio">Bio</label>
-                            <textarea class="par-textarea" id="bio" name="bio" rows="4"><?php echo esc_textarea($v_bio); ?></textarea>
+                            <label for="bio">Bio <span class="required">*</span></label>
+                            <textarea class="par-textarea" id="bio" name="bio" rows="4" required><?php echo esc_textarea($v_bio); ?></textarea>
                         </div>
 
                         <div class="par-cols-2">

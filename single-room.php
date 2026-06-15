@@ -317,6 +317,23 @@ if (have_posts()) :
                                         </li>
                                     </ul>
                                 <?php endif; ?>
+
+                                <?php if ($map_url) : ?>
+                                    <p class="u-mt-4">
+                                        <a
+                                            class="btn btn-secondary"
+                                            href="<?php echo esc_url($map_url); ?>"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <?php esc_html_e('Open Location Map', 'roommate-mobile-theme'); ?>
+                                        </a>
+                                    </p>
+                                <?php endif; ?>
+
+                                <div class="entry-content u-mt-4">
+                                    <?php the_content(); ?>
+                                </div>
                             </section>
 
                             <?php if (!empty($amenities) && !is_wp_error($amenities)) : ?>
@@ -330,31 +347,6 @@ if (have_posts()) :
                                             </span>
                                         <?php endforeach; ?>
                                     </div>
-                                </section>
-                            <?php endif; ?>
-
-                            <section class="single-card">
-                                <h2><?php esc_html_e('Description', 'roommate-mobile-theme'); ?></h2>
-
-                                <div class="entry-content">
-                                    <?php the_content(); ?>
-                                </div>
-                            </section>
-
-                            <?php if ($map_url) : ?>
-                                <section class="single-card">
-                                    <h2><?php esc_html_e('Map', 'roommate-mobile-theme'); ?></h2>
-
-                                    <p>
-                                        <a
-                                            class="btn btn-secondary"
-                                            href="<?php echo esc_url($map_url); ?>"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            <?php esc_html_e('Open Location Map', 'roommate-mobile-theme'); ?>
-                                        </a>
-                                    </p>
                                 </section>
                             <?php endif; ?>
 

@@ -613,6 +613,49 @@ function rmt_get_chat_url( $author_id, $post_id ) {
     );
 }
 
+function rmt_get_required_room_current_roommate_fields() {
+    return array(
+        'nickname'       => __('Current roommate name is required.', 'roommate-mobile-theme'),
+        'age'            => __('Current roommate age is required.', 'roommate-mobile-theme'),
+        'gender'         => __('Current roommate gender is required.', 'roommate-mobile-theme'),
+        'bio'            => __('Current roommate bio is required.', 'roommate-mobile-theme'),
+    );
+}
+
+function rmt_validate_required_room_fields($posted) {
+    $errors  = array();
+    $address = sanitize_text_field($posted['address'] ?? '');
+    $map_url = esc_url_raw($posted['map_url'] ?? '');
+
+    if ($address === '') {
+        $errors[] = __('Room address is required.', 'roommate-mobile-theme');
+    }
+
+    if ($map_url === '') {
+        $errors[] = __('Google Map URL is required.', 'roommate-mobile-theme');
+    } elseif (!preg_match('#^https?://#i', $map_url)) {
+        $errors[] = __('Please enter a valid Google Map URL.', 'roommate-mobile-theme');
+    }
+
+    foreach (rmt_get_required_room_current_roommate_fields() as $field => $message) {
+        $value = in_array($field, array('bio'), true)
+            ? sanitize_textarea_field($posted[$field] ?? '')
+            : sanitize_text_field($posted[$field] ?? '');
+
+        if ($value === '') {
+            $errors[] = $message;
+        }
+    }
+
+    $age = sanitize_text_field($posted['age'] ?? '');
+
+    if ($age !== '' && (!is_numeric($age) || (int) $age < 18 || (int) $age > 99)) {
+        $errors[] = __('Current roommate age must be between 18 and 99.', 'roommate-mobile-theme');
+    }
+
+    return $errors;
+}
+
 function rmt_save_post_meta($post_id) {
     if (!isset($_POST['rmt_meta_nonce']) || !wp_verify_nonce($_POST['rmt_meta_nonce'], 'rmt_save_meta')) {
         return;
@@ -2298,3 +2341,20 @@ function rmt_delete_scheduled_account($user_id) {
     rmt_delete_account_data($user_id);
 }
 add_action('rmt_delete_scheduled_account', 'rmt_delete_scheduled_account');
+
+function bkkroomie_google_analytics_tag() {
+    if ( is_admin() || current_user_can( 'manage_options' ) ) {
+        return;
+    }
+    ?>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-X9DJTW8GVX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-X9DJTW8GVX');
+    </script>
+    <?php
+}
+add_action( 'wp_head', 'bkkroomie_google_analytics_tag' );
