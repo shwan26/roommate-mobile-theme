@@ -14,6 +14,8 @@ if (!is_user_logged_in()) {
 $current_user    = wp_get_current_user();
 $success_message = '';
 $error_message   = '';
+$can_create_room     = bkkroomie_user_can_create_listing($current_user->ID, 'room');
+$can_create_roommate = bkkroomie_user_can_create_listing($current_user->ID, 'roommate');
 
 function rmt_dashboard_can_manage($post_id, $user_id) {
     $post = get_post($post_id);
@@ -227,26 +229,32 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
 
 	                <div class="single-card dashboard-quick-card">
 	                    <h2>Quick Actions</h2>
+	                    <div class="dashboard-quick-limit-messages" aria-live="polite" hidden>
+	                        <p data-limit-message="room" hidden>delete existing room post to post a new listing</p>
+	                        <p data-limit-message="roommate" hidden>delete existing roommate post to post a new listing</p>
+	                    </div>
 	                    <div class="cta-actions dashboard-quick-actions">
-	                        <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'room')) : ?>
+	                        <?php if ($can_create_room) : ?>
 	                            <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="btn dashboard-quick-btn">
 	                                <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/><path d="M9 20v-6h6v6"/></svg>
 	                                <span>Post a Room</span>
 	                            </a>
 	                        <?php else : ?>
-	                            <button class="btn dashboard-quick-btn" type="button" disabled>
-	                                Room Limit Reached
+	                            <button class="btn dashboard-quick-btn dashboard-quick-btn--limited" type="button" aria-disabled="true" data-dashboard-limit-trigger="room">
+	                                <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/><path d="M9 20v-6h6v6"/></svg>
+	                                <span>Post a Room</span>
 	                            </button>
 	                        <?php endif; ?>
 
-	                        <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'roommate')) : ?>
+	                        <?php if ($can_create_roommate) : ?>
 	                            <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="btn dashboard-quick-btn">
 	                                <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
 	                                <span>Post a Roommate</span>
 	                            </a>
 	                        <?php else : ?>
-	                            <button class="btn dashboard-quick-btn" type="button" disabled>
-	                                Roommate Limit Reached
+	                            <button class="btn dashboard-quick-btn dashboard-quick-btn--limited" type="button" aria-disabled="true" data-dashboard-limit-trigger="roommate">
+	                                <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+	                                <span>Post a Roommate</span>
 	                            </button>
 	                        <?php endif; ?>
 	                        <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn dashboard-quick-btn dashboard-quick-btn--logout">
@@ -261,8 +269,8 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
 	                            <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
 	                            <span>Delete Account</span>
 	                        </button>
-                    </div>
-                </div>
+	                    </div>
+	                </div>
             </div>
 
             <div class="dashboard-delete-modal" id="rmt-delete-account-modal" hidden>
@@ -338,8 +346,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
     <section class="listing-section">
         <div class="container">
             <div class="section-heading">
-                <span class="section-badge">My Rooms</span>
-                <h2>Your Room Listings</h2>
+                <h2>My Room Listings</h2>
                 <p>Edit, publish, unpublish, mark done, or delete room listings.</p>
             </div>
 
@@ -461,8 +468,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
     <section class="listing-section">
         <div class="container">
             <div class="section-heading">
-                <span class="section-badge">My Roommates</span>
-                <h2>Your Roommate Profiles</h2>
+                <h2>My Roommate Profiles</h2>
                 <p>Edit, publish, unpublish, mark done, or delete roommate profiles.</p>
             </div>
 
@@ -587,7 +593,46 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                 </div>
             <?php endif; ?>
         </div>
-    </section>
-</main>
+	    </section>
+	</main>
 
-<?php get_footer(); ?>
+	<script>
+	document.addEventListener('DOMContentLoaded', function () {
+	    var quickCard = document.querySelector('.dashboard-quick-card');
+	    var limitMessageTimer = null;
+
+	    if (!quickCard) {
+	        return;
+	    }
+
+	    quickCard.addEventListener('click', function (event) {
+	        var trigger = event.target.closest('[data-dashboard-limit-trigger]');
+
+	        if (!trigger) {
+	            return;
+	        }
+
+	        var limitType = trigger.getAttribute('data-dashboard-limit-trigger');
+	        var messageWrap = quickCard.querySelector('.dashboard-quick-limit-messages');
+
+	        if (!messageWrap) {
+	            return;
+	        }
+
+	        messageWrap.hidden = false;
+	        messageWrap.querySelectorAll('[data-limit-message]').forEach(function (message) {
+	            message.hidden = message.getAttribute('data-limit-message') !== limitType;
+	        });
+
+	        window.clearTimeout(limitMessageTimer);
+	        limitMessageTimer = window.setTimeout(function () {
+	            messageWrap.hidden = true;
+	            messageWrap.querySelectorAll('[data-limit-message]').forEach(function (message) {
+	                message.hidden = true;
+	            });
+	        }, 20000);
+	    });
+	});
+	</script>
+
+	<?php get_footer(); ?>
