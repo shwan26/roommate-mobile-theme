@@ -131,15 +131,17 @@ $latest_roommates = new WP_Query(array(
             <div class="rmt-hero__grid">
 
                 <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="rmt-card rmt-card--light">
-                    <span class="rmt-card__icon rmt-card__icon--light">🙋</span>
+                    <span class="rmt-card__head">
+                        <span class="rmt-card__icon rmt-card__icon--light">🙋</span>
 
-                    <span class="rmt-card__meta">
-                        <span class="rmt-card__label rmt-card__label--light">
-                            <?php esc_html_e('Need Roommate?', 'roommate-mobile-theme'); ?>
-                        </span>
+                        <span class="rmt-card__meta">
+                            <span class="rmt-card__label rmt-card__label--light">
+                                <?php esc_html_e('Need Roommate?', 'roommate-mobile-theme'); ?>
+                            </span>
 
-                        <span class="rmt-card__title rmt-card__title--light">
-                            <?php esc_html_e('Browse Roommates', 'roommate-mobile-theme'); ?>
+                            <span class="rmt-card__title rmt-card__title--light">
+                                <?php esc_html_e('Browse Roommates', 'roommate-mobile-theme'); ?>
+                            </span>
                         </span>
                     </span>
 
@@ -149,15 +151,17 @@ $latest_roommates = new WP_Query(array(
                 </a>
                 
                 <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="rmt-card rmt-card--light">
-                    <span class="rmt-card__icon rmt-card__icon--light">🏠</span>
+                    <span class="rmt-card__head">
+                        <span class="rmt-card__icon rmt-card__icon--light">🏠</span>
 
-                    <span class="rmt-card__meta">
-                        <span class="rmt-card__label rmt-card__label--light">
-                            <?php esc_html_e('Need Room?', 'roommate-mobile-theme'); ?>
-                        </span>
+                        <span class="rmt-card__meta">
+                            <span class="rmt-card__label rmt-card__label--light">
+                                <?php esc_html_e('Need Room?', 'roommate-mobile-theme'); ?>
+                            </span>
 
-                        <span class="rmt-card__title rmt-card__title--light">
-                            <?php esc_html_e('Browse Rooms', 'roommate-mobile-theme'); ?>
+                            <span class="rmt-card__title rmt-card__title--light">
+                                <?php esc_html_e('Browse Rooms', 'roommate-mobile-theme'); ?>
+                            </span>
                         </span>
                     </span>
 
@@ -200,113 +204,6 @@ $latest_roommates = new WP_Query(array(
                     <p><?php esc_html_e('Create your profile and tell others what you are looking for.', 'roommate-mobile-theme'); ?></p>
                 </a>
             </div>
-
-        </div>
-    </section>
-
-    <section class="listing-section listing-section--rooms">
-        <div class="container">
-
-            <div class="section-heading">
-                <h2><?php esc_html_e('Recently posted rooms', 'roommate-mobile-theme'); ?></h2>
-                <p><?php esc_html_e('The newest room listings using the same card design as the room archive.', 'roommate-mobile-theme'); ?></p>
-            </div>
-
-            <?php if ($latest_rooms->have_posts()) : ?>
-                <div class="listing-grid">
-
-                    <?php while ($latest_rooms->have_posts()) : $latest_rooms->the_post(); ?>
-                        <?php
-                        $post_id = get_the_ID();
-
-                        $rent             = rmt_front_get_meta($post_id, '_rent');
-                        $available_date   = rmt_front_get_meta($post_id, '_available_date');
-                        $property_type    = rmt_front_get_meta($post_id, '_property_type');
-                        $nearby_landmark  = rmt_front_get_meta($post_id, '_nearby_landmark');
-
-                        $location_text    = rmt_front_terms_text($post_id, 'location_area');
-                        $room_type_text   = rmt_front_terms_text($post_id, 'room_type');
-
-                        $display_property = $room_type_text ? $room_type_text : $property_type;
-                        ?>
-
-                        <article <?php post_class('listing-card'); ?>>
-
-                            <a href="<?php the_permalink(); ?>" class="listing-card__image-link">
-                                <div class="listing-card__image">
-                                    <?php echo rmt_get_room_photo_html(get_the_ID(), 'large'); ?>
-                                </div>
-                            </a>
-
-                            <div class="listing-card__content">
-
-                                <h2 class="listing-card__title">
-                                    <a href="<?php the_permalink(); ?>">
-                                        <?php the_title(); ?>
-                                    </a>
-                                </h2>
-
-                                <div class="listing-card__details">
-                                    <?php if ($display_property) : ?>
-                                        <span>
-                                            <?php echo esc_html($display_property); ?>
-                                        </span>
-                                    <?php endif; ?>
-
-                                    <?php if ($location_text) : ?>
-                                        <span>
-                                            <?php echo esc_html($location_text); ?>
-                                        </span>
-                                    <?php endif; ?>
-
-                                    <?php if ($rent) : ?>
-                                        <span>
-                                            <?php echo esc_html(number_format_i18n((int) $rent)); ?>
-                                            <?php esc_html_e(' THB/person', 'roommate-mobile-theme'); ?>
-                                        </span>
-                                    <?php endif; ?>
-
-                                    <?php if ($available_date) : ?>
-                                        <span>
-                                            <?php echo esc_html(sprintf(__('Starting from %s', 'roommate-mobile-theme'), rmt_front_format_date($available_date))); ?>
-                                        </span>
-                                    <?php endif; ?>
-
-                                    <?php if ($nearby_landmark) : ?>
-                                        <span>
-                                            <?php echo esc_html($nearby_landmark); ?>
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
-
-                                <p class="listing-card__post-id">#<?php echo esc_html($post_id); ?></p>
-
-                                <a href="<?php the_permalink(); ?>" class="btn btn-secondary">
-                                    <?php esc_html_e('View Room', 'roommate-mobile-theme'); ?>
-                                </a>
-
-                            </div>
-                        </article>
-                    <?php endwhile; ?>
-
-                </div>
-
-                <?php wp_reset_postdata(); ?>
-
-                <div class="cta-actions u-mt-4">
-                    <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-primary">
-                        <?php esc_html_e('View more rooms', 'roommate-mobile-theme'); ?>
-                    </a>
-                </div>
-
-            <?php else : ?>
-
-                <div class="empty-state">
-                    <h2><?php esc_html_e('No rooms yet', 'roommate-mobile-theme'); ?></h2>
-                    <p><?php esc_html_e('Check back later or post the first room.', 'roommate-mobile-theme'); ?></p>
-                </div>
-
-            <?php endif; ?>
 
         </div>
     </section>
@@ -422,6 +319,113 @@ $latest_roommates = new WP_Query(array(
                 <div class="empty-state">
                     <h2><?php esc_html_e('No roommates yet', 'roommate-mobile-theme'); ?></h2>
                     <p><?php esc_html_e('Check back later or post the first roommate profile.', 'roommate-mobile-theme'); ?></p>
+                </div>
+
+            <?php endif; ?>
+
+        </div>
+    </section>
+
+     <section class="listing-section listing-section--rooms">
+        <div class="container">
+
+            <div class="section-heading">
+                <h2><?php esc_html_e('Recently posted rooms', 'roommate-mobile-theme'); ?></h2>
+                <p><?php esc_html_e('The newest room listings using the same card design as the room archive.', 'roommate-mobile-theme'); ?></p>
+            </div>
+
+            <?php if ($latest_rooms->have_posts()) : ?>
+                <div class="listing-grid">
+
+                    <?php while ($latest_rooms->have_posts()) : $latest_rooms->the_post(); ?>
+                        <?php
+                        $post_id = get_the_ID();
+
+                        $rent             = rmt_front_get_meta($post_id, '_rent');
+                        $available_date   = rmt_front_get_meta($post_id, '_available_date');
+                        $property_type    = rmt_front_get_meta($post_id, '_property_type');
+                        $nearby_landmark  = rmt_front_get_meta($post_id, '_nearby_landmark');
+
+                        $location_text    = rmt_front_terms_text($post_id, 'location_area');
+                        $room_type_text   = rmt_front_terms_text($post_id, 'room_type');
+
+                        $display_property = $room_type_text ? $room_type_text : $property_type;
+                        ?>
+
+                        <article <?php post_class('listing-card'); ?>>
+
+                            <a href="<?php the_permalink(); ?>" class="listing-card__image-link">
+                                <div class="listing-card__image">
+                                    <?php echo rmt_get_room_photo_html(get_the_ID(), 'large'); ?>
+                                </div>
+                            </a>
+
+                            <div class="listing-card__content">
+
+                                <h2 class="listing-card__title">
+                                    <a href="<?php the_permalink(); ?>">
+                                        <?php the_title(); ?>
+                                    </a>
+                                </h2>
+
+                                <div class="listing-card__details">
+                                    <?php if ($display_property) : ?>
+                                        <span>
+                                            <?php echo esc_html($display_property); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($location_text) : ?>
+                                        <span>
+                                            <?php echo esc_html($location_text); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($rent) : ?>
+                                        <span>
+                                            <?php echo esc_html(number_format_i18n((int) $rent)); ?>
+                                            <?php esc_html_e(' THB/person', 'roommate-mobile-theme'); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($available_date) : ?>
+                                        <span>
+                                            <?php echo esc_html(sprintf(__('Starting from %s', 'roommate-mobile-theme'), rmt_front_format_date($available_date))); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($nearby_landmark) : ?>
+                                        <span>
+                                            <?php echo esc_html($nearby_landmark); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <p class="listing-card__post-id">#<?php echo esc_html($post_id); ?></p>
+
+                                <a href="<?php the_permalink(); ?>" class="btn btn-secondary">
+                                    <?php esc_html_e('View Room', 'roommate-mobile-theme'); ?>
+                                </a>
+
+                            </div>
+                        </article>
+                    <?php endwhile; ?>
+
+                </div>
+
+                <?php wp_reset_postdata(); ?>
+
+                <div class="cta-actions u-mt-4">
+                    <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn btn-primary">
+                        <?php esc_html_e('View more rooms', 'roommate-mobile-theme'); ?>
+                    </a>
+                </div>
+
+            <?php else : ?>
+
+                <div class="empty-state">
+                    <h2><?php esc_html_e('No rooms yet', 'roommate-mobile-theme'); ?></h2>
+                    <p><?php esc_html_e('Check back later or post the first room.', 'roommate-mobile-theme'); ?></p>
                 </div>
 
             <?php endif; ?>
