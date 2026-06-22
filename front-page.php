@@ -311,7 +311,7 @@ $latest_roommates = new WP_Query(array(
         </div>
     </section>
 
-    <section class="listing-section">
+    <section class="listing-section listing-section--roommates">
         <div class="container">
 
             <div class="section-heading">
@@ -326,19 +326,32 @@ $latest_roommates = new WP_Query(array(
                         <?php
                         $post_id = get_the_ID();
 
+                        $nickname       = rmt_front_get_meta($post_id, '_nickname');
+                        $age            = rmt_front_get_meta($post_id, '_age');
                         $gender         = rmt_front_get_meta($post_id, '_gender');
                         $budget_min     = rmt_front_get_meta($post_id, '_budget_min');
-                        $budget_max     = rmt_front_get_meta($post_id, '_budget_max');
                         $move_in_date   = rmt_front_get_meta($post_id, '_move_in_date');
                         $preferred_area = rmt_front_get_meta($post_id, '_preferred_area_text');
 
                         $location_text  = rmt_front_terms_text($post_id, 'location_area');
 
-                        $display_area   = $location_text ? $location_text : $preferred_area;
-                        $display_budget = rmt_front_format_budget_range($budget_min, $budget_max);
+                        $display_area    = $location_text ? $location_text : $preferred_area;
+                        $display_budget  = $budget_min ? number_format_i18n((int) $budget_min) . ' THB' : '';
+                        $display_name    = $nickname ? $nickname : get_the_title();
+                        $title_parts     = array_filter([$display_name, $age]);
+                        $gender_key      = strtolower(trim($gender));
+                        $gender_symbol   = '';
+
+                        if ($gender_key === 'male') {
+                            $gender_symbol = '♂';
+                        } elseif ($gender_key === 'female') {
+                            $gender_symbol = '♀';
+                        } elseif ($gender_key === 'non-binary') {
+                            $gender_symbol = '⚧';
+                        }
                         ?>
 
-                        <article <?php post_class('listing-card'); ?>>
+                        <article <?php post_class('listing-card listing-card--roommate'); ?>>
 
                             <a href="<?php the_permalink(); ?>" class="listing-card__image-link">
                                 <div class="listing-card__image">
@@ -356,38 +369,34 @@ $latest_roommates = new WP_Query(array(
 
                                 <h2 class="listing-card__title">
                                     <a href="<?php the_permalink(); ?>">
-                                        <?php the_title(); ?>
+                                        <?php echo esc_html(implode(', ', $title_parts)); ?>
                                     </a>
                                 </h2>
 
-                                <div class="listing-card__chips">
+                                <div class="listing-card__details">
                                     <?php if ($move_in_date) : ?>
-                                        <span class="listing-chip">
-                                            <?php esc_html_e('Move-in:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html(rmt_front_format_date($move_in_date)); ?>
-                                        </span>
-                                    <?php endif; ?>
-
-                                    <?php if ($display_area) : ?>
-                                        <span class="listing-chip">
-                                            <?php esc_html_e('Preferred Area:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($display_area); ?>
+                                        <span>
+                                            <?php echo esc_html(sprintf(__('Starting from %s', 'roommate-mobile-theme'), rmt_front_format_date($move_in_date))); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if ($display_budget) : ?>
-                                        <span class="listing-chip">
-                                            <?php esc_html_e('Budget:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($display_budget); ?>
+                                        <span>
+                                            <?php echo esc_html(sprintf(__('Min budget: %s', 'roommate-mobile-theme'), $display_budget)); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="listing-card__mini-meta">
+                                    <?php if ($display_area || $gender_symbol) : ?>
+                                        <span class="listing-card__area-gender">
+                                            <?php echo esc_html(implode(' ', array_filter([$display_area, $gender_symbol]))); ?>
                                         </span>
                                     <?php endif; ?>
 
-                                    <?php if ($gender) : ?>
-                                        <span class="listing-chip">
-                                            <?php esc_html_e('Gender:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($gender); ?>
-                                        </span>
-                                    <?php endif; ?>
+                                    <span class="listing-card__post-id">
+                                        <?php echo esc_html('#' . $post_id); ?>
+                                    </span>
                                 </div>
 
                                 <a href="<?php the_permalink(); ?>" class="btn btn-secondary">
