@@ -130,20 +130,20 @@ $latest_roommates = new WP_Query(array(
 
             <div class="rmt-hero__grid">
 
-                <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="rmt-card rmt-card--dark">
-                    <span class="rmt-card__icon rmt-card__icon--dark">🙋</span>
+                <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="rmt-card rmt-card--light">
+                    <span class="rmt-card__icon rmt-card__icon--light">🙋</span>
 
                     <span class="rmt-card__meta">
-                        <span class="rmt-card__label rmt-card__label--dark">
+                        <span class="rmt-card__label rmt-card__label--light">
                             <?php esc_html_e('Need Roommate?', 'roommate-mobile-theme'); ?>
                         </span>
 
-                        <span class="rmt-card__title rmt-card__title--dark">
+                        <span class="rmt-card__title rmt-card__title--light">
                             <?php esc_html_e('Browse Roommates', 'roommate-mobile-theme'); ?>
                         </span>
                     </span>
 
-                    <span class="rmt-card__desc rmt-card__desc--dark">
+                    <span class="rmt-card__desc rmt-card__desc--light">
                         <?php esc_html_e('Find people looking for a room and compare budget, move-in date, lifestyle, and area.', 'roommate-mobile-theme'); ?>
                     </span>
                 </a>
