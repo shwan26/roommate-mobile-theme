@@ -201,7 +201,7 @@ $latest_roommates = new WP_Query(array(
 
                 <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="quick-search-card">
                     <h3><?php esc_html_e('Post roommate profile', 'roommate-mobile-theme'); ?></h3>
-                    <p><?php esc_html_e('Create your profile and tell others what you are looking for.', 'roommate-mobile-theme'); ?></p>
+                    <p><?php esc_html_e('Share your profile and what you are looking for.', 'roommate-mobile-theme'); ?></p>
                 </a>
             </div>
 
@@ -212,7 +212,7 @@ $latest_roommates = new WP_Query(array(
         <div class="container">
 
             <div class="section-heading">
-                <h2><?php esc_html_e('Recently posted roommate profiles', 'roommate-mobile-theme'); ?></h2>
+                <h2><?php esc_html_e('Recently posted Roommates', 'roommate-mobile-theme'); ?></h2>
                 <p><?php esc_html_e('The newest roommate profiles using the same card design as the roommate archive.', 'roommate-mobile-theme'); ?></p>
             </div>
 
@@ -330,7 +330,7 @@ $latest_roommates = new WP_Query(array(
         <div class="container">
 
             <div class="section-heading">
-                <h2><?php esc_html_e('Recently posted rooms', 'roommate-mobile-theme'); ?></h2>
+                <h2><?php esc_html_e('Recently posted Rooms', 'roommate-mobile-theme'); ?></h2>
                 <p><?php esc_html_e('The newest room listings using the same card design as the room archive.', 'roommate-mobile-theme'); ?></p>
             </div>
 
