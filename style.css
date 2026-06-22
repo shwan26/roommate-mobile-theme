@@ -1232,23 +1232,48 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .rmt-hero__headline {
   font-size: clamp(2.6rem,6vw,4.4rem);
   line-height: 1.05; color: var(--color-text);
-  max-width: 780px; margin: 0 0 1.1rem;
-  letter-spacing: -0.02em; font-weight: 800;
+  width: 100%; max-width: none; margin: 0 auto 1.1rem;
+  letter-spacing: -0.02em; font-weight: 400;
+  text-align: center;
 }
 .rmt-hero__headline mark {
-  background: none; color: var(--charcoal);
+  background: none; color: var(--green);
+  font-weight: 800;
   position: relative; display: inline-block; padding-bottom: 2px;
 }
-.rmt-hero__headline mark::after {
-  content: ''; position: absolute;
-  left: 0; right: 0; bottom: 2px;
-  height: 4px; background: var(--green);
-  border-radius: 2px; opacity: 0.75;
+.rmt-hero__highlight--roommate-mobile {
+  display: none;
+}
+.rmt-hero__headline-line {
+  display: block;
+}
+.rmt-hero__headline-line--main {
+  white-space: nowrap;
 }
 
 .rmt-hero__sub {
   font-size: 1.05rem; color: var(--color-text-soft);
-  max-width: 510px; line-height: 1.65; margin-bottom: 2rem;
+  max-width: 510px; line-height: 1.65; margin: 0 auto 2rem;
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  .rmt-hero__headline {
+    font-size: clamp(1.85rem, 8vw, 3rem);
+    line-height: 1.12;
+  }
+  .rmt-hero__highlight--roommate {
+    display: none;
+  }
+  .rmt-hero__highlight--roommate-mobile {
+    display: inline-block;
+  }
+}
+
+@media (max-width: 420px) {
+  .rmt-hero__headline {
+    font-size: clamp(1.55rem, 7.2vw, 1.95rem);
+  }
 }
 
 .rmt-hero__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; margin-bottom: 1.5rem; }
