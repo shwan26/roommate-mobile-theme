@@ -352,9 +352,9 @@ get_header();
                             <div class="par-photo-upload">
                                 <?php
                                 $thumb_id = get_post_thumbnail_id($edit_id);
-                                $thumb_url = $thumb_id
+                                $thumb_url = $thumb_id && !rmt_is_default_profile_photo_id($thumb_id)
                                     ? wp_get_attachment_image_url($thumb_id, 'thumbnail')
-                                    : get_template_directory_uri() . '/images/default-profile.jpg';
+                                    : rmt_get_default_profile_photo_url();
                                 ?>
 
                                 <img id="photo-preview" src="<?php echo esc_url($thumb_url); ?>" alt="Profile photo preview">

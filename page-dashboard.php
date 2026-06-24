@@ -510,13 +510,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                         <article class="listing-card listing-card--roommate">
                             <a href="<?php echo esc_url(get_permalink()); ?>" class="listing-card__image-link">
                                 <div class="listing-card__image">
-                                    <?php if (has_post_thumbnail()) : ?>
-                                        <?php the_post_thumbnail('large'); ?>
-                                    <?php else : ?>
-                                        <div class="listing-card__image listing-card__image--placeholder">
-                                            <?php esc_html_e('No Image', 'roommate-mobile-theme'); ?>
-                                        </div>
-                                    <?php endif; ?>
+                                    <?php echo rmt_get_profile_photo_html(get_the_ID(), 'large'); ?>
                                 </div>
                             </a>
 

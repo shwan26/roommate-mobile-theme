@@ -444,7 +444,7 @@ get_header();
                                 <div class="par-photo-upload">
                                     <img
                                         id="photo-preview"
-                                        src="<?php echo esc_url(get_template_directory_uri() . '/images/default-profile.jpg'); ?>"
+                                        src="<?php echo esc_url(rmt_get_default_profile_photo_url()); ?>"
                                         alt="Profile photo preview"
                                     >
 

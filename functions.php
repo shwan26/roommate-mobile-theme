@@ -836,16 +836,18 @@ add_action('widgets_init', 'rmt_register_sidebars');
 /**
  * Get default profile photo attachment ID.
  * Source file:
- * /wp-content/themes/roommate-mobile-theme/images/default-profile.jpg
+ * /wp-content/themes/roommate-mobile-theme/images/default-profile-scaled.png
  */
 function rmt_get_default_profile_photo_id() {
     $existing_id = absint(get_option('rmt_default_profile_photo_id'));
+    $source_file = 'default-profile-scaled.png';
+    $upload_file = 'rmt-default-profile-scaled.png';
 
-    if ($existing_id && get_post($existing_id)) {
+    if ($existing_id && get_post($existing_id) && basename((string) get_attached_file($existing_id)) === $upload_file) {
         return $existing_id;
     }
 
-    $file_path = get_template_directory() . '/images/default-profile.jpg';
+    $file_path = get_template_directory() . '/images/' . $source_file;
 
     if (!file_exists($file_path)) {
         return 0;
@@ -854,14 +856,12 @@ function rmt_get_default_profile_photo_id() {
     $file_type = wp_check_filetype(basename($file_path), null);
 
     $upload_dir = wp_upload_dir();
-    $new_file_path = $upload_dir['path'] . '/rmt-default-profile.jpg';
+    $new_file_path = $upload_dir['path'] . '/' . $upload_file;
 
-    if (!file_exists($new_file_path)) {
-        copy($file_path, $new_file_path);
-    }
+    copy($file_path, $new_file_path);
 
     $attachment = [
-        'guid' => $upload_dir['url'] . '/rmt-default-profile.jpg',
+        'guid'           => $upload_dir['url'] . '/' . $upload_file,
         'post_mime_type' => $file_type['type'],
         'post_title'     => 'Default Profile Photo',
         'post_content'   => '',
@@ -882,6 +882,63 @@ function rmt_get_default_profile_photo_id() {
     update_option('rmt_default_profile_photo_id', $attachment_id);
 
     return $attachment_id;
+}
+
+function rmt_is_default_profile_photo_id($attachment_id) {
+    $attachment_id = absint($attachment_id);
+
+    if (!$attachment_id) {
+        return false;
+    }
+
+    $current_default_id = absint(get_option('rmt_default_profile_photo_id'));
+
+    if ($current_default_id && $attachment_id === $current_default_id) {
+        return true;
+    }
+
+    $attachment = get_post($attachment_id);
+
+    return $attachment
+        && $attachment->post_type === 'attachment'
+        && $attachment->post_title === 'Default Profile Photo';
+}
+
+function rmt_get_default_profile_photo_url($size = 'thumbnail') {
+    $default_id = rmt_get_default_profile_photo_id();
+
+    if ($default_id) {
+        $url = wp_get_attachment_image_url($default_id, $size);
+
+        if ($url) {
+            return $url;
+        }
+    }
+
+    return get_template_directory_uri() . '/images/default-profile-scaled.png';
+}
+
+function rmt_get_profile_photo_html($post_id = null, $size = 'large', $attr = []) {
+    $post_id = $post_id ? absint($post_id) : get_the_ID();
+    $thumbnail_id = get_post_thumbnail_id($post_id);
+
+    if ($thumbnail_id && !rmt_is_default_profile_photo_id($thumbnail_id)) {
+        return get_the_post_thumbnail($post_id, $size, $attr);
+    }
+
+    $default_id = rmt_get_default_profile_photo_id();
+
+    if ($default_id) {
+        return wp_get_attachment_image($default_id, $size, false, array_merge([
+            'alt' => __('Default profile photo', 'roommate-mobile-theme'),
+        ], $attr));
+    }
+
+    return sprintf(
+        '<img src="%s" alt="%s">',
+        esc_url(get_template_directory_uri() . '/images/default-profile-scaled.png'),
+        esc_attr__('Default profile photo', 'roommate-mobile-theme')
+    );
 }
 
 /**

@@ -195,7 +195,7 @@ get_header();
                 <aside class="par-sidebar">
                     <div class="par-card par-sticky edit-profile-summary-card">
                         <div class="edit-profile-avatar">
-                            <?php echo get_avatar($current_user->ID, 96, '', $current_user->display_name, ['class' => 'edit-profile-avatar__image']); ?>
+                            <?php echo get_avatar($current_user->ID, 96, rmt_get_default_profile_photo_url(), $current_user->display_name, ['class' => 'edit-profile-avatar__image']); ?>
                         </div>
 
                         <h2><?php echo esc_html($current_user->display_name); ?></h2>
