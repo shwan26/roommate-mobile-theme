@@ -782,6 +782,16 @@ function rmt_format_price($amount) {
     return number_format((float) $amount) . ' THB';
 }
 
+function rmt_format_choice_label($value) {
+    $value = trim((string) $value);
+
+    if ($value === '') {
+        return '';
+    }
+
+    return str_replace(array('_', '-'), ' ', $value);
+}
+
 function rmt_format_date_for_form($date) {
     if (!$date) {
         return '';

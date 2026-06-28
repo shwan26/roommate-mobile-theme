@@ -1327,6 +1327,13 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 .rmt-card--light:hover { border-color: var(--green); box-shadow: 0 22px 52px rgba(16,24,40,0.16), 0 8px 24px rgba(88,204,2,0.18); }
 
+@media (max-width: 640px) {
+  .front-page .rmt-card--light,
+  .front-page .rmt-card--light:hover {
+    box-shadow: none;
+  }
+}
+
 .rmt-card--dark {
   background: var(--charcoal);
   border-color: rgba(255,255,255,0.08);

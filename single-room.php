@@ -276,28 +276,28 @@ if (have_posts()) :
                                     <?php if ($gender_preference) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Gender Preference:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($gender_preference); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($gender_preference)); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if ($pet_policy) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Pet Policy:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($pet_policy); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($pet_policy)); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if ($smoking_policy) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Smoking Policy:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($smoking_policy); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($smoking_policy)); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if ($min_stay) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Minimum Stay:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($min_stay); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($min_stay)); ?>
                                         </span>
                                     <?php endif; ?>
 
@@ -373,7 +373,7 @@ if (have_posts()) :
                                     <?php if ($gender) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Gender:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($gender); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($gender)); ?>
                                         </span>
                                     <?php endif; ?>
 

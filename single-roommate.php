@@ -270,7 +270,7 @@ if (have_posts()) :
                                     <?php if ($gender) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Gender:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($gender); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($gender)); ?>
                                         </span>
                                     <?php endif; ?>
 
@@ -318,28 +318,28 @@ if (have_posts()) :
                                     <?php if ($sleep_schedule) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Sleep Schedule:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($sleep_schedule); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($sleep_schedule)); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if ($smoker) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Smoker:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($smoker); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($smoker)); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if ($has_pets) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Has Pets:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($has_pets); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($has_pets)); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if ($social_level) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Social Level:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($social_level); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($social_level)); ?>
                                         </span>
                                     <?php endif; ?>
                                 </div>
@@ -412,7 +412,7 @@ if (have_posts()) :
                                     <?php if ($gender) : ?>
                                         <span class="listing-chip">
                                             <?php esc_html_e('Gender:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($gender); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($gender)); ?>
                                         </span>
                                     <?php endif; ?>
                                 </div>
