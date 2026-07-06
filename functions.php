@@ -470,7 +470,8 @@ function rmt_render_room_meta_box($post) {
                     <option value="">Select</option>
                     <option value="Male" <?php selected($gender, 'Male'); ?>>Male</option>
                     <option value="Female" <?php selected($gender, 'Female'); ?>>Female</option>
-                    <option value="Others" <?php selected($gender, 'Others'); ?>>Others</option>
+                    <option value="Non-binary" <?php selected($gender, 'Non-binary'); ?>>Non-binary</option>
+                    <option value="Prefer not to say" <?php selected($gender, 'Prefer not to say'); ?>>Prefer not to say</option>
                 </select>
             </td>
         </tr>
@@ -790,6 +791,43 @@ function rmt_format_choice_label($value) {
     }
 
     return str_replace(array('_', '-'), ' ', $value);
+}
+
+function rmt_min_stay_months_value($value) {
+    $value = trim((string) $value);
+
+    if ($value === '') {
+        return '';
+    }
+
+    if (is_numeric($value)) {
+        return (string) absint($value);
+    }
+
+    $normalized = strtolower(str_replace(array('_', '-'), ' ', $value));
+
+    if (preg_match('/(\d+)\s*year/', $normalized, $matches)) {
+        return (string) (absint($matches[1]) * 12);
+    }
+
+    if (preg_match('/(\d+)\s*month/', $normalized, $matches)) {
+        return (string) absint($matches[1]);
+    }
+
+    return '';
+}
+
+function rmt_format_min_stay_months($value) {
+    $months = rmt_min_stay_months_value($value);
+
+    if ($months === '' || (int) $months <= 0) {
+        return '';
+    }
+
+    return sprintf(
+        _n('%s month', '%s months', (int) $months, 'roommate-mobile-theme'),
+        number_format_i18n((int) $months)
+    );
 }
 
 function rmt_format_date_for_form($date) {
@@ -2414,6 +2452,186 @@ function rmt_delete_scheduled_account($user_id) {
 }
 add_action('rmt_delete_scheduled_account', 'rmt_delete_scheduled_account');
 
+/**
+ * Admin quick summary for listing and subscriber activity.
+ */
+function rmt_admin_dashboard_count_live_posts($post_type) {
+    $counts = wp_count_posts($post_type);
+
+    return isset($counts->publish) ? (int) $counts->publish : 0;
+}
+
+function rmt_admin_dashboard_count_subscribers() {
+    $user_counts = count_users();
+
+    return isset($user_counts['avail_roles']['subscriber'])
+        ? (int) $user_counts['avail_roles']['subscriber']
+        : 0;
+}
+
+function rmt_admin_dashboard_count_gender_posts($post_type, $group) {
+    $gender_values = array(
+        'male'              => array('Male', 'male'),
+        'female'            => array('Female', 'female'),
+        'non_binary'        => array('Non-binary', 'non-binary', 'Others', 'Other', 'other'),
+        'prefer_not_to_say' => array('Prefer not to say', 'prefer_not_to_say'),
+    );
+
+    if (!isset($gender_values[$group])) {
+        return 0;
+    }
+
+    $query = new WP_Query(array(
+        'post_type'              => $post_type,
+        'post_status'            => 'publish',
+        'posts_per_page'         => 1,
+        'fields'                 => 'ids',
+        'no_found_rows'          => false,
+        'ignore_sticky_posts'    => true,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
+        'meta_query'             => array(
+            array(
+                'key'     => '_gender',
+                'value'   => $gender_values[$group],
+                'compare' => 'IN',
+            ),
+        ),
+    ));
+
+    return (int) $query->found_posts;
+}
+
+function rmt_admin_dashboard_render_summary_widget() {
+    if (!current_user_can('edit_posts')) {
+        return;
+    }
+
+    $room_count       = rmt_admin_dashboard_count_live_posts('room');
+    $roommate_count   = rmt_admin_dashboard_count_live_posts('roommate');
+    $subscriber_count = rmt_admin_dashboard_count_subscribers();
+
+    $gender_groups = array(
+        'male'              => __('Male', 'roommate-mobile-theme'),
+        'female'            => __('Female', 'roommate-mobile-theme'),
+        'non_binary'        => __('Non-binary', 'roommate-mobile-theme'),
+        'prefer_not_to_say' => __('Prefer not to say', 'roommate-mobile-theme'),
+    );
+
+    $gender_summary = array();
+
+    foreach (array('room', 'roommate') as $post_type) {
+        foreach ($gender_groups as $group => $label) {
+            $gender_summary[$post_type][$group] = rmt_admin_dashboard_count_gender_posts($post_type, $group);
+        }
+    }
+    ?>
+    <style>
+        .rmt-admin-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin: 0 0 16px;
+        }
+
+        .rmt-admin-summary-card {
+            border: 1px solid #dcdcde;
+            border-radius: 6px;
+            padding: 12px;
+            background: #fff;
+        }
+
+        .rmt-admin-summary-card strong {
+            display: block;
+            margin: 0 0 4px;
+            color: #1d2327;
+            font-size: 22px;
+            line-height: 1.1;
+        }
+
+        .rmt-admin-summary-card span {
+            color: #646970;
+        }
+
+        .rmt-admin-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .rmt-admin-summary-table th,
+        .rmt-admin-summary-table td {
+            padding: 8px 6px;
+            border-top: 1px solid #dcdcde;
+            text-align: left;
+        }
+
+        .rmt-admin-summary-table td {
+            font-weight: 600;
+        }
+
+        @media (max-width: 782px) {
+            .rmt-admin-summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <div class="rmt-admin-summary-grid">
+        <a class="rmt-admin-summary-card" href="<?php echo esc_url(admin_url('edit.php?post_type=room&post_status=publish')); ?>">
+            <strong><?php echo esc_html(number_format_i18n($room_count)); ?></strong>
+            <span><?php esc_html_e('Live room posts', 'roommate-mobile-theme'); ?></span>
+        </a>
+        <a class="rmt-admin-summary-card" href="<?php echo esc_url(admin_url('edit.php?post_type=roommate&post_status=publish')); ?>">
+            <strong><?php echo esc_html(number_format_i18n($roommate_count)); ?></strong>
+            <span><?php esc_html_e('Live roommate posts', 'roommate-mobile-theme'); ?></span>
+        </a>
+        <a class="rmt-admin-summary-card" href="<?php echo esc_url(admin_url('users.php?role=subscriber')); ?>">
+            <strong><?php echo esc_html(number_format_i18n($subscriber_count)); ?></strong>
+            <span><?php esc_html_e('Subscriber users', 'roommate-mobile-theme'); ?></span>
+        </a>
+    </div>
+
+    <table class="rmt-admin-summary-table">
+        <thead>
+            <tr>
+                <th><?php esc_html_e('Gender', 'roommate-mobile-theme'); ?></th>
+                <th><?php esc_html_e('Rooms', 'roommate-mobile-theme'); ?></th>
+                <th><?php esc_html_e('Roommates', 'roommate-mobile-theme'); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($gender_groups as $group => $label) : ?>
+                <tr>
+                    <th scope="row"><?php echo esc_html($label); ?></th>
+                    <td><?php echo esc_html(number_format_i18n($gender_summary['room'][$group])); ?></td>
+                    <td><?php echo esc_html(number_format_i18n($gender_summary['roommate'][$group])); ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php
+}
+
+function rmt_admin_dashboard_add_summary_widget() {
+    global $wp_meta_boxes;
+
+    wp_add_dashboard_widget(
+        'rmt_admin_quick_summary',
+        __('Bkkroomie Quick Summary', 'roommate-mobile-theme'),
+        'rmt_admin_dashboard_render_summary_widget'
+    );
+
+    if (empty($wp_meta_boxes['dashboard']['normal']['core']['rmt_admin_quick_summary'])) {
+        return;
+    }
+
+    $summary_widget = array('rmt_admin_quick_summary' => $wp_meta_boxes['dashboard']['normal']['core']['rmt_admin_quick_summary']);
+    unset($wp_meta_boxes['dashboard']['normal']['core']['rmt_admin_quick_summary']);
+
+    $wp_meta_boxes['dashboard']['normal']['core'] = $summary_widget + $wp_meta_boxes['dashboard']['normal']['core'];
+}
+add_action('wp_dashboard_setup', 'rmt_admin_dashboard_add_summary_widget');
+
 function bkkroomie_google_analytics_tag() {
     if ( is_admin() || current_user_can( 'manage_options' ) ) {
         return;
@@ -2430,3 +2648,58 @@ function bkkroomie_google_analytics_tag() {
     <?php
 }
 add_action( 'wp_head', 'bkkroomie_google_analytics_tag' );
+
+add_filter('user_row_actions', function ($actions, $user) {
+    if ((int) $user->ID === 1) {
+        unset($actions['delete']);
+    }
+    return $actions;
+}, 10, 2);
+
+add_action('delete_user', function ($user_id) {
+    if ((int) $user_id === 1) {
+        wp_die('This administrator account is protected.');
+    }
+}, 1);
+
+add_action('admin_init', function () {
+
+    if (!current_user_can('delete_users')) {
+        return;
+    }
+
+    if (isset($_GET['action'], $_GET['user']) &&
+        $_GET['action'] === 'delete' &&
+        (int) $_GET['user'] === 1) {
+
+        wp_die('This administrator account is protected.');
+    }
+
+    if (
+        isset($_POST['action']) &&
+        $_POST['action'] === 'delete' &&
+        !empty($_POST['users'])
+    ) {
+        if (in_array(1, array_map('intval', $_POST['users']), true)) {
+            wp_die('This administrator account is protected.');
+        }
+    }
+
+});
+
+add_action('profile_update', function ($user_id, $old_user_data) {
+
+    if ((int) $user_id !== 1) {
+        return;
+    }
+
+    $user = get_userdata(1);
+
+    if (!in_array('administrator', (array) $user->roles, true)) {
+
+        $user->set_role('administrator');
+
+        wp_die('The primary administrator role cannot be changed.');
+    }
+
+}, 10, 2);

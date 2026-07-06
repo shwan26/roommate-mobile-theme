@@ -92,6 +92,7 @@ if (have_posts()) :
         $budget_min           = rmt_get_meta($post_id, '_budget_min');
         $budget_max           = rmt_get_meta($post_id, '_budget_max');
         $move_in_date         = rmt_get_meta($post_id, '_move_in_date');
+        $min_stay             = rmt_get_meta($post_id, '_lease_duration');
         $preferred_area_text  = rmt_get_meta($post_id, '_preferred_area_text');
         $preferred_area       = rmt_get_meta($post_id, '_preferred_area');
         $roommate_preference  = rmt_get_meta($post_id, '_roommate_preference');
@@ -236,6 +237,13 @@ if (have_posts()) :
                                         <span class="listing-chip">
                                             <?php esc_html_e('Move-in:', 'roommate-mobile-theme'); ?>
                                             <?php echo esc_html(rmt_single_roommate_format_date($move_in_date)); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($min_stay) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Minimum Stay:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($min_stay)); ?>
                                         </span>
                                     <?php endif; ?>
 
@@ -406,6 +414,13 @@ if (have_posts()) :
                                         <span class="listing-chip">
                                             <?php esc_html_e('Move-in:', 'roommate-mobile-theme'); ?>
                                             <?php echo esc_html(rmt_single_roommate_format_date($move_in_date)); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($min_stay) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Minimum Stay:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html(rmt_format_choice_label($min_stay)); ?>
                                         </span>
                                     <?php endif; ?>
 

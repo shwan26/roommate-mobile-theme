@@ -117,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
                 }
 
                 update_post_meta($post_id, '_move_in_date', $move_in_date);
+                update_post_meta($post_id, '_lease_duration', rmt_format_min_stay_months($_POST['min_stay'] ?? ''));
 
                 update_post_meta($post_id, '_preferred_area_text', $preferred_area);
                 update_post_meta($post_id, '_preferred_area', $preferred_area);
@@ -407,17 +408,34 @@ get_header();
                                 </div>
 
                                 <div class="par-field">
-                                    <label for="preferred_area">Preferred Area <span class="required">*</span></label>
-                                    <input
-                                        class="par-input"
-                                        type="text"
-                                        id="preferred_area"
-                                        name="preferred_area"
-                                        value="<?php echo esc_attr($_POST['preferred_area'] ?? ''); ?>"
-                                        placeholder="Sukhumvit, On Nut, Ari..."
-                                        required
-                                    >
+                                    <label for="min_stay">Minimum Stay</label>
+                                    <div class="par-number-unit">
+                                        <input
+                                            class="par-input"
+                                            type="number"
+                                            id="min_stay"
+                                            name="min_stay"
+                                            min="1"
+                                            step="1"
+                                            inputmode="numeric"
+                                            value="<?php echo esc_attr(rmt_min_stay_months_value($_POST['min_stay'] ?? '')); ?>"
+                                        >
+                                        <span class="par-number-unit__suffix">months</span>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <div class="par-field">
+                                <label for="preferred_area">Preferred Area <span class="required">*</span></label>
+                                <input
+                                    class="par-input"
+                                    type="text"
+                                    id="preferred_area"
+                                    name="preferred_area"
+                                    value="<?php echo esc_attr($_POST['preferred_area'] ?? ''); ?>"
+                                    placeholder="Sukhumvit, On Nut, Ari..."
+                                    required
+                                >
                             </div>
 
                             <?php if (!empty($location_area_terms) && !is_wp_error($location_area_terms)) : ?>

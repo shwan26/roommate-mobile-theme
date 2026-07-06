@@ -72,6 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
 
                     if ($meta_key === '_map_url') {
                         update_post_meta($post_id, $meta_key, esc_url_raw($value));
+                    } elseif ($meta_key === '_min_stay') {
+                        update_post_meta($post_id, $meta_key, rmt_format_min_stay_months($value));
                     } else {
                         update_post_meta($post_id, $meta_key, sanitize_text_field($value));
                     }
@@ -312,14 +314,19 @@ get_header();
                             <div class="par-cols-2">
                                 <div class="par-field">
                                     <label for="min_stay">Minimum Stay</label>
-                                    <select class="par-select" id="min_stay" name="min_stay">
-                                        <option value="">Select</option>
-                                        <?php foreach (['1 month', '2 months', '3 months', '6 months', '1 year'] as $option) : ?>
-                                            <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['min_stay'] ?? '', $option); ?>>
-                                                <?php echo esc_html($option); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
+                                    <div class="par-number-unit">
+                                        <input
+                                            class="par-input"
+                                            type="number"
+                                            id="min_stay"
+                                            name="min_stay"
+                                            min="1"
+                                            step="1"
+                                            inputmode="numeric"
+                                            value="<?php echo esc_attr(rmt_min_stay_months_value($_POST['min_stay'] ?? '')); ?>"
+                                        >
+                                        <span class="par-number-unit__suffix">months</span>
+                                    </div>
                                 </div>
 
                                 <div class="par-field">

@@ -1520,6 +1520,19 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   box-shadow: 0 0 0 4px rgba(88,204,2,0.14);
 }
 
+.par-number-unit {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.par-number-unit .par-input { max-width: 150px; }
+.par-number-unit__suffix {
+  color: var(--color-text);
+  font-size: 0.93rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .par-select-wrap { position: relative; }
 .par-select-wrap::after {
   content: "▾"; position: absolute; right: 1rem; top: 50%;

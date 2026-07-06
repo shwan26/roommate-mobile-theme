@@ -118,6 +118,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
 
                     if ($meta_key === '_map_url') {
                         update_post_meta($edit_id, $meta_key, esc_url_raw($value));
+                    } elseif ($meta_key === '_min_stay') {
+                        update_post_meta($edit_id, $meta_key, rmt_format_min_stay_months($value));
                     } else {
                         update_post_meta($edit_id, $meta_key, sanitize_text_field($value));
                     }
@@ -387,13 +389,19 @@ get_header();
                         <div class="par-cols-2">
                             <div class="par-field">
                                 <label for="min_stay">Minimum Stay</label>
-                                <select class="par-select" id="min_stay" name="min_stay">
-                                    <option value="">Select</option>
-                                    <option value="1_month" <?php selected($v_min_stay, '1_month'); ?>>1 Month</option>
-                                    <option value="3_months" <?php selected($v_min_stay, '3_months'); ?>>3 Months</option>
-                                    <option value="6_months" <?php selected($v_min_stay, '6_months'); ?>>6 Months</option>
-                                    <option value="1_year" <?php selected($v_min_stay, '1_year'); ?>>1 Year</option>
-                                </select>
+                                <div class="par-number-unit">
+                                    <input
+                                        class="par-input"
+                                        type="number"
+                                        id="min_stay"
+                                        name="min_stay"
+                                        min="1"
+                                        step="1"
+                                        inputmode="numeric"
+                                        value="<?php echo esc_attr(rmt_min_stay_months_value($v_min_stay)); ?>"
+                                    >
+                                    <span class="par-number-unit__suffix">months</span>
+                                </div>
                             </div>
 
                             <div class="par-field">
