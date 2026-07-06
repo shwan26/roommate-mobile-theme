@@ -87,7 +87,6 @@ if (have_posts()) :
         $room_type_text = rmt_single_terms_text($post_id, 'room_type');
 
         $amenities  = get_the_terms($post_id, 'amenity');
-        $lifestyles = get_the_terms($post_id, 'lifestyle');
 
         /*
          * Display values matching archive room card spans
@@ -441,20 +440,6 @@ if (have_posts()) :
                                     <?php endif; ?>
                                 </div>
                             </section>
-
-                            <?php if (!empty($lifestyles) && !is_wp_error($lifestyles)) : ?>
-                                <section class="single-card">
-                                    <h2><?php esc_html_e('Lifestyle Tags', 'roommate-mobile-theme'); ?></h2>
-
-                                    <div class="listing-card__chips">
-                                        <?php foreach ($lifestyles as $tag) : ?>
-                                            <span class="listing-chip">
-                                                <?php echo esc_html($tag->name); ?>
-                                            </span>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </section>
-                            <?php endif; ?>
 
                             <?php if ($bio) : ?>
                                 <section class="single-card">

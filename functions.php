@@ -252,17 +252,6 @@ function rmt_register_taxonomies() {
         'show_in_rest' => true,
     ));
 
-    register_taxonomy('lifestyle', array('room', 'roommate'), array(
-        'labels' => array(
-            'name'          => __('Lifestyle Tags', 'roommate-mobile-theme'),
-            'singular_name' => __('Lifestyle Tag', 'roommate-mobile-theme'),
-        ),
-        'public'       => true,
-        'hierarchical' => false,
-        'rewrite'      => array('slug' => 'lifestyle'),
-        'show_in_rest' => true,
-    ));
-
     register_taxonomy('room_type', array('room', 'roommate'), array(
         'labels' => array(
             'name'          => __('Room Types', 'roommate-mobile-theme'),

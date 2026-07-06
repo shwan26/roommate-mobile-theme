@@ -165,14 +165,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
 
                 wp_set_post_terms(
                     $edit_id,
-                    !empty($_POST['lifestyle']) && is_array($_POST['lifestyle'])
-                        ? array_map('intval', $_POST['lifestyle'])
-                        : [],
-                    'lifestyle'
-                );
-
-                wp_set_post_terms(
-                    $edit_id,
                     !empty($_POST['room_type'])
                         ? [absint($_POST['room_type'])]
                         : [],
@@ -240,7 +232,6 @@ $v_roommate_pref  = $is_post ? sanitize_textarea_field($_POST['roommate_preferen
 
 $selected_location_area = $is_post ? array_map('intval', (array) ($_POST['location_area'] ?? [])) : rmt_edit_room_selected_terms($edit_id, 'location_area');
 $selected_amenity       = $is_post ? array_map('intval', (array) ($_POST['amenity'] ?? [])) : rmt_edit_room_selected_terms($edit_id, 'amenity');
-$selected_lifestyle     = $is_post ? array_map('intval', (array) ($_POST['lifestyle'] ?? [])) : rmt_edit_room_selected_terms($edit_id, 'lifestyle');
 $selected_room_type     = $is_post ? absint($_POST['room_type'] ?? 0) : 0;
 
 if (!$is_post) {
@@ -250,7 +241,6 @@ if (!$is_post) {
 
 $location_terms  = get_terms(['taxonomy' => 'location_area', 'hide_empty' => false]);
 $amenity_terms   = get_terms(['taxonomy' => 'amenity', 'hide_empty' => false]);
-$lifestyle_terms = get_terms(['taxonomy' => 'lifestyle', 'hide_empty' => false]);
 $room_type_terms = get_terms(['taxonomy' => 'room_type', 'hide_empty' => false]);
 
 get_header();
@@ -443,7 +433,7 @@ get_header();
                             <div class="par-card__icon">🗂️</div>
                             <div>
                                 <h2>Categories</h2>
-                                <p>Choose room type, location, amenities, and lifestyle tags.</p>
+                                <p>Choose room type, location, and amenities.</p>
                             </div>
                         </div>
 
@@ -489,19 +479,6 @@ get_header();
                             </div>
                         <?php endif; ?>
 
-                        <?php if (!empty($lifestyle_terms) && !is_wp_error($lifestyle_terms)) : ?>
-                            <div class="par-field">
-                                <label>Lifestyle</label>
-                                <div class="par-check-grid">
-                                    <?php foreach ($lifestyle_terms as $term) : ?>
-                                        <label class="par-check">
-                                            <input type="checkbox" name="lifestyle[]" value="<?php echo esc_attr($term->term_id); ?>" <?php checked(in_array($term->term_id, $selected_lifestyle, true)); ?>>
-                                            <span><?php echo esc_html($term->name); ?></span>
-                                        </label>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        <?php endif; ?>
                     </section>
 
                     <section class="par-card">

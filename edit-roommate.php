@@ -183,14 +183,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_roommate_non
 
                 wp_set_post_terms(
                     $edit_id,
-                    !empty($_POST['lifestyle']) && is_array($_POST['lifestyle'])
-                        ? array_map('intval', $_POST['lifestyle'])
-                        : [],
-                    'lifestyle'
-                );
-
-                wp_set_post_terms(
-                    $edit_id,
                     !empty($_POST['location_area']) && is_array($_POST['location_area'])
                         ? array_map('intval', $_POST['location_area'])
                         : [],
@@ -286,18 +278,9 @@ $v_roommate_preference = $is_post
     ? sanitize_textarea_field($_POST['roommate_preference'] ?? '')
     : rmt_edit_roommate_get($edit_id, '_roommate_preference');
 
-$selected_lifestyles = $is_post
-    ? array_map('intval', (array) ($_POST['lifestyle'] ?? []))
-    : rmt_edit_roommate_selected_terms($edit_id, 'lifestyle');
-
 $selected_locations = $is_post
     ? array_map('intval', (array) ($_POST['location_area'] ?? []))
     : rmt_edit_roommate_selected_terms($edit_id, 'location_area');
-
-$lifestyle_terms = get_terms([
-    'taxonomy'   => 'lifestyle',
-    'hide_empty' => false,
-]);
 
 $location_area_terms = get_terms([
     'taxonomy'   => 'location_area',
@@ -607,26 +590,6 @@ get_header();
                             <input class="par-input" type="text" id="hobbies" name="hobbies" value="<?php echo esc_attr($v_hobbies); ?>">
                         </div>
 
-                        <?php if (!empty($lifestyle_terms) && !is_wp_error($lifestyle_terms)) : ?>
-                            <div class="par-field">
-                                <label>Lifestyle Tags</label>
-
-                                <div class="par-checkbox-group">
-                                    <?php foreach ($lifestyle_terms as $term) : ?>
-                                        <label class="par-checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                name="lifestyle[]"
-                                                value="<?php echo esc_attr($term->term_id); ?>"
-                                                <?php checked(in_array($term->term_id, $selected_lifestyles, true)); ?>
-                                            >
-
-                                            <span><?php echo esc_html($term->name); ?></span>
-                                        </label>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
-                        <?php endif; ?>
                     </section>
 
                     <section class="par-card">

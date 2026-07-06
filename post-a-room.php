@@ -119,14 +119,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
 
                 wp_set_post_terms(
                     $post_id,
-                    !empty($_POST['lifestyle']) && is_array($_POST['lifestyle'])
-                        ? array_map('intval', $_POST['lifestyle'])
-                        : [],
-                    'lifestyle'
-                );
-
-                wp_set_post_terms(
-                    $post_id,
                     !empty($_POST['room_type'])
                         ? [absint($_POST['room_type'])]
                         : [],
@@ -169,7 +161,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
 
 $location_terms  = get_terms(['taxonomy' => 'location_area', 'hide_empty' => false]);
 $amenity_terms   = get_terms(['taxonomy' => 'amenity', 'hide_empty' => false]);
-$lifestyle_terms = get_terms(['taxonomy' => 'lifestyle', 'hide_empty' => false]);
 $room_type_terms = get_terms(['taxonomy' => 'room_type', 'hide_empty' => false]);
 
 get_header();
@@ -420,19 +411,6 @@ get_header();
                                 </div>
                             <?php endif; ?>
 
-                            <?php if (!empty($lifestyle_terms) && !is_wp_error($lifestyle_terms)) : ?>
-                                <div class="par-field">
-                                    <label>Lifestyle Tags</label>
-                                    <div class="par-check-grid">
-                                        <?php foreach ($lifestyle_terms as $term) : ?>
-                                            <label class="par-check">
-                                                <input type="checkbox" name="lifestyle[]" value="<?php echo esc_attr($term->term_id); ?>" <?php checked(in_array($term->term_id, array_map('intval', (array) ($_POST['lifestyle'] ?? [])), true)); ?>>
-                                                <span><?php echo esc_html($term->name); ?></span>
-                                            </label>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
                         </section>
 
                         <section class="par-card">
