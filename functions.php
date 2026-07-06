@@ -1810,6 +1810,14 @@ function rmt_messages_table_name() {
     return $wpdb->prefix . 'rmt_messages';
 }
 
+if (!defined('RMT_CHAT_RETENTION_YEARS')) {
+    define('RMT_CHAT_RETENTION_YEARS', 2);
+}
+
+if (!defined('RMT_CHAT_CLEANUP_HOOK')) {
+    define('RMT_CHAT_CLEANUP_HOOK', 'rmt_delete_expired_chat_messages');
+}
+
 function rmt_create_messages_table() {
     global $wpdb;
 
@@ -1852,6 +1860,34 @@ function rmt_maybe_create_messages_table() {
     }
 }
 add_action('init', 'rmt_maybe_create_messages_table');
+
+function rmt_schedule_chat_cleanup() {
+    if (!wp_next_scheduled(RMT_CHAT_CLEANUP_HOOK)) {
+        wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', RMT_CHAT_CLEANUP_HOOK);
+    }
+}
+add_action('init', 'rmt_schedule_chat_cleanup');
+add_action('after_switch_theme', 'rmt_schedule_chat_cleanup');
+
+function rmt_unschedule_chat_cleanup() {
+    wp_clear_scheduled_hook(RMT_CHAT_CLEANUP_HOOK);
+}
+add_action('switch_theme', 'rmt_unschedule_chat_cleanup');
+
+function rmt_delete_expired_chat_messages() {
+    global $wpdb;
+
+    $cutoff_timestamp = strtotime('-' . RMT_CHAT_RETENTION_YEARS . ' years', current_time('timestamp'));
+    $cutoff_date      = date('Y-m-d H:i:s', $cutoff_timestamp);
+
+    return $wpdb->query(
+        $wpdb->prepare(
+            'DELETE FROM ' . rmt_messages_table_name() . ' WHERE created_at < %s',
+            $cutoff_date
+        )
+    );
+}
+add_action(RMT_CHAT_CLEANUP_HOOK, 'rmt_delete_expired_chat_messages');
 
 function rmt_user_can_chat_about_listing($user_id, $other_user_id, $listing_id) {
     $user_id       = absint($user_id);
@@ -1910,7 +1946,42 @@ function rmt_insert_message($sender_id, $recipient_id, $listing_id, $message) {
         return new WP_Error('db_error', 'Message could not be saved.');
     }
 
+    rmt_send_listing_chat_notification_email(absint($sender_id), absint($recipient_id), absint($listing_id), $message);
+
     return (int) $wpdb->insert_id;
+}
+
+function rmt_send_listing_chat_notification_email($sender_id, $recipient_id, $listing_id, $message) {
+    $sender_id    = absint($sender_id);
+    $recipient_id = absint($recipient_id);
+    $listing_id   = absint($listing_id);
+
+    if (!$sender_id || !$recipient_id || !$listing_id || $sender_id === $recipient_id) {
+        return false;
+    }
+
+    $listing = get_post($listing_id);
+
+    if (!$listing || !in_array($listing->post_type, array('room', 'roommate'), true)) {
+        return false;
+    }
+
+    if ((int) $listing->post_author !== $recipient_id) {
+        return false;
+    }
+
+    $recipient = get_userdata($recipient_id);
+    $sender    = get_userdata($sender_id);
+
+    if (!$recipient || empty($recipient->user_email) || !$sender) {
+        return false;
+    }
+
+    $site_name     = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
+    $subject       = sprintf('[%s] New message', $site_name);
+    $email_message = "You received a new message.\n\nLogin to read it.";
+
+    return wp_mail($recipient->user_email, $subject, $email_message);
 }
 
 function rmt_get_conversation_messages($user_id, $other_user_id, $listing_id, $limit = 80) {
