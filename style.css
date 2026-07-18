@@ -1586,6 +1586,35 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .par-photo-upload img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--color-border); flex-shrink: 0; }
 .par-photo-upload__right { display: flex; flex-direction: column; gap: 0.5rem; }
 .par-photo-hint { font-size: 0.78rem; color: var(--color-text-muted); }
+.par-room-photo-upload img { width: 120px; height: 88px; border-radius: 8px; }
+.par-photo-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+.par-photo-upload.is-selected {
+  border-color: var(--green);
+  background: #f4fbf2;
+}
+.par-photo-upload.is-selected .par-photo-status { color: var(--green-dark); }
+.par-photo-upload.is-selected .par-photo-status::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  background: var(--green);
+  flex: 0 0 auto;
+}
+.par-photo-clear {
+  align-self: flex-start;
+  padding: 0.5rem 0.85rem;
+  min-height: 36px;
+  font-size: 0.82rem;
+}
 
 .par-alert, .par-notice, .rmt-notice {
   padding: 0.95rem 1.15rem; border-radius: var(--radius-md); margin-bottom: 1.15rem;
@@ -2185,6 +2214,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
   .par-photo-upload { flex-direction: column; align-items: flex-start; gap: 0.8rem; }
   .par-photo-upload img { width: 68px; height: 68px; }
+  .par-room-photo-upload img { width: 100%; max-width: 260px; height: auto; aspect-ratio: 4 / 3; }
   .par-current-image { max-width: 100%; }
 
   .btn, .mobile-menu-btn, .par-file-btn { min-height: 48px; font-size: 0.95rem; padding: 0.78rem 1.1rem; }

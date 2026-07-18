@@ -51,6 +51,62 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  document.querySelectorAll("[data-room-photo-upload]").forEach(function (upload) {
+    const input = upload.querySelector("[data-room-photo-input]");
+    const preview = upload.querySelector("[data-room-photo-preview]");
+    const status = upload.querySelector("[data-room-photo-status]");
+    const clearButton = upload.querySelector("[data-room-photo-clear]");
+    const defaultPreview = preview ? preview.src : "";
+
+    if (!input || !preview || !status) {
+      return;
+    }
+
+    const resetUpload = function () {
+      input.value = "";
+      preview.src = defaultPreview;
+      status.textContent = "No photo selected yet.";
+      upload.classList.remove("is-selected");
+
+      if (clearButton) {
+        clearButton.hidden = true;
+      }
+    };
+
+    input.addEventListener("change", function () {
+      const file = input.files && input.files[0];
+
+      if (!file) {
+        resetUpload();
+        return;
+      }
+
+      if (!file.type || !file.type.startsWith("image/")) {
+        status.textContent = "Please choose an image file.";
+        upload.classList.remove("is-selected");
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = function (event) {
+        preview.src = event.target.result;
+      };
+
+      reader.readAsDataURL(file);
+      status.textContent = "Ready to upload: " + file.name;
+      upload.classList.add("is-selected");
+
+      if (clearButton) {
+        clearButton.hidden = false;
+      }
+    });
+
+    if (clearButton) {
+      clearButton.addEventListener("click", resetUpload);
+    }
+  });
+
   const listingCards = document.querySelectorAll(".listing-card");
   listingCards.forEach(function (card) {
     card.addEventListener("mouseenter", function () {

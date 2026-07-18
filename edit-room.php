@@ -73,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
         }
 
         $errors = array_merge($errors, rmt_validate_required_room_fields($_POST));
+        $errors = array_merge($errors, rmt_validate_image_upload('room_image', 'Room photo'));
 
         if (empty($errors)) {
             $_POST['available_date'] = $available_date;
@@ -180,6 +181,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
 
                     if (!is_wp_error($attachment_id)) {
                         set_post_thumbnail($edit_id, $attachment_id);
+                    } else {
+                        $errors[] = $attachment_id->get_error_message();
                     }
                 } elseif (!has_post_thumbnail($edit_id)) {
                     $default_room_photo_id = rmt_get_default_room_photo_id();
@@ -189,8 +192,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_room_nonce']
                     }
                 }
 
-                wp_redirect(add_query_arg('listing_updated', '1', home_url('/dashboard/')));
-                exit;
+                if (empty($errors)) {
+                    wp_redirect(add_query_arg('listing_updated', '1', home_url('/dashboard/')));
+                    exit;
+                }
             }
         }
     }
@@ -357,7 +362,8 @@ get_header();
                         <div class="par-field">
                             <label for="room_image">Room Photo</label>
                             <label for="room_image" class="btn btn-secondary par-file-btn">Add Room Photo</label>
-                            <input class="par-file-input-hidden" type="file" id="room_image" name="room_image" accept="image/*">
+                            <input class="par-file-input-hidden" type="file" id="room_image" name="room_image" accept="image/jpeg,image/png,image/webp">
+                            <small>JPG, PNG, or WEBP recommended.</small>
 
                             <?php if (has_post_thumbnail($edit_id)) : ?>
                                 <div class="par-current-image">

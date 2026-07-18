@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
         }
 
         $errors = array_merge($errors, rmt_validate_required_room_fields($_POST));
+        $errors = array_merge($errors, rmt_validate_image_upload('room_image', 'Room photo'));
 
         if (empty($errors)) {
             $_POST['available_date'] = $available_date;
@@ -134,6 +135,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
 
                     if (!is_wp_error($attachment_id)) {
                         set_post_thumbnail($post_id, $attachment_id);
+                    } else {
+                        $errors[] = $attachment_id->get_error_message();
+                        wp_delete_post($post_id, true);
                     }
                 } else {
                     $default_room_photo_id = rmt_get_default_room_photo_id();
@@ -143,17 +147,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
                     }
                 }
 
-                $profile_photo_id = rmt_get_uploaded_or_default_profile_photo_id('profile_photo', $post_id);
+                $profile_photo_id = empty($errors)
+                    ? rmt_get_uploaded_or_default_profile_photo_id('profile_photo', $post_id)
+                    : 0;
 
                 if ($profile_photo_id) {
                     update_post_meta($post_id, '_profile_photo_id', $profile_photo_id);
                 }
 
-                wp_redirect(add_query_arg([
-                    'listing_submitted' => '1',
-                    'listing_status'    => $post_status,
-                ], home_url('/dashboard/')));
-                exit;
+                if (empty($errors)) {
+                    wp_redirect(add_query_arg([
+                        'listing_submitted' => '1',
+                        'listing_status'    => $post_status,
+                    ], home_url('/dashboard/')));
+                    exit;
+                }
             }
         }
     }
@@ -288,8 +296,21 @@ get_header();
 
                             <div class="par-field">
                                 <label for="room_image">Room Photo</label>
-                                <label for="room_image" class="btn btn-secondary par-file-btn">Add Room Photo</label>
-                                <input class="par-file-input-hidden" type="file" id="room_image" name="room_image" accept="image/*">
+                                <div class="par-photo-upload par-room-photo-upload" data-room-photo-upload>
+                                    <img
+                                        data-room-photo-preview
+                                        src="<?php echo esc_url(get_template_directory_uri() . '/images/default-room.png'); ?>"
+                                        alt="Room photo preview"
+                                    >
+
+                                    <div class="par-photo-upload__right">
+                                        <label for="room_image" class="btn btn-secondary par-file-btn">Add Room Photo</label>
+                                        <input class="par-file-input-hidden" type="file" id="room_image" name="room_image" accept="image/jpeg,image/png,image/webp" data-room-photo-input>
+                                        <span class="par-photo-status" data-room-photo-status>No photo selected yet.</span>
+                                        <button class="btn btn-outline par-photo-clear" type="button" data-room-photo-clear hidden>Clear Photo</button>
+                                        <span class="par-photo-hint">JPG, PNG, or WEBP recommended. Leave empty to use the default room photo.</span>
+                                    </div>
+                                </div>
                             </div>
                         </section>
 

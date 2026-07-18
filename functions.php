@@ -1092,6 +1092,54 @@ function rmt_get_uploaded_or_default_profile_photo_id($field_name, $post_id) {
     return rmt_get_default_profile_photo_id();
 }
 
+function rmt_get_upload_error_message($error_code, $label = 'Photo') {
+    $label = trim((string) $label) ?: 'Photo';
+
+    switch ((int) $error_code) {
+        case UPLOAD_ERR_INI_SIZE:
+        case UPLOAD_ERR_FORM_SIZE:
+            return sprintf('%s is too large. Maximum upload size is %s.', $label, size_format(wp_max_upload_size()));
+        case UPLOAD_ERR_PARTIAL:
+            return sprintf('%s was only partially uploaded. Please try again.', $label);
+        case UPLOAD_ERR_NO_FILE:
+            return '';
+        case UPLOAD_ERR_NO_TMP_DIR:
+            return sprintf('%s could not be uploaded because the server upload folder is missing.', $label);
+        case UPLOAD_ERR_CANT_WRITE:
+            return sprintf('%s could not be saved on the server.', $label);
+        case UPLOAD_ERR_EXTENSION:
+            return sprintf('%s upload was stopped by the server.', $label);
+        default:
+            return sprintf('%s could not be uploaded. Please try a JPG, PNG, or WEBP image.', $label);
+    }
+}
+
+function rmt_validate_image_upload($field_name, $label = 'Photo') {
+    if (empty($_FILES[$field_name]['name'])) {
+        return [];
+    }
+
+    $file = $_FILES[$field_name];
+
+    if (!isset($file['error']) || (int) $file['error'] !== UPLOAD_ERR_OK) {
+        $message = rmt_get_upload_error_message($file['error'] ?? UPLOAD_ERR_NO_FILE, $label);
+        return $message ? [$message] : [];
+    }
+
+    if (!empty($file['size']) && (int) $file['size'] > wp_max_upload_size()) {
+        return [sprintf('%s is too large. Maximum upload size is %s.', $label, size_format(wp_max_upload_size()))];
+    }
+
+    $file_type = wp_check_filetype_and_ext($file['tmp_name'], $file['name']);
+    $allowed_types = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (empty($file_type['type']) || !in_array($file_type['type'], $allowed_types, true)) {
+        return [sprintf('Please upload a JPG, PNG, or WEBP image for %s.', strtolower($label))];
+    }
+
+    return [];
+}
+
 /**
  * ------------------------------------------------------------
  * 12. AJAX LOAD MORE EXAMPLE
