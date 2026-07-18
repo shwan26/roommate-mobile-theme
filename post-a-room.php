@@ -85,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
                     '_age'            => 'age',
                     '_gender'         => 'gender',
                     '_occupation'     => 'occupation',
+                    '_line_id'        => 'line_id',
                     '_nationality'    => 'nationality',
                     '_languages'      => 'languages',
                     '_zodiac_sign'    => 'zodiac_sign',
@@ -505,6 +506,11 @@ get_header();
                             </div>
 
                             <div class="par-cols-2">
+                                <div class="par-field">
+                                    <label for="line_id">Line ID</label>
+                                    <input class="par-input" type="text" id="line_id" name="line_id" value="<?php echo esc_attr($_POST['line_id'] ?? ''); ?>">
+                                </div>
+
                                 <div class="par-field">
                                     <label for="nationality">Nationality</label>
                                     <input class="par-input" type="text" id="nationality" name="nationality" value="<?php echo esc_attr($_POST['nationality'] ?? ''); ?>">

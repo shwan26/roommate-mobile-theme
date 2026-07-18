@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_profile_nonc
         $nickname     = sanitize_text_field(wp_unslash($_POST['nickname'] ?? ''));
         $email        = sanitize_email(wp_unslash($_POST['user_email'] ?? ''));
         $description  = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
+        $line_id      = sanitize_text_field(wp_unslash($_POST['line_id'] ?? ''));
         $user_url     = esc_url_raw(wp_unslash($_POST['user_url'] ?? ''));
         $password     = (string) wp_unslash($_POST['current_password'] ?? '');
 
@@ -65,6 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_profile_nonc
             if (is_wp_error($updated)) {
                 $errors[] = $updated->get_error_message();
             } else {
+                update_user_meta($current_user->ID, 'line_id', $line_id);
+
                 wp_safe_redirect(add_query_arg('profile_updated', '1', home_url('/edit-profile/')));
                 exit;
             }
@@ -85,6 +88,7 @@ $v_last_name    = $is_post ? sanitize_text_field(wp_unslash($_POST['last_name'] 
 $v_nickname     = $is_post ? sanitize_text_field(wp_unslash($_POST['nickname'] ?? '')) : get_user_meta($current_user->ID, 'nickname', true);
 $v_email        = $is_post ? sanitize_email(wp_unslash($_POST['user_email'] ?? '')) : $current_user->user_email;
 $v_description  = $is_post ? sanitize_textarea_field(wp_unslash($_POST['description'] ?? '')) : get_user_meta($current_user->ID, 'description', true);
+$v_line_id      = $is_post ? sanitize_text_field(wp_unslash($_POST['line_id'] ?? '')) : get_user_meta($current_user->ID, 'line_id', true);
 $v_user_url     = $is_post ? esc_url_raw(wp_unslash($_POST['user_url'] ?? '')) : $current_user->user_url;
 
 if ($v_nickname === '') {
@@ -161,6 +165,11 @@ get_header();
                         <div class="par-field">
                             <label for="description">About You</label>
                             <textarea class="par-textarea" id="description" name="description" rows="5" placeholder="A short note about yourself."><?php echo esc_textarea($v_description); ?></textarea>
+                        </div>
+
+                        <div class="par-field">
+                            <label for="line_id">Line ID</label>
+                            <input class="par-input" type="text" id="line_id" name="line_id" value="<?php echo esc_attr($v_line_id); ?>" placeholder="Your LINE contact ID">
                         </div>
                     </section>
 

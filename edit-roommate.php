@@ -146,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_roommate_non
                     '_age'        => 'age',
                     '_gender'     => 'gender',
                     '_occupation' => 'occupation',
+                    '_line_id'    => 'line_id',
                     '_nationality' => 'nationality',
                     '_languages'  => 'languages',
                     '_zodiac_sign' => 'zodiac_sign',
@@ -213,6 +214,10 @@ $v_gender = $is_post
 $v_occupation = $is_post
     ? sanitize_text_field($_POST['occupation'] ?? '')
     : rmt_edit_roommate_get($edit_id, '_occupation');
+
+$v_line_id = $is_post
+    ? sanitize_text_field($_POST['line_id'] ?? '')
+    : rmt_edit_roommate_get($edit_id, '_line_id');
 
 $v_nationality = $is_post
     ? sanitize_text_field($_POST['nationality'] ?? '')
@@ -402,6 +407,11 @@ get_header();
                         </div>
 
                         <div class="par-cols-2">
+                            <div class="par-field">
+                                <label for="line_id">Line ID</label>
+                                <input class="par-input" type="text" id="line_id" name="line_id" value="<?php echo esc_attr($v_line_id); ?>">
+                            </div>
+
                             <div class="par-field">
                                 <label for="nationality">Nationality</label>
                                 <input class="par-input" type="text" id="nationality" name="nationality" value="<?php echo esc_attr($v_nationality); ?>">
