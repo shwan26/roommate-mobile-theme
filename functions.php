@@ -2752,6 +2752,7 @@ function bkkroomie_google_analytics_tag() {
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-X9DJTW8GVX');
+      gtag('config', 'G-T322N5J5QT');
     </script>
     <?php
 }

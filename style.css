@@ -784,6 +784,25 @@ p { margin-top: 0; color: var(--color-text-soft); }
   border-bottom: 0;
 }
 
+.single-page .listing-chip--line-contact {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.single-page .listing-chip--line-contact span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.listing-chip__line-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  color: #06c755;
+  fill: currentColor;
+}
+
 .listing-card__person { background: var(--color-surface-alt); border-radius: var(--radius-md); padding: 0.85rem; }
 .listing-card__person strong { display: inline-block; margin-bottom: 0.4rem; font-size: 0.9rem; }
 .listing-card__person ul { margin: 0; padding-left: 1rem; color: var(--color-text-soft); font-size: 0.88rem; }

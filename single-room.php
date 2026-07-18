@@ -71,6 +71,7 @@ if (have_posts()) :
         $occupation          = rmt_get_meta($post_id, '_occupation');
         $nationality         = rmt_get_meta($post_id, '_nationality');
         $languages           = rmt_get_meta($post_id, '_languages');
+        $line_id             = rmt_get_meta($post_id, '_line_id');
         $zodiac_sign         = rmt_get_meta($post_id, '_zodiac_sign');
         $sleep_schedule      = rmt_get_meta($post_id, '_sleep_schedule');
         $smoker              = rmt_get_meta($post_id, '_smoker');
@@ -359,6 +360,16 @@ if (have_posts()) :
                                         <span class="listing-chip">
                                             <?php esc_html_e('Name:', 'roommate-mobile-theme'); ?>
                                             <?php echo esc_html($nickname); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($line_id) : ?>
+                                        <span class="listing-chip listing-chip--line-contact">
+                                            <svg class="listing-chip__line-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3C6.49 3 2 6.67 2 11.18c0 4.04 3.58 7.43 8.42 8.08.33.07.78.22.9.5.1.26.07.66.03.92l-.14.87c-.04.26-.2 1.02.87.56 1.07-.45 5.76-3.39 7.86-5.8A7.34 7.34 0 0 0 22 11.18C22 6.67 17.51 3 12 3Zm-5.4 11.1H5.2V8.25h1.4v4.55h2.33v1.3H6.6Zm4.06 0H9.26V8.25h1.4v5.85Zm5.05 0h-1.25l-2.3-3.13v3.13h-1.39V8.25h1.25l2.3 3.15V8.25h1.39v5.85Zm3.92-3.86h-2.35v.98h2.1v1.23h-2.1v.8h2.35v1.25h-3.75V8.25h3.75v1.24Z"/></svg>
+                                            <span>
+                                                <?php esc_html_e('Line ID:', 'roommate-mobile-theme'); ?>
+                                                <?php echo esc_html($line_id); ?>
+                                            </span>
                                         </span>
                                     <?php endif; ?>
 
