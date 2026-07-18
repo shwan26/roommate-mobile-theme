@@ -35,24 +35,15 @@ if (!function_exists('rmt_single_roommate_format_date')) {
     }
 }
 
-if (!function_exists('rmt_single_roommate_format_budget_range')) {
-    function rmt_single_roommate_format_budget_range($min, $max) {
-        $min = $min !== '' ? absint($min) : '';
-        $max = $max !== '' ? absint($max) : '';
+if (!function_exists('rmt_single_roommate_format_budget_amount')) {
+    function rmt_single_roommate_format_budget_amount($amount) {
+        $amount = $amount !== '' ? absint($amount) : 0;
 
-        if ($min && $max) {
-            return number_format_i18n($min) . ' - ' . number_format_i18n($max) . ' THB/month';
+        if (!$amount) {
+            return '';
         }
 
-        if ($min) {
-            return number_format_i18n($min) . '+ THB/month';
-        }
-
-        if ($max) {
-            return 'Up to ' . number_format_i18n($max) . ' THB/month';
-        }
-
-        return '';
+        return number_format_i18n($amount) . ' THB/month';
     }
 }
 
@@ -105,12 +96,13 @@ if (have_posts()) :
         /*
          * Display values matching archive roommate cards
          */
-        $display_area   = $location_text ? $location_text : ($preferred_area_text ? $preferred_area_text : $preferred_area);
-        $display_budget = rmt_single_roommate_format_budget_range($budget_min, $budget_max);
-        $share_url      = get_permalink($post_id);
-        $share_title    = get_the_title($post_id);
-        $share_text     = sprintf(__('Check out this roommate profile on Bkkroomie: %s', 'roommate-mobile-theme'), $share_title);
-        $share_message  = $share_text . ' ' . $share_url;
+        $display_area       = $location_text ? $location_text : ($preferred_area_text ? $preferred_area_text : $preferred_area);
+        $display_budget_min = rmt_single_roommate_format_budget_amount($budget_min);
+        $display_budget_max = rmt_single_roommate_format_budget_amount($budget_max);
+        $share_url          = get_permalink($post_id);
+        $share_title        = get_the_title($post_id);
+        $share_text         = sprintf(__('Check out this roommate profile on Bkkroomie: %s', 'roommate-mobile-theme'), $share_title);
+        $share_message      = $share_text . ' ' . $share_url;
         ?>
 
         <main id="primary" class="site-main single-page single-roommate">
@@ -251,10 +243,17 @@ if (have_posts()) :
                                         </span>
                                     <?php endif; ?>
 
-                                    <?php if ($display_budget) : ?>
+                                    <?php if ($display_budget_min) : ?>
                                         <span class="listing-chip">
-                                            <?php esc_html_e('Budget:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($display_budget); ?>
+                                            <?php esc_html_e('Min. Budget:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($display_budget_min); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($display_budget_max) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Max. Budget:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($display_budget_max); ?>
                                         </span>
                                     <?php endif; ?>
 
@@ -379,10 +378,17 @@ if (have_posts()) :
                                 <h2><?php esc_html_e('Quick Summary', 'roommate-mobile-theme'); ?></h2>
 
                                 <div class="single-listing__chips">
-                                    <?php if ($display_budget) : ?>
+                                    <?php if ($display_budget_min) : ?>
                                         <span class="listing-chip">
-                                            <?php esc_html_e('Budget:', 'roommate-mobile-theme'); ?>
-                                            <?php echo esc_html($display_budget); ?>
+                                            <?php esc_html_e('Min. Budget:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($display_budget_min); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if ($display_budget_max) : ?>
+                                        <span class="listing-chip">
+                                            <?php esc_html_e('Max. Budget:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($display_budget_max); ?>
                                         </span>
                                     <?php endif; ?>
 
