@@ -5,9 +5,10 @@
 
 defined('ABSPATH') || exit;
 
-$is_room_active      = is_post_type_archive('room') || is_singular('room') || is_page(array('post-a-room', 'edit-room'));
-$is_roommate_active  = is_post_type_archive('roommate') || is_singular('roommate') || is_page(array('post-a-roommate', 'edit-roommate'));
-$is_dashboard_active = is_page('dashboard');
+$request_path        = function_exists('rmt_get_frontend_request_path') ? rmt_get_frontend_request_path() : '';
+$is_room_active      = is_post_type_archive('room') || is_singular('room') || is_page(array('post-a-room', 'edit-room')) || $request_path === 'post-a-room';
+$is_roommate_active  = is_post_type_archive('roommate') || is_singular('roommate') || is_page(array('post-a-roommate', 'edit-roommate')) || $request_path === 'post-a-roommate';
+$is_dashboard_active = is_page(array('dashboard', 'edit-profile', 'messages'));
 
 $custom_logo_id = get_theme_mod('custom_logo');
 $theme_logo_url = get_template_directory_uri() . '/assets/images/bkkroomie-logo.png';
@@ -76,12 +77,12 @@ $theme_logo_path = get_template_directory() . '/assets/images/bkkroomie-logo.png
             </nav>
 
             <div class="site-header__actions">
-                <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn <?php echo $is_room_active ? 'btn-primary' : 'btn-secondary'; ?> header-btn">
-                    Browse Rooms
-                </a>
-
                 <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn <?php echo $is_roommate_active ? 'btn-primary' : 'btn-secondary'; ?> header-btn">
                     Browse Roommates
+                </a>
+
+                <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn <?php echo $is_room_active ? 'btn-primary' : 'btn-secondary'; ?> header-btn">
+                    Browse Rooms
                 </a>
 
                 <?php if (is_user_logged_in()) : ?>

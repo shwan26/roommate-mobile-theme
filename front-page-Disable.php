@@ -5,9 +5,7 @@
  */
 
 // Image URLs
-$upload_base = wp_upload_dir()['baseurl'];
-$bg_url      = $upload_base . '/bkkroomie/Landing%20Page%20Graphic.png';
-$logo_url    = $upload_base . '/bkkroomie/logo.png';
+$logo_url = get_template_directory_uri() . '/assets/images/bbkroomie-full.png';
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -23,27 +21,28 @@ $logo_url    = $upload_base . '/bkkroomie/logo.png';
         .site-content,
         #page,
         #content {
-            background: transparent !important;
+            background: #ffffff !important;
+            color: #000000 !important;
             padding: 0 !important;
             margin: 0 !important;
         }
 
+        body {
+            min-height: 100svh;
+            display: flex;
+            flex-direction: column;
+        }
+
         .hero-section {
-            min-height: 100vh;
+            flex: 1 1 auto;
+            min-height: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem 0;
+            padding: clamp(1.25rem, 4vh, 3rem) 0;
             position: relative;
-
-            background:
-                linear-gradient(
-                    to bottom,
-                    rgba(10,10,10,0.70) 0%,
-                    rgba(10,10,10,0.45) 50%,
-                    rgba(10,10,10,0.80) 100%
-                ),
-                url('<?php echo esc_url( $bg_url ); ?>') center center / cover no-repeat;
+            background: #ffffff;
+            color: #000000;
         }
 
         .hero-content {
@@ -56,21 +55,103 @@ $logo_url    = $upload_base . '/bkkroomie/logo.png';
 
         .bkk-logo {
             display: block;
-            width: clamp(240px, 40vw, 320px);
+            width: clamp(280px, 42vw, 430px);
             height: auto;
-            margin: 0 auto 2rem;
+            margin: 0 auto clamp(1.1rem, 2.5vh, 2rem);
         }
 
         .hero-section .hero-title,
-        .hero-section .hero-title span {
-            color: #FFFFFF;
+        .hero-section .hero-description,
+        .hero-section .hero-description strong {
+            color: #000000 !important;
+        }
+
+        .hero-section .hero-title {
+            margin-bottom: 0;
+            font-size: clamp(2.3rem, 6vw, 4.25rem) !important;
+            font-weight: 400;
+        }
+
+        .hero-title__intro {
+            display: block;
+            color: #000000;
+            font-weight: 400;
+        }
+
+        .hero-title__accent {
+            display: block;
+            color: var(--color-primary);
+            font-weight: 700;
         }
 
         .hero-section .hero-description {
-            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 0;
+            font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+            line-height: 1.45;
+        }
+
+        .hero-section .btn-primary {
+            color: #ffffff !important;
+        }
+
+        .hero-section .btn-primary:hover,
+        .hero-section .btn-primary:focus-visible {
+            background: #6bea12;
+            border-color: #6bea12;
+            color: #ffffff !important;
+            box-shadow: 0 10px 32px rgba(88, 204, 2, 0.48), 0 0 0 4px rgba(88, 204, 2, 0.14);
+            filter: brightness(1.05);
+        }
+
+        .site-footer--simple {
+            flex: 0 0 auto;
+            padding: 0.65rem 0 !important;
+        }
+
+        .simple-footer--with-links {
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center;
+            gap: 0.4rem 0.85rem;
+            text-align: center !important;
+        }
+
+        .simple-footer__left {
+            min-width: 0 !important;
+        }
+
+        .simple-footer__text,
+        .simple-footer__link {
+            font-size: 0.72rem !important;
+            line-height: 1.3;
+        }
+
+        .simple-footer__social {
+            width: 26px !important;
+            height: 26px !important;
+        }
+
+        .simple-footer__social svg {
+            width: 14px;
+            height: 14px;
         }
 
         .bkk-wordmark { display: none; }
+
+        @media (max-height: 700px) {
+            .bkk-logo {
+                width: clamp(230px, 36vw, 330px);
+                margin-bottom: 1rem;
+            }
+
+            .hero-section .hero-title {
+                font-size: clamp(2rem, 5.3vw, 3.4rem) !important;
+            }
+
+            .site-footer--simple {
+                padding: 0.5rem 0 !important;
+            }
+        }
     </style>
 </head>
 <body <?php body_class(); ?>>
@@ -78,7 +159,7 @@ $logo_url    = $upload_base . '/bkkroomie/logo.png';
 <section class="hero-section">
     <div class="container">
 
-        <div class="hero-content" style="max-width:600px; margin-inline:auto; text-align:center;">
+        <div class="hero-content" style="max-width:760px; margin-inline:auto; text-align:center;">
 
             <!-- Logo -->
             <img
@@ -88,30 +169,30 @@ $logo_url    = $upload_base . '/bkkroomie/logo.png';
             >
 
             <!-- Headline -->
-            <h1 class="hero-title" style="max-width:none; font-size:clamp(2.2rem,6vw,4rem);">
-                Here's Where You
-                <span style="display:block; color:var(--color-primary);">
+            <h1 class="hero-title" style="max-width:none;">
+                <span class="hero-title__intro">Here's Where You</span>
+                <span class="hero-title__accent">
                     Find Your Awesome Roommate in Bangkok
                 </span>
             </h1>
 
             <!-- Divider -->
-            <hr style="border:none; border-top:1px solid var(--color-border); margin:1.8rem auto; max-width:200px;">
+            <hr style="border:none; border-top:1px solid var(--color-border); margin:clamp(1.2rem,3vh,2rem) auto; max-width:360px;">
 
             <!-- Sub text -->
             <p class="hero-description" style="margin-inline:auto; text-align:center;">
-                <strong style="color:var(--color-primary);">Be the first to try Bkkroomie.</strong><br>
+                <strong style="color:#000000;">Be the first to try Bkkroomie.</strong><br>
                 Join the beta waitlist.
             </p>
 
             <!-- Pre-register Button -->
-            <div style="margin-top:1.5rem;">
+            <div style="margin-top:clamp(1.25rem,3vh,2rem);">
                 <a
                     href="https://forms.gle/onrSAg4QXAp4XZ7E7"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="btn btn-primary"
-                    style="min-height:50px; white-space:nowrap; display:inline-flex; align-items:center; padding:0 2rem; text-decoration:none;"
+                    style="min-height:54px; white-space:nowrap; display:inline-flex; align-items:center; padding:0 2.4rem; text-decoration:none; font-size:1.05rem;"
                 >
                     Pre-register
                 </a>

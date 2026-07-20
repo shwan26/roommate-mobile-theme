@@ -51,6 +51,62 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  document.querySelectorAll("[data-room-photo-upload]").forEach(function (upload) {
+    const input = upload.querySelector("[data-room-photo-input]");
+    const preview = upload.querySelector("[data-room-photo-preview]");
+    const status = upload.querySelector("[data-room-photo-status]");
+    const clearButton = upload.querySelector("[data-room-photo-clear]");
+    const defaultPreview = preview ? preview.src : "";
+
+    if (!input || !preview || !status) {
+      return;
+    }
+
+    const resetUpload = function () {
+      input.value = "";
+      preview.src = defaultPreview;
+      status.textContent = "No photo selected yet.";
+      upload.classList.remove("is-selected");
+
+      if (clearButton) {
+        clearButton.hidden = true;
+      }
+    };
+
+    input.addEventListener("change", function () {
+      const file = input.files && input.files[0];
+
+      if (!file) {
+        resetUpload();
+        return;
+      }
+
+      if (!file.type || !file.type.startsWith("image/")) {
+        status.textContent = "Please choose an image file.";
+        upload.classList.remove("is-selected");
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = function (event) {
+        preview.src = event.target.result;
+      };
+
+      reader.readAsDataURL(file);
+      status.textContent = "Ready to upload: " + file.name;
+      upload.classList.add("is-selected");
+
+      if (clearButton) {
+        clearButton.hidden = false;
+      }
+    });
+
+    if (clearButton) {
+      clearButton.addEventListener("click", resetUpload);
+    }
+  });
+
   const listingCards = document.querySelectorAll(".listing-card");
   listingCards.forEach(function (card) {
     card.addEventListener("mouseenter", function () {
@@ -59,6 +115,134 @@ document.addEventListener("DOMContentLoaded", function () {
 
     card.addEventListener("mouseleave", function () {
       card.classList.remove("is-hovered");
+    });
+  });
+
+  const deleteAccountModal = document.getElementById("rmt-delete-account-modal");
+  const deleteAccountOpen = document.querySelector("[data-delete-account-open]");
+  const deleteAccountCloseButtons = document.querySelectorAll("[data-delete-account-close]");
+  const deleteAccountPassword = document.getElementById("rmt-delete-account-password");
+
+  if (deleteAccountModal && deleteAccountOpen) {
+    const setDeleteAccountModal = function (isOpen) {
+      deleteAccountModal.hidden = !isOpen;
+      document.body.classList.toggle("dashboard-delete-modal-open", isOpen);
+
+      if (isOpen && deleteAccountPassword) {
+        window.setTimeout(function () {
+          deleteAccountPassword.focus();
+        }, 0);
+      }
+    };
+
+    deleteAccountOpen.addEventListener("click", function () {
+      setDeleteAccountModal(true);
+    });
+
+    deleteAccountCloseButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        setDeleteAccountModal(false);
+      });
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !deleteAccountModal.hidden) {
+        setDeleteAccountModal(false);
+      }
+    });
+  }
+
+  const shareButtons = document.querySelectorAll(".js-listing-share");
+  const shareCloseButtons = document.querySelectorAll("[data-share-close]");
+
+  const setShareModal = function (modal, isOpen) {
+    if (!modal) {
+      return;
+    }
+
+    modal.hidden = !isOpen;
+    modal.setAttribute("aria-hidden", String(!isOpen));
+    document.body.classList.toggle("listing-share-modal-open", isOpen);
+
+    if (isOpen) {
+      const copyButton = modal.querySelector(".js-copy-share-link");
+
+      window.setTimeout(function () {
+        if (copyButton) {
+          copyButton.focus();
+        }
+      }, 0);
+    }
+  };
+
+  const copyShareUrl = function (url) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(url);
+    }
+
+    const input = document.createElement("textarea");
+    input.value = url;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.top = "-9999px";
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand("copy");
+    document.body.removeChild(input);
+
+    return Promise.resolve();
+  };
+
+  shareButtons.forEach(function (button) {
+    button.addEventListener("click", async function () {
+      const shareData = {
+        title: button.dataset.shareTitle || document.title,
+        text: button.dataset.shareText || "",
+        url: button.dataset.shareUrl || window.location.href
+      };
+
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch (error) {
+          if (error && error.name === "AbortError") {
+            return;
+          }
+        }
+      }
+
+      setShareModal(document.getElementById(button.dataset.shareModal), true);
+    });
+  });
+
+  shareCloseButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      setShareModal(button.closest(".listing-share-modal"), false);
+    });
+  });
+
+  document.querySelectorAll(".js-copy-share-link").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const originalText = button.textContent;
+
+      copyShareUrl(button.dataset.shareUrl || window.location.href).then(function () {
+        button.textContent = "Copied";
+
+        window.setTimeout(function () {
+          button.textContent = originalText;
+        }, 1600);
+      });
+    });
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape") {
+      return;
+    }
+
+    document.querySelectorAll(".listing-share-modal:not([hidden])").forEach(function (modal) {
+      setShareModal(modal, false);
     });
   });
 });

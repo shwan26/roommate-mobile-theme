@@ -28,7 +28,7 @@ $profile_url       = home_url('/profile/');
 
                 <div class="index-welcome__greeting">
                     <a href="<?php echo esc_url( $profile_url ); ?>" class="index-welcome__avatar-link">
-                        <?php echo get_avatar( $user_id, 40, '', $display_name, array( 'class' => 'index-welcome__avatar' ) ); ?>
+                        <?php echo get_avatar( $user_id, 40, rmt_get_default_profile_photo_url(), $display_name, array( 'class' => 'index-welcome__avatar' ) ); ?>
                     </a>
                     <div class="index-welcome__text">
                         <p class="index-welcome__name">

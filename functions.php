@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 define( 'RMT_VERSION',   '1.0.0' );
 define( 'RMT_THEME_DIR', get_template_directory());
 define( 'RMT_THEME_URI', get_template_directory_uri());
-define( 'RMT_REWRITE_VERSION', '2026-06-01-archives' );
+define( 'RMT_REWRITE_VERSION', '2026-06-08-listing-id-links' );
 
 /**
  * ------------------------------------------------------------
@@ -175,12 +175,23 @@ add_action('init', 'rmt_register_post_types');
  * makes /roommate/ render index.php with "Nothing found" instead of the archive.
  */
 function rmt_register_archive_rewrite_rules() {
+    add_rewrite_rule('^room/([0-9]+)/?$', 'index.php?post_type=room&p=$matches[1]', 'top');
     add_rewrite_rule('^room/?$', 'index.php?post_type=room', 'top');
     add_rewrite_rule('^room/page/([0-9]{1,})/?$', 'index.php?post_type=room&paged=$matches[1]', 'top');
+    add_rewrite_rule('^roommate/([0-9]+)/?$', 'index.php?post_type=roommate&p=$matches[1]', 'top');
     add_rewrite_rule('^roommate/?$', 'index.php?post_type=roommate', 'top');
     add_rewrite_rule('^roommate/page/([0-9]{1,})/?$', 'index.php?post_type=roommate&paged=$matches[1]', 'top');
 }
 add_action('init', 'rmt_register_archive_rewrite_rules', 20);
+
+function rmt_use_listing_id_permalink($post_link, $post) {
+    if ($post instanceof WP_Post && in_array($post->post_type, array('room', 'roommate'), true)) {
+        return home_url(user_trailingslashit($post->post_type . '/' . $post->ID));
+    }
+
+    return $post_link;
+}
+add_filter('post_type_link', 'rmt_use_listing_id_permalink', 10, 2);
 
 function rmt_normalize_listing_archive_requests($query_vars) {
     if (!isset($query_vars['pagename'])) {
@@ -238,17 +249,6 @@ function rmt_register_taxonomies() {
         'public'       => true,
         'hierarchical' => false,
         'rewrite'      => array('slug' => 'amenity'),
-        'show_in_rest' => true,
-    ));
-
-    register_taxonomy('lifestyle', array('room', 'roommate'), array(
-        'labels' => array(
-            'name'          => __('Lifestyle Tags', 'roommate-mobile-theme'),
-            'singular_name' => __('Lifestyle Tag', 'roommate-mobile-theme'),
-        ),
-        'public'       => true,
-        'hierarchical' => false,
-        'rewrite'      => array('slug' => 'lifestyle'),
         'show_in_rest' => true,
     ));
 
@@ -316,14 +316,14 @@ function rmt_render_room_meta_box($post) {
         '_property_type',
         '_address',
         '_map_url',
+        '_total_rent',
         '_rent',
-        '_bills_included',
+        '_total_deposit',
         '_deposit',
         '_available_date',
         '_gender_preference',
         '_pet_policy',
         '_smoking_policy',
-        '_utilities',
         '_nearby_landmark',
         '_min_stay',
 
@@ -331,14 +331,15 @@ function rmt_render_room_meta_box($post) {
         '_age',
         '_gender',
         '_occupation',
+        '_nationality',
+        '_bio',
         '_languages',
-        '_cleanliness',
+        '_zodiac_sign',
+        '_social_level',
         '_sleep_schedule',
         '_smoker',
         '_has_pets',
-        '_social_level',
         '_hobbies',
-        '_bio',
         '_roommate_preference',
     );
 
@@ -378,24 +379,22 @@ function rmt_render_room_meta_box($post) {
     </tr>
 
     <tr>
-        <th><label for="_rent">Rent Fees</label></th>
-        <td><input type="number" name="_rent" id="_rent" value="<?php echo esc_attr($rent); ?>" class="regular-text" placeholder="Amount roommate pays"></td>
+        <th><label for="_total_rent">Total Rent</label></th>
+        <td><input type="number" name="_total_rent" id="_total_rent" value="<?php echo esc_attr($total_rent); ?>" class="regular-text"></td>
     </tr>
 
     <tr>
-        <th><label for="_bills_included">Bills Included</label></th>
-        <td>
-            <select name="_bills_included" id="_bills_included">
-                <option value="">Select</option>
-                <option value="Included" <?php selected($bills_included, 'Included'); ?>>Included</option>
-                <option value="Not Included" <?php selected($bills_included, 'Not Included'); ?>>Not Included</option>
-                <option value="Partially Included" <?php selected($bills_included, 'Partially Included'); ?>>Partially Included</option>
-            </select>
-        </td>
+        <th><label for="_rent">Rent Per Person</label></th>
+        <td><input type="number" name="_rent" id="_rent" value="<?php echo esc_attr($rent); ?>" class="regular-text"></td>
     </tr>
 
     <tr>
-        <th><label for="_deposit">Deposit</label></th>
+        <th><label for="_total_deposit">Total Deposit</label></th>
+        <td><input type="number" name="_total_deposit" id="_total_deposit" value="<?php echo esc_attr($total_deposit); ?>" class="regular-text"></td>
+    </tr>
+
+    <tr>
+        <th><label for="_deposit">Deposit Per Person</label></th>
         <td><input type="number" name="_deposit" id="_deposit" value="<?php echo esc_attr($deposit); ?>" class="regular-text" placeholder="0 if none"></td>
     </tr>
 
@@ -439,11 +438,6 @@ function rmt_render_room_meta_box($post) {
     </tr>
 
     <tr>
-        <th><label for="_utilities">Bills / Utilities Notes</label></th>
-        <td><input type="text" name="_utilities" id="_utilities" value="<?php echo esc_attr($utilities); ?>" class="regular-text" placeholder="Water, electricity, wifi, etc."></td>
-    </tr>
-
-    <tr>
         <th><label for="_nearby_landmark">Nearby Landmark</label></th>
         <td><input type="text" name="_nearby_landmark" id="_nearby_landmark" value="<?php echo esc_attr($nearby_landmark); ?>" class="regular-text"></td>
     </tr>
@@ -465,25 +459,32 @@ function rmt_render_room_meta_box($post) {
                     <option value="">Select</option>
                     <option value="Male" <?php selected($gender, 'Male'); ?>>Male</option>
                     <option value="Female" <?php selected($gender, 'Female'); ?>>Female</option>
-                    <option value="Others" <?php selected($gender, 'Others'); ?>>Others</option>
+                    <option value="Non-binary" <?php selected($gender, 'Non-binary'); ?>>Non-binary</option>
+                    <option value="Prefer not to say" <?php selected($gender, 'Prefer not to say'); ?>>Prefer not to say</option>
                 </select>
             </td>
         </tr>
 
         <tr><th><label for="_occupation">Occupation</label></th><td><input type="text" name="_occupation" id="_occupation" value="<?php echo esc_attr($occupation); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_languages">Languages</label></th><td><input type="text" name="_languages" id="_languages" value="<?php echo esc_attr($languages); ?>" class="regular-text"></td></tr>
+        <tr><th><label for="_nationality">Nationality</label></th><td><input type="text" name="_nationality" id="_nationality" value="<?php echo esc_attr($nationality); ?>" class="regular-text"></td></tr>
+        <tr><th><label for="_bio">Bio</label></th><td><textarea name="_bio" id="_bio" rows="4" class="large-text"><?php echo esc_textarea($bio); ?></textarea></td></tr>
+        <tr><th><label for="_languages">Languages Spoken</label></th><td><input type="text" name="_languages" id="_languages" value="<?php echo esc_attr($languages); ?>" class="regular-text"></td></tr>
 
         <tr>
-            <th><label for="_cleanliness">Cleanliness</label></th>
+            <th><label for="_zodiac_sign">Zodiac Sign</label></th>
             <td>
-                <select name="_cleanliness" id="_cleanliness">
+                <select name="_zodiac_sign" id="_zodiac_sign">
                     <option value="">Select</option>
-                    <option value="Yes" <?php selected($cleanliness, 'Yes'); ?>>Yes</option>
-                    <option value="No" <?php selected($cleanliness, 'No'); ?>>No</option>
+                    <?php foreach (array('Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces') as $option) : ?>
+                        <option value="<?php echo esc_attr($option); ?>" <?php selected($zodiac_sign, $option); ?>>
+                            <?php echo esc_html($option); ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </td>
         </tr>
 
+        <tr><th><label for="_social_level">Social Level</label></th><td><select name="_social_level" id="_social_level"><option value="">Select</option><?php foreach (array('Extrovert', 'Introvert', 'Ambivert') as $option) : ?><option value="<?php echo esc_attr($option); ?>" <?php selected($social_level, $option); ?>><?php echo esc_html($option); ?></option><?php endforeach; ?></select></td></tr>
         <tr><th><label for="_sleep_schedule">Sleep Schedule</label></th><td><input type="text" name="_sleep_schedule" id="_sleep_schedule" value="<?php echo esc_attr($sleep_schedule); ?>" class="regular-text" placeholder="11 PM to 7 AM"></td></tr>
 
         <tr>
@@ -508,10 +509,8 @@ function rmt_render_room_meta_box($post) {
             </td>
         </tr>
 
-        <tr><th><label for="_social_level">Social Level</label></th><td><input type="number" min="0" max="10" name="_social_level" id="_social_level" value="<?php echo esc_attr($social_level); ?>"></td></tr>
         <tr><th><label for="_hobbies">Hobbies</label></th><td><input type="text" name="_hobbies" id="_hobbies" value="<?php echo esc_attr($hobbies); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_bio">Bio</label></th><td><textarea name="_bio" id="_bio" rows="4" class="large-text"><?php echo esc_textarea($bio); ?></textarea></td></tr>
-        <tr><th><label for="_roommate_preference">Preferred Roommate</label></th><td><textarea name="_roommate_preference" id="_roommate_preference" rows="4" class="large-text"><?php echo esc_textarea($roommate_preference); ?></textarea></td></tr>
+        <tr><th><label for="_roommate_preference">My Ideal Roommate</label></th><td><textarea name="_roommate_preference" id="_roommate_preference" rows="4" class="large-text"><?php echo esc_textarea($roommate_preference); ?></textarea></td></tr>
     </table>
     <?php
 }
@@ -541,15 +540,16 @@ function rmt_render_roommate_meta_box($post) {
         '_age',
         '_gender',
         '_occupation',
+        '_nationality',
+        '_bio',
         '_languages',
-        '_cleanliness',
+        '_zodiac_sign',
+        '_social_level',
         '_sleep_schedule',
         '_smoker',
         '_has_pets',
-        '_social_level',
         '_hobbies',
-        '_bio',
-        '_ideal_roommate',
+        '_roommate_preference',
     );
 
     foreach ($fields as $field) {
@@ -574,15 +574,16 @@ function rmt_render_roommate_meta_box($post) {
         <tr><th><label for="_age">Age</label></th><td><input type="number" name="_age" id="_age" value="<?php echo esc_attr($age); ?>"></td></tr>
         <tr><th><label for="_gender">Gender</label></th><td><input type="text" name="_gender" id="_gender" value="<?php echo esc_attr($gender); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_occupation">Occupation</label></th><td><input type="text" name="_occupation" id="_occupation" value="<?php echo esc_attr($occupation); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_languages">Languages</label></th><td><input type="text" name="_languages" id="_languages" value="<?php echo esc_attr($languages); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_cleanliness">Cleanliness</label></th><td><input type="text" name="_cleanliness" id="_cleanliness" value="<?php echo esc_attr($cleanliness); ?>" class="regular-text"></td></tr>
+        <tr><th><label for="_nationality">Nationality</label></th><td><input type="text" name="_nationality" id="_nationality" value="<?php echo esc_attr($nationality); ?>" class="regular-text"></td></tr>
+        <tr><th><label for="_bio">Bio</label></th><td><textarea name="_bio" id="_bio" rows="4" class="large-text"><?php echo esc_textarea($bio); ?></textarea></td></tr>
+        <tr><th><label for="_languages">Languages Spoken</label></th><td><input type="text" name="_languages" id="_languages" value="<?php echo esc_attr($languages); ?>" class="regular-text"></td></tr>
+        <tr><th><label for="_zodiac_sign">Zodiac Sign</label></th><td><select name="_zodiac_sign" id="_zodiac_sign"><option value="">Select</option><?php foreach (array('Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces') as $option) : ?><option value="<?php echo esc_attr($option); ?>" <?php selected($zodiac_sign, $option); ?>><?php echo esc_html($option); ?></option><?php endforeach; ?></select></td></tr>
+        <tr><th><label for="_social_level">Social Level</label></th><td><select name="_social_level" id="_social_level"><option value="">Select</option><?php foreach (array('Extrovert', 'Introvert', 'Ambivert') as $option) : ?><option value="<?php echo esc_attr($option); ?>" <?php selected($social_level, $option); ?>><?php echo esc_html($option); ?></option><?php endforeach; ?></select></td></tr>
         <tr><th><label for="_sleep_schedule">Sleep Schedule</label></th><td><input type="text" name="_sleep_schedule" id="_sleep_schedule" value="<?php echo esc_attr($sleep_schedule); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_smoker">Smoker</label></th><td><input type="text" name="_smoker" id="_smoker" value="<?php echo esc_attr($smoker); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_has_pets">Has Pets</label></th><td><input type="text" name="_has_pets" id="_has_pets" value="<?php echo esc_attr($has_pets); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_social_level">Social Level</label></th><td><input type="text" name="_social_level" id="_social_level" value="<?php echo esc_attr($social_level); ?>" class="regular-text"></td></tr>
         <tr><th><label for="_hobbies">Hobbies</label></th><td><input type="text" name="_hobbies" id="_hobbies" value="<?php echo esc_attr($hobbies); ?>" class="regular-text"></td></tr>
-        <tr><th><label for="_bio">Bio</label></th><td><textarea name="_bio" id="_bio" rows="4" class="large-text"><?php echo esc_textarea($bio); ?></textarea></td></tr>
-        <tr><th><label for="_ideal_roommate">Ideal Roommate</label></th><td><textarea name="_ideal_roommate" id="_ideal_roommate" rows="4" class="large-text"><?php echo esc_textarea($ideal_roommate); ?></textarea></td></tr>
+        <tr><th><label for="_roommate_preference">My Ideal Roommate</label></th><td><textarea name="_roommate_preference" id="_roommate_preference" rows="4" class="large-text"><?php echo esc_textarea($roommate_preference); ?></textarea></td></tr>
     </table>
     <?php
 }
@@ -602,6 +603,54 @@ function rmt_get_chat_url( $author_id, $post_id ) {
     );
 }
 
+function rmt_get_required_room_current_roommate_fields() {
+    return array(
+        'nickname'       => __('Current roommate name is required.', 'roommate-mobile-theme'),
+        'age'            => __('Current roommate age is required.', 'roommate-mobile-theme'),
+        'gender'         => __('Current roommate gender is required.', 'roommate-mobile-theme'),
+        'bio'            => __('Current roommate bio is required.', 'roommate-mobile-theme'),
+    );
+}
+
+function rmt_validate_required_room_fields($posted) {
+    $errors  = array();
+    $address = sanitize_text_field($posted['address'] ?? '');
+    $map_url = esc_url_raw($posted['map_url'] ?? '');
+    $available_date = sanitize_text_field($posted['available_date'] ?? '');
+
+    if ($available_date === '') {
+        $errors[] = __('Available from date is required.', 'roommate-mobile-theme');
+    }
+
+    if ($address === '') {
+        $errors[] = __('Room address is required.', 'roommate-mobile-theme');
+    }
+
+    if ($map_url === '') {
+        $errors[] = __('Google Map URL is required.', 'roommate-mobile-theme');
+    } elseif (!preg_match('#^https?://#i', $map_url)) {
+        $errors[] = __('Please enter a valid Google Map URL.', 'roommate-mobile-theme');
+    }
+
+    foreach (rmt_get_required_room_current_roommate_fields() as $field => $message) {
+        $value = in_array($field, array('bio'), true)
+            ? sanitize_textarea_field($posted[$field] ?? '')
+            : sanitize_text_field($posted[$field] ?? '');
+
+        if ($value === '') {
+            $errors[] = $message;
+        }
+    }
+
+    $age = sanitize_text_field($posted['age'] ?? '');
+
+    if ($age !== '' && (!is_numeric($age) || (int) $age < 18 || (int) $age > 99)) {
+        $errors[] = __('Current roommate age must be between 18 and 99.', 'roommate-mobile-theme');
+    }
+
+    return $errors;
+}
+
 function rmt_save_post_meta($post_id) {
     if (!isset($_POST['rmt_meta_nonce']) || !wp_verify_nonce($_POST['rmt_meta_nonce'], 'rmt_save_meta')) {
         return;
@@ -617,11 +666,9 @@ function rmt_save_post_meta($post_id) {
 
     $text_fields = array(
         '_property_type',
-        '_poperty_name',
-        '_bills_included',
+        '_property_name',
         '_address',
         '_nearby_landmark',
-        '_utilities',
         '_min_stay',
         '_gender_preference',
         '_pet_policy',
@@ -629,8 +676,9 @@ function rmt_save_post_meta($post_id) {
         '_nickname',
         '_gender',
         '_occupation',
+        '_nationality',
         '_languages',
-        '_cleanliness',
+        '_zodiac_sign',
         '_sleep_schedule',
         '_smoker',
         '_has_pets',
@@ -649,7 +697,6 @@ function rmt_save_post_meta($post_id) {
     $textarea_fields = array(
         '_bio',
         '_roommate_preference',
-        '_ideal_roommate',
     );
 
     $url_fields = array(
@@ -657,7 +704,9 @@ function rmt_save_post_meta($post_id) {
     );
 
     $number_fields = array(
+        '_total_rent',
         '_rent',
+        '_total_deposit',
         '_deposit',
         '_bedrooms',
         '_bathrooms',
@@ -723,6 +772,87 @@ function rmt_format_price($amount) {
     return number_format((float) $amount) . ' THB';
 }
 
+function rmt_format_choice_label($value) {
+    $value = trim((string) $value);
+
+    if ($value === '') {
+        return '';
+    }
+
+    return str_replace(array('_', '-'), ' ', $value);
+}
+
+function rmt_min_stay_months_value($value) {
+    $value = trim((string) $value);
+
+    if ($value === '') {
+        return '';
+    }
+
+    if (is_numeric($value)) {
+        return (string) absint($value);
+    }
+
+    $normalized = strtolower(str_replace(array('_', '-'), ' ', $value));
+
+    if (preg_match('/(\d+)\s*year/', $normalized, $matches)) {
+        return (string) (absint($matches[1]) * 12);
+    }
+
+    if (preg_match('/(\d+)\s*month/', $normalized, $matches)) {
+        return (string) absint($matches[1]);
+    }
+
+    return '';
+}
+
+function rmt_format_min_stay_months($value) {
+    $months = rmt_min_stay_months_value($value);
+
+    if ($months === '' || (int) $months <= 0) {
+        return '';
+    }
+
+    return sprintf(
+        _n('%s month', '%s months', (int) $months, 'roommate-mobile-theme'),
+        number_format_i18n((int) $months)
+    );
+}
+
+function rmt_format_date_for_form($date) {
+    if (!$date) {
+        return '';
+    }
+
+    $timestamp = strtotime($date);
+
+    if (!$timestamp) {
+        return $date;
+    }
+
+    return date_i18n('d/m/Y', $timestamp);
+}
+
+function rmt_normalize_form_date($date) {
+    $date = trim((string) $date);
+
+    if ($date === '') {
+        return '';
+    }
+
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+        $parsed = DateTime::createFromFormat('!Y-m-d', $date);
+        return $parsed && $parsed->format('Y-m-d') === $date ? $date : '';
+    }
+
+    if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $date)) {
+        $parsed = DateTime::createFromFormat('!d/m/Y', $date);
+        return $parsed && $parsed->format('d/m/Y') === $date ? $parsed->format('Y-m-d') : '';
+    }
+
+    return '';
+}
+
 /**
  * ------------------------------------------------------------
  * 11. SIDEBARS / WIDGET AREAS
@@ -743,16 +873,18 @@ add_action('widgets_init', 'rmt_register_sidebars');
 /**
  * Get default profile photo attachment ID.
  * Source file:
- * /wp-content/themes/roommate-mobile-theme/images/default-profile.jpg
+ * /wp-content/themes/roommate-mobile-theme/images/default-profile-scaled.png
  */
 function rmt_get_default_profile_photo_id() {
     $existing_id = absint(get_option('rmt_default_profile_photo_id'));
+    $source_file = 'default-profile-scaled.png';
+    $upload_file = 'rmt-default-profile-scaled.png';
 
-    if ($existing_id && get_post($existing_id)) {
+    if ($existing_id && get_post($existing_id) && basename((string) get_attached_file($existing_id)) === $upload_file) {
         return $existing_id;
     }
 
-    $file_path = get_template_directory() . '/images/default-profile.jpg';
+    $file_path = get_template_directory() . '/images/' . $source_file;
 
     if (!file_exists($file_path)) {
         return 0;
@@ -761,14 +893,12 @@ function rmt_get_default_profile_photo_id() {
     $file_type = wp_check_filetype(basename($file_path), null);
 
     $upload_dir = wp_upload_dir();
-    $new_file_path = $upload_dir['path'] . '/rmt-default-profile.jpg';
+    $new_file_path = $upload_dir['path'] . '/' . $upload_file;
 
-    if (!file_exists($new_file_path)) {
-        copy($file_path, $new_file_path);
-    }
+    copy($file_path, $new_file_path);
 
     $attachment = [
-        'guid' => $upload_dir['url'] . '/rmt-default-profile.jpg',
+        'guid'           => $upload_dir['url'] . '/' . $upload_file,
         'post_mime_type' => $file_type['type'],
         'post_title'     => 'Default Profile Photo',
         'post_content'   => '',
@@ -791,6 +921,157 @@ function rmt_get_default_profile_photo_id() {
     return $attachment_id;
 }
 
+function rmt_is_default_profile_photo_id($attachment_id) {
+    $attachment_id = absint($attachment_id);
+
+    if (!$attachment_id) {
+        return false;
+    }
+
+    $current_default_id = absint(get_option('rmt_default_profile_photo_id'));
+
+    if ($current_default_id && $attachment_id === $current_default_id) {
+        return true;
+    }
+
+    $attachment = get_post($attachment_id);
+
+    return $attachment
+        && $attachment->post_type === 'attachment'
+        && $attachment->post_title === 'Default Profile Photo';
+}
+
+function rmt_get_default_profile_photo_url($size = 'thumbnail') {
+    $default_id = rmt_get_default_profile_photo_id();
+
+    if ($default_id) {
+        $url = wp_get_attachment_image_url($default_id, $size);
+
+        if ($url) {
+            return $url;
+        }
+    }
+
+    return get_template_directory_uri() . '/images/default-profile-scaled.png';
+}
+
+function rmt_get_profile_photo_html($post_id = null, $size = 'large', $attr = []) {
+    $post_id = $post_id ? absint($post_id) : get_the_ID();
+    $thumbnail_id = get_post_thumbnail_id($post_id);
+
+    if ($thumbnail_id && !rmt_is_default_profile_photo_id($thumbnail_id)) {
+        return get_the_post_thumbnail($post_id, $size, $attr);
+    }
+
+    $default_id = rmt_get_default_profile_photo_id();
+
+    if ($default_id) {
+        return wp_get_attachment_image($default_id, $size, false, array_merge([
+            'alt' => __('Default profile photo', 'roommate-mobile-theme'),
+        ], $attr));
+    }
+
+    return sprintf(
+        '<img src="%s" alt="%s">',
+        esc_url(get_template_directory_uri() . '/images/default-profile-scaled.png'),
+        esc_attr__('Default profile photo', 'roommate-mobile-theme')
+    );
+}
+
+/**
+ * Get default room photo attachment ID.
+ * Source file:
+ * /wp-content/themes/roommate-mobile-theme/images/default-room.png
+ */
+function rmt_get_default_room_photo_id() {
+    $existing_id = absint(get_option('rmt_default_room_photo_id'));
+    $source_file = 'default-room.png';
+    $upload_file = 'rmt-default-room.png';
+
+    if ($existing_id && get_post($existing_id) && basename((string) get_attached_file($existing_id)) === $upload_file) {
+        return $existing_id;
+    }
+
+    $file_path = get_template_directory() . '/images/' . $source_file;
+
+    if (!file_exists($file_path)) {
+        return 0;
+    }
+
+    $file_type = wp_check_filetype(basename($file_path), null);
+
+    $upload_dir = wp_upload_dir();
+    $new_file_path = $upload_dir['path'] . '/' . $upload_file;
+
+    copy($file_path, $new_file_path);
+
+    $attachment = [
+        'guid'           => $upload_dir['url'] . '/' . $upload_file,
+        'post_mime_type' => $file_type['type'],
+        'post_title'     => 'Default Room Photo',
+        'post_content'   => '',
+        'post_status'    => 'inherit',
+    ];
+
+    $attachment_id = wp_insert_attachment($attachment, $new_file_path);
+
+    if (is_wp_error($attachment_id) || !$attachment_id) {
+        return 0;
+    }
+
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+
+    $attachment_data = wp_generate_attachment_metadata($attachment_id, $new_file_path);
+    wp_update_attachment_metadata($attachment_id, $attachment_data);
+
+    update_option('rmt_default_room_photo_id', $attachment_id);
+
+    return $attachment_id;
+}
+
+function rmt_is_default_room_photo_id($attachment_id) {
+    $attachment_id = absint($attachment_id);
+
+    if (!$attachment_id) {
+        return false;
+    }
+
+    $current_default_id = absint(get_option('rmt_default_room_photo_id'));
+
+    if ($current_default_id && $attachment_id === $current_default_id) {
+        return true;
+    }
+
+    $attachment = get_post($attachment_id);
+
+    return $attachment
+        && $attachment->post_type === 'attachment'
+        && $attachment->post_title === 'Default Room Photo';
+}
+
+function rmt_get_room_photo_html($post_id = null, $size = 'large', $attr = []) {
+    $post_id = $post_id ? absint($post_id) : get_the_ID();
+    $thumbnail_id = get_post_thumbnail_id($post_id);
+
+    if ($thumbnail_id && !rmt_is_default_room_photo_id($thumbnail_id)) {
+        return get_the_post_thumbnail($post_id, $size, $attr);
+    }
+
+    $default_id = rmt_get_default_room_photo_id();
+
+    if ($default_id) {
+        return wp_get_attachment_image($default_id, $size, false, array_merge([
+            'alt' => __('Default room photo', 'roommate-mobile-theme'),
+        ], $attr));
+    }
+
+    return sprintf(
+        '<img src="%s" alt="%s">',
+        esc_url(get_template_directory_uri() . '/images/default-room.png'),
+        esc_attr__('Default room photo', 'roommate-mobile-theme')
+    );
+}
+
 /**
  * Upload profile photo if user uploaded one.
  * Otherwise return default profile photo ID.
@@ -809,6 +1090,54 @@ function rmt_get_uploaded_or_default_profile_photo_id($field_name, $post_id) {
     }
 
     return rmt_get_default_profile_photo_id();
+}
+
+function rmt_get_upload_error_message($error_code, $label = 'Photo') {
+    $label = trim((string) $label) ?: 'Photo';
+
+    switch ((int) $error_code) {
+        case UPLOAD_ERR_INI_SIZE:
+        case UPLOAD_ERR_FORM_SIZE:
+            return sprintf('%s is too large. Maximum upload size is %s.', $label, size_format(wp_max_upload_size()));
+        case UPLOAD_ERR_PARTIAL:
+            return sprintf('%s was only partially uploaded. Please try again.', $label);
+        case UPLOAD_ERR_NO_FILE:
+            return '';
+        case UPLOAD_ERR_NO_TMP_DIR:
+            return sprintf('%s could not be uploaded because the server upload folder is missing.', $label);
+        case UPLOAD_ERR_CANT_WRITE:
+            return sprintf('%s could not be saved on the server.', $label);
+        case UPLOAD_ERR_EXTENSION:
+            return sprintf('%s upload was stopped by the server.', $label);
+        default:
+            return sprintf('%s could not be uploaded. Please try a JPG, PNG, or WEBP image.', $label);
+    }
+}
+
+function rmt_validate_image_upload($field_name, $label = 'Photo') {
+    if (empty($_FILES[$field_name]['name'])) {
+        return [];
+    }
+
+    $file = $_FILES[$field_name];
+
+    if (!isset($file['error']) || (int) $file['error'] !== UPLOAD_ERR_OK) {
+        $message = rmt_get_upload_error_message($file['error'] ?? UPLOAD_ERR_NO_FILE, $label);
+        return $message ? [$message] : [];
+    }
+
+    if (!empty($file['size']) && (int) $file['size'] > wp_max_upload_size()) {
+        return [sprintf('%s is too large. Maximum upload size is %s.', $label, size_format(wp_max_upload_size()))];
+    }
+
+    $file_type = wp_check_filetype_and_ext($file['tmp_name'], $file['name']);
+    $allowed_types = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (empty($file_type['type']) || !in_array($file_type['type'], $allowed_types, true)) {
+        return [sprintf('Please upload a JPG, PNG, or WEBP image for %s.', strtolower($label))];
+    }
+
+    return [];
 }
 
 /**
@@ -880,54 +1209,6 @@ function rmt_primary_menu_fallback() {
  */
 
 // ---------------------------------------------------------------
-// PATCH 1 — Add to $text_fields array inside rmt_save_post_meta:
-// ---------------------------------------------------------------
-//   '_property_name',
-//   '_bills_included',
-//   '_age',          // currently in $number_fields — keep there
-//   '_gender',
-//   '_lease_duration',
-//   '_private_or_shared',
-//   '_pets_ok',
-//   '_smokers_ok',
-//   '_preferred_room_type',   // already present — confirm
-//   '_preferred_property_type', // already present — confirm
-
-// Full corrected $text_fields for copy-paste:
-/*
-$text_fields = array(
-    '_property_name',        // ← NEW
-    '_bills_included',       // ← NEW
-    '_property_type',
-    '_address',
-    '_nearby_landmark',
-    '_utilities',
-    '_min_stay',
-    '_gender_preference',
-    '_pet_policy',
-    '_smoking_policy',
-    '_nickname',
-    '_gender',
-    '_occupation',
-    '_languages',
-    '_cleanliness',
-    '_sleep_schedule',
-    '_smoker',
-    '_has_pets',
-    '_social_level',
-    '_hobbies',
-    '_preferred_property_type',
-    '_preferred_room_type',
-    '_lease_duration',
-    '_preferred_area_text',
-    '_private_or_shared',
-    '_teamup_ok',
-    '_pets_ok',
-    '_smokers_ok',
-);
-*/
-
-// ---------------------------------------------------------------
 // PATCH 2 — Allow front-end image uploads for logged-in users.
 // Paste this new function anywhere in functions.php.
 // ---------------------------------------------------------------
@@ -956,7 +1237,7 @@ add_filter( 'user_has_cap', 'rmt_allow_subscriber_uploads', 10, 3 );
 
 
 /* ================================================================
-   1. MARK AS CLOSED
+   1. MARK AS DONE
    Stores a post meta flag and re-labels the post status visually.
 ================================================================ */
 add_action('wp_ajax_rmt_mark_closed',        'rmt_ajax_mark_closed');
@@ -970,14 +1251,20 @@ function rmt_ajax_mark_closed() {
         wp_send_json_error('Invalid request.');
     }
  
-    // Only the author (or admin) may close their own listing
+    // Only the author (or admin) may mark their own listing as done.
     $author_id = (int) get_post_field('post_author', $post_id);
     if (get_current_user_id() !== $author_id && !current_user_can('manage_options')) {
         wp_send_json_error('Permission denied.');
     }
  
-    update_post_meta($post_id, '_listing_closed', 1);
-    wp_send_json_success('Marked as closed.');
+    wp_update_post([
+        'ID'          => $post_id,
+        'post_status' => 'draft',
+    ]);
+
+    update_post_meta($post_id, '_rmt_done', 1);
+    delete_post_meta($post_id, '_listing_closed');
+    wp_send_json_success('Marked as done.');
 }
  
 /* ================================================================
@@ -1142,9 +1429,8 @@ add_action('pre_get_posts', function ($query) {
     }
 
     // Default order: newest listing first
-    $sort = sanitize_text_field($_GET['sort'] ?? 'newest');
     $query->set('orderby', 'date');
-    $query->set('order', $sort === 'oldest' ? 'ASC' : 'DESC');
+    $query->set('order', 'DESC');
 
     // Search (q)
     if (!empty($_GET['q'])) {
@@ -1154,10 +1440,10 @@ add_action('pre_get_posts', function ($query) {
     // Meta filters
     $meta_query = ['relation' => 'AND'];
 
-    // Budget filtering: keep it simple (posts with _budget_min/_budget_max)
-    // budget_min param means: listing budget_max >= budget_min OR budget_min >= budget_min (fallback)
-    $budget_min = isset($_GET['budget_min']) ? floatval($_GET['budget_min']) : null;
-    if ($budget_min !== null && $_GET['budget_min'] !== '') {
+    // Rent price filtering maps to roommate budget fields.
+    $budget_min_raw = $_GET['rent_min'] ?? ($_GET['budget_min'] ?? '');
+    $budget_min     = $budget_min_raw !== '' ? floatval($budget_min_raw) : null;
+    if ($budget_min !== null) {
         $meta_query[] = [
             'relation' => 'OR',
             [
@@ -1175,31 +1461,36 @@ add_action('pre_get_posts', function ($query) {
         ];
     }
 
-    // budget_max param means: listing budget_min <= budget_max OR budget_max <= budget_max (fallback)
-    $budget_max = isset($_GET['budget_max']) ? floatval($_GET['budget_max']) : null;
-    if ($budget_max !== null && $_GET['budget_max'] !== '') {
+    $gender = sanitize_text_field($_GET['gender'] ?? '');
+    if ($gender !== '') {
         $meta_query[] = [
-            'relation' => 'OR',
-            [
-                'key'     => '_budget_min',
-                'value'   => $budget_max,
-                'type'    => 'NUMERIC',
-                'compare' => '<=',
-            ],
-            [
-                'key'     => '_budget_max',
-                'value'   => $budget_max,
-                'type'    => 'NUMERIC',
-                'compare' => '<=',
-            ],
+            'key'     => '_gender',
+            'value'   => $gender,
+            'compare' => '=',
         ];
     }
 
-    // Move-in date (on/after)
-    if (!empty($_GET['move_in'])) {
+    $move_in_month = sanitize_text_field($_GET['move_in_month'] ?? '');
+
+    // Available from date maps to the roommate move-in date field.
+    $available_from = sanitize_text_field($_GET['available_from'] ?? ($_GET['move_in'] ?? ''));
+    if ($move_in_month === '' && preg_match('/^\d{4}-\d{2}/', $available_from)) {
+        $move_in_month = substr($available_from, 0, 7);
+    }
+
+    if ($move_in_month !== '' && preg_match('/^\d{4}-\d{2}$/', $move_in_month)) {
+        $month_start = $move_in_month . '-01';
+
         $meta_query[] = [
             'key'     => '_move_in_date',
-            'value'   => sanitize_text_field($_GET['move_in']),
+            'value'   => $month_start,
+            'type'    => 'DATE',
+            'compare' => '>=',
+        ];
+    } elseif ($available_from !== '') {
+        $meta_query[] = [
+            'key'     => '_move_in_date',
+            'value'   => $available_from,
             'type'    => 'DATE',
             'compare' => '>=',
         ];
@@ -1208,22 +1499,6 @@ add_action('pre_get_posts', function ($query) {
 
     if (count($meta_query) > 1) {
         $query->set('meta_query', $meta_query);
-    }
-
-    // Taxonomy filters
-    $tax_query = ['relation' => 'AND'];
-
-    if (!empty($_GET['location_area'])) {
-        $tax_query[] = [
-            'taxonomy' => 'location_area',
-            'field'    => 'term_id',
-            'terms'    => [absint($_GET['location_area'])],
-        ];
-    }
-
-
-    if (count($tax_query) > 1) {
-        $query->set('tax_query', $tax_query);
     }
 });
 
@@ -1296,6 +1571,97 @@ function rmt_allow_frontend_user_uploads($allcaps, $caps, $args) {
     return $allcaps;
 }
 
+function rmt_get_frontend_request_path() {
+    $request_uri  = isset($_SERVER['REQUEST_URI']) ? stripslashes((string) $_SERVER['REQUEST_URI']) : '';
+    $request_path = (string) parse_url($request_uri, PHP_URL_PATH);
+    $home_path    = (string) parse_url(home_url('/'), PHP_URL_PATH);
+
+    if ($home_path && $home_path !== '/' && strpos($request_path, $home_path) === 0) {
+        $request_path = substr($request_path, strlen($home_path));
+    }
+
+    return trim($request_path, '/');
+}
+
+function rmt_is_frontend_request_path($paths) {
+    return in_array(rmt_get_frontend_request_path(), (array) $paths, true);
+}
+
+add_action('template_redirect', 'rmt_prepare_frontend_listing_form_routes', 0);
+
+function rmt_prepare_frontend_listing_form_routes() {
+    if (!rmt_is_frontend_request_path(array('post-a-room', 'post-a-roommate'))) {
+        return;
+    }
+
+    global $wp_query;
+
+    if ($wp_query instanceof WP_Query) {
+        $wp_query->is_404 = false;
+    }
+
+    status_header(200);
+}
+
+add_filter('template_include', 'rmt_route_frontend_listing_form_templates', 20);
+
+function rmt_route_frontend_listing_form_templates($template) {
+    $form_templates = array(
+        'post-a-room'     => 'post-a-room.php',
+        'post-a-roommate' => 'post-a-roommate.php',
+    );
+
+    $request_path = rmt_get_frontend_request_path();
+
+    if (empty($form_templates[$request_path])) {
+        return $template;
+    }
+
+    $form_template = locate_template($form_templates[$request_path]);
+
+    return $form_template ? $form_template : $template;
+}
+
+/**
+ * Allow logged-in frontend users to create and update their own listings.
+ * Subscribers do not have the default post capabilities WordPress maps to
+ * custom post types, but these forms are the intended publishing surface.
+ */
+add_filter('user_has_cap', 'rmt_allow_frontend_listing_capabilities', 10, 3);
+
+function rmt_allow_frontend_listing_capabilities($allcaps, $caps, $args) {
+    if (!is_user_logged_in() || is_admin()) {
+        return $allcaps;
+    }
+
+    $frontend_listing_paths = array('post-a-room', 'post-a-roommate', 'edit-room', 'edit-roommate', 'dashboard');
+
+    if (!rmt_is_frontend_request_path($frontend_listing_paths)) {
+        return $allcaps;
+    }
+
+    $requested_cap = $args[0] ?? '';
+    $post_id       = isset($args[2]) ? absint($args[2]) : 0;
+
+    if (in_array($requested_cap, array('edit_post', 'delete_post', 'read_post'), true)) {
+        $post = $post_id ? get_post($post_id) : null;
+
+        if (!$post || !in_array($post->post_type, array('room', 'roommate'), true)) {
+            return $allcaps;
+        }
+
+        if ((int) $post->post_author !== get_current_user_id()) {
+            return $allcaps;
+        }
+    }
+
+    foreach (array('edit_posts', 'edit_published_posts', 'publish_posts', 'delete_posts', 'read') as $cap) {
+        $allcaps[$cap] = true;
+    }
+
+    return $allcaps;
+}
+
 /**
  * Protect frontend edit pages.
  * Logged-out users go to login page.
@@ -1307,12 +1673,14 @@ function rmt_protect_frontend_edit_pages() {
         is_page('edit-room') ||
         is_page('edit-roommate') ||
         is_page('dashboard') ||
+        is_page('edit-profile') ||
         is_page('post-a-room') ||
         is_page('post-a-roommate') ||
-        is_page('messages')
+        is_page('messages') ||
+        rmt_is_frontend_request_path(array('post-a-room', 'post-a-roommate'))
     ) {
         if (!is_user_logged_in()) {
-            wp_redirect(wp_login_url(get_permalink()));
+            wp_redirect(wp_login_url(home_url('/' . rmt_get_frontend_request_path() . '/')));
             exit;
         }
     }
@@ -1490,6 +1858,14 @@ function rmt_messages_table_name() {
     return $wpdb->prefix . 'rmt_messages';
 }
 
+if (!defined('RMT_CHAT_RETENTION_YEARS')) {
+    define('RMT_CHAT_RETENTION_YEARS', 2);
+}
+
+if (!defined('RMT_CHAT_CLEANUP_HOOK')) {
+    define('RMT_CHAT_CLEANUP_HOOK', 'rmt_delete_expired_chat_messages');
+}
+
 function rmt_create_messages_table() {
     global $wpdb;
 
@@ -1532,6 +1908,34 @@ function rmt_maybe_create_messages_table() {
     }
 }
 add_action('init', 'rmt_maybe_create_messages_table');
+
+function rmt_schedule_chat_cleanup() {
+    if (!wp_next_scheduled(RMT_CHAT_CLEANUP_HOOK)) {
+        wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', RMT_CHAT_CLEANUP_HOOK);
+    }
+}
+add_action('init', 'rmt_schedule_chat_cleanup');
+add_action('after_switch_theme', 'rmt_schedule_chat_cleanup');
+
+function rmt_unschedule_chat_cleanup() {
+    wp_clear_scheduled_hook(RMT_CHAT_CLEANUP_HOOK);
+}
+add_action('switch_theme', 'rmt_unschedule_chat_cleanup');
+
+function rmt_delete_expired_chat_messages() {
+    global $wpdb;
+
+    $cutoff_timestamp = strtotime('-' . RMT_CHAT_RETENTION_YEARS . ' years', current_time('timestamp'));
+    $cutoff_date      = date('Y-m-d H:i:s', $cutoff_timestamp);
+
+    return $wpdb->query(
+        $wpdb->prepare(
+            'DELETE FROM ' . rmt_messages_table_name() . ' WHERE created_at < %s',
+            $cutoff_date
+        )
+    );
+}
+add_action(RMT_CHAT_CLEANUP_HOOK, 'rmt_delete_expired_chat_messages');
 
 function rmt_user_can_chat_about_listing($user_id, $other_user_id, $listing_id) {
     $user_id       = absint($user_id);
@@ -1590,7 +1994,42 @@ function rmt_insert_message($sender_id, $recipient_id, $listing_id, $message) {
         return new WP_Error('db_error', 'Message could not be saved.');
     }
 
+    rmt_send_listing_chat_notification_email(absint($sender_id), absint($recipient_id), absint($listing_id), $message);
+
     return (int) $wpdb->insert_id;
+}
+
+function rmt_send_listing_chat_notification_email($sender_id, $recipient_id, $listing_id, $message) {
+    $sender_id    = absint($sender_id);
+    $recipient_id = absint($recipient_id);
+    $listing_id   = absint($listing_id);
+
+    if (!$sender_id || !$recipient_id || !$listing_id || $sender_id === $recipient_id) {
+        return false;
+    }
+
+    $listing = get_post($listing_id);
+
+    if (!$listing || !in_array($listing->post_type, array('room', 'roommate'), true)) {
+        return false;
+    }
+
+    if ((int) $listing->post_author !== $recipient_id) {
+        return false;
+    }
+
+    $recipient = get_userdata($recipient_id);
+    $sender    = get_userdata($sender_id);
+
+    if (!$recipient || empty($recipient->user_email) || !$sender) {
+        return false;
+    }
+
+    $site_name     = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
+    $subject       = sprintf('[%s] New message', $site_name);
+    $email_message = "You received a new message.\n\nLogin to read it.";
+
+    return wp_mail($recipient->user_email, $subject, $email_message);
 }
 
 function rmt_get_conversation_messages($user_id, $other_user_id, $listing_id, $limit = 80) {
@@ -1848,7 +2287,7 @@ add_filter('login_headertext', 'bkkroomie_login_logo_title');
 
 /**
  * Bkkroomie listing limits.
- * Subscribers can post up to 5 rooms and 5 roommate profiles.
+ * Subscribers can post up to 1 room and 1 roommate profile.
  * Administrators have no limit.
  */
 
@@ -1863,14 +2302,22 @@ function bkkroomie_user_is_unlimited_poster($user_id = 0) {
 }
 
 function bkkroomie_get_user_post_count_by_type($user_id, $post_type) {
-    $counts = count_user_posts((int) $user_id, $post_type, true);
-    return (int) $counts;
+    $listing_query = new WP_Query(array(
+        'post_type'      => $post_type,
+        'author'         => (int) $user_id,
+        'post_status'    => array('publish', 'pending', 'draft'),
+        'posts_per_page' => 1,
+        'fields'         => 'ids',
+        'no_found_rows'  => false,
+    ));
+
+    return (int) $listing_query->found_posts;
 }
 
 function bkkroomie_get_listing_limit($post_type) {
     $limits = array(
-        'room'     => 5,
-        'roommate' => 5,
+        'room'     => 1,
+        'roommate' => 1,
     );
 
     return isset($limits[$post_type]) ? (int) $limits[$post_type] : 0;
@@ -1894,11 +2341,11 @@ function bkkroomie_user_can_create_listing($user_id, $post_type) {
 
 function bkkroomie_get_listing_limit_message($post_type) {
     if ($post_type === 'room') {
-        return __('You have reached the limit of 5 room posts. Please edit or delete an existing room before posting a new one.', 'roommate-mobile-theme');
+        return __('You have reached the limit of 1 room post. Please edit or delete your existing room before posting a new one.', 'roommate-mobile-theme');
     }
 
     if ($post_type === 'roommate') {
-        return __('You have reached the limit of 5 roommate posts. Please edit or delete an existing roommate profile before posting a new one.', 'roommate-mobile-theme');
+        return __('You have reached the limit of 1 roommate post. Please edit or delete your existing roommate profile before posting a new one.', 'roommate-mobile-theme');
     }
 
     return __('You have reached the posting limit.', 'roommate-mobile-theme');
@@ -1921,11 +2368,11 @@ function bkkroomie_block_limited_listing_pages() {
 
     $blocked_post_type = '';
 
-    if (is_page('post-a-room')) {
+    if (is_page('post-a-room') || rmt_is_frontend_request_path('post-a-room')) {
         $blocked_post_type = 'room';
     }
 
-    if (is_page('post-a-roommate')) {
+    if (is_page('post-a-roommate') || rmt_is_frontend_request_path('post-a-roommate')) {
         $blocked_post_type = 'roommate';
     }
 
@@ -1991,3 +2438,377 @@ function bkkroomie_enforce_listing_limit_before_insert($data, $postarr) {
     return $data;
 }
 add_filter('wp_insert_post_data', 'bkkroomie_enforce_listing_limit_before_insert', 10, 2);
+
+/**
+ * Scheduled frontend account deletion.
+ */
+function rmt_delete_account_data($user_id) {
+    global $wpdb;
+
+    $user_id = absint($user_id);
+
+    if (!$user_id) {
+        return false;
+    }
+
+    if (function_exists('rmt_messages_table_name')) {
+        $wpdb->query(
+            $wpdb->prepare(
+                'DELETE FROM ' . rmt_messages_table_name() . ' WHERE sender_id = %d OR recipient_id = %d',
+                $user_id,
+                $user_id
+            )
+        );
+    }
+
+    require_once ABSPATH . 'wp-admin/includes/user.php';
+
+    return (bool) wp_delete_user($user_id);
+}
+
+function rmt_schedule_account_deletion($user_id) {
+    $user_id = absint($user_id);
+
+    if (!$user_id || user_can($user_id, 'manage_options') || (function_exists('is_super_admin') && is_super_admin($user_id))) {
+        return new WP_Error('not_allowed', 'This account cannot be deleted from the frontend dashboard.');
+    }
+
+    $delete_at = time() + WEEK_IN_SECONDS;
+
+    update_user_meta($user_id, '_rmt_account_deletion_requested_at', current_time('mysql'));
+    update_user_meta($user_id, '_rmt_account_deletion_scheduled_for', $delete_at);
+
+    wp_clear_scheduled_hook('rmt_delete_scheduled_account', array($user_id));
+    $scheduled = wp_schedule_single_event($delete_at, 'rmt_delete_scheduled_account', array($user_id));
+
+    if (!$scheduled) {
+        delete_user_meta($user_id, '_rmt_account_deletion_requested_at');
+        delete_user_meta($user_id, '_rmt_account_deletion_scheduled_for');
+
+        return new WP_Error('schedule_failed', 'Account deletion could not be scheduled. Please try again.');
+    }
+
+    rmt_send_account_deletion_scheduled_email($user_id, $delete_at);
+
+    return $delete_at;
+}
+
+function rmt_send_account_deletion_scheduled_email($user_id, $delete_at) {
+    $user = get_userdata($user_id);
+
+    if (!$user || empty($user->user_email)) {
+        return false;
+    }
+
+    $site_name   = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
+    $delete_date = wp_date(get_option('date_format') . ' ' . get_option('time_format'), $delete_at);
+    $login_url   = wp_login_url(home_url('/dashboard/'));
+    $subject     = sprintf('[%s] Account deletion scheduled', $site_name);
+    $message     = sprintf(
+        "Hi %s,\n\nYour account deletion has been scheduled. Your account will be deleted in 7 days, on %s.\n\nIf you change your mind, just log in again before that date and the deletion request will be cancelled automatically:\n%s\n\nIf you did not request this, log in now to cancel the deletion.\n\n%s",
+        $user->display_name ?: $user->user_login,
+        $delete_date,
+        $login_url,
+        $site_name
+    );
+
+    return wp_mail($user->user_email, $subject, $message);
+}
+
+function rmt_cancel_account_deletion($user_id) {
+    $user_id = absint($user_id);
+
+    if (!$user_id) {
+        return false;
+    }
+
+    $scheduled_for = (int) get_user_meta($user_id, '_rmt_account_deletion_scheduled_for', true);
+
+    if (!$scheduled_for) {
+        return false;
+    }
+
+    wp_clear_scheduled_hook('rmt_delete_scheduled_account', array($user_id));
+    delete_user_meta($user_id, '_rmt_account_deletion_requested_at');
+    delete_user_meta($user_id, '_rmt_account_deletion_scheduled_for');
+
+    return true;
+}
+
+function rmt_cancel_account_deletion_on_login($user_login, $user) {
+    if ($user instanceof WP_User) {
+        rmt_cancel_account_deletion($user->ID);
+    }
+}
+add_action('wp_login', 'rmt_cancel_account_deletion_on_login', 10, 2);
+
+function rmt_delete_scheduled_account($user_id) {
+    $user_id = absint($user_id);
+    $user    = get_userdata($user_id);
+
+    if (!$user || user_can($user_id, 'manage_options') || (function_exists('is_super_admin') && is_super_admin($user_id))) {
+        return;
+    }
+
+    $scheduled_for = (int) get_user_meta($user_id, '_rmt_account_deletion_scheduled_for', true);
+
+    if (!$scheduled_for || $scheduled_for > time()) {
+        return;
+    }
+
+    rmt_delete_account_data($user_id);
+}
+add_action('rmt_delete_scheduled_account', 'rmt_delete_scheduled_account');
+
+/**
+ * Admin quick summary for listing and subscriber activity.
+ */
+function rmt_admin_dashboard_count_live_posts($post_type) {
+    $counts = wp_count_posts($post_type);
+
+    return isset($counts->publish) ? (int) $counts->publish : 0;
+}
+
+function rmt_admin_dashboard_count_subscribers() {
+    $user_counts = count_users();
+
+    return isset($user_counts['avail_roles']['subscriber'])
+        ? (int) $user_counts['avail_roles']['subscriber']
+        : 0;
+}
+
+function rmt_admin_dashboard_count_gender_posts($post_type, $group) {
+    $gender_values = array(
+        'male'              => array('Male', 'male'),
+        'female'            => array('Female', 'female'),
+        'non_binary'        => array('Non-binary', 'non-binary', 'Others', 'Other', 'other'),
+        'prefer_not_to_say' => array('Prefer not to say', 'prefer_not_to_say'),
+    );
+
+    if (!isset($gender_values[$group])) {
+        return 0;
+    }
+
+    $query = new WP_Query(array(
+        'post_type'              => $post_type,
+        'post_status'            => 'publish',
+        'posts_per_page'         => 1,
+        'fields'                 => 'ids',
+        'no_found_rows'          => false,
+        'ignore_sticky_posts'    => true,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
+        'meta_query'             => array(
+            array(
+                'key'     => '_gender',
+                'value'   => $gender_values[$group],
+                'compare' => 'IN',
+            ),
+        ),
+    ));
+
+    return (int) $query->found_posts;
+}
+
+function rmt_admin_dashboard_render_summary_widget() {
+    if (!current_user_can('edit_posts')) {
+        return;
+    }
+
+    $room_count       = rmt_admin_dashboard_count_live_posts('room');
+    $roommate_count   = rmt_admin_dashboard_count_live_posts('roommate');
+    $subscriber_count = rmt_admin_dashboard_count_subscribers();
+
+    $gender_groups = array(
+        'male'              => __('Male', 'roommate-mobile-theme'),
+        'female'            => __('Female', 'roommate-mobile-theme'),
+        'non_binary'        => __('Non-binary', 'roommate-mobile-theme'),
+        'prefer_not_to_say' => __('Prefer not to say', 'roommate-mobile-theme'),
+    );
+
+    $gender_summary = array();
+
+    foreach (array('room', 'roommate') as $post_type) {
+        foreach ($gender_groups as $group => $label) {
+            $gender_summary[$post_type][$group] = rmt_admin_dashboard_count_gender_posts($post_type, $group);
+        }
+    }
+    ?>
+    <style>
+        .rmt-admin-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin: 0 0 16px;
+        }
+
+        .rmt-admin-summary-card {
+            border: 1px solid #dcdcde;
+            border-radius: 6px;
+            padding: 12px;
+            background: #fff;
+        }
+
+        .rmt-admin-summary-card strong {
+            display: block;
+            margin: 0 0 4px;
+            color: #1d2327;
+            font-size: 22px;
+            line-height: 1.1;
+        }
+
+        .rmt-admin-summary-card span {
+            color: #646970;
+        }
+
+        .rmt-admin-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .rmt-admin-summary-table th,
+        .rmt-admin-summary-table td {
+            padding: 8px 6px;
+            border-top: 1px solid #dcdcde;
+            text-align: left;
+        }
+
+        .rmt-admin-summary-table td {
+            font-weight: 600;
+        }
+
+        @media (max-width: 782px) {
+            .rmt-admin-summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <div class="rmt-admin-summary-grid">
+        <a class="rmt-admin-summary-card" href="<?php echo esc_url(admin_url('edit.php?post_type=room&post_status=publish')); ?>">
+            <strong><?php echo esc_html(number_format_i18n($room_count)); ?></strong>
+            <span><?php esc_html_e('Live room posts', 'roommate-mobile-theme'); ?></span>
+        </a>
+        <a class="rmt-admin-summary-card" href="<?php echo esc_url(admin_url('edit.php?post_type=roommate&post_status=publish')); ?>">
+            <strong><?php echo esc_html(number_format_i18n($roommate_count)); ?></strong>
+            <span><?php esc_html_e('Live roommate posts', 'roommate-mobile-theme'); ?></span>
+        </a>
+        <a class="rmt-admin-summary-card" href="<?php echo esc_url(admin_url('users.php?role=subscriber')); ?>">
+            <strong><?php echo esc_html(number_format_i18n($subscriber_count)); ?></strong>
+            <span><?php esc_html_e('Subscriber users', 'roommate-mobile-theme'); ?></span>
+        </a>
+    </div>
+
+    <table class="rmt-admin-summary-table">
+        <thead>
+            <tr>
+                <th><?php esc_html_e('Gender', 'roommate-mobile-theme'); ?></th>
+                <th><?php esc_html_e('Rooms', 'roommate-mobile-theme'); ?></th>
+                <th><?php esc_html_e('Roommates', 'roommate-mobile-theme'); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($gender_groups as $group => $label) : ?>
+                <tr>
+                    <th scope="row"><?php echo esc_html($label); ?></th>
+                    <td><?php echo esc_html(number_format_i18n($gender_summary['room'][$group])); ?></td>
+                    <td><?php echo esc_html(number_format_i18n($gender_summary['roommate'][$group])); ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php
+}
+
+function rmt_admin_dashboard_add_summary_widget() {
+    global $wp_meta_boxes;
+
+    wp_add_dashboard_widget(
+        'rmt_admin_quick_summary',
+        __('Bkkroomie Quick Summary', 'roommate-mobile-theme'),
+        'rmt_admin_dashboard_render_summary_widget'
+    );
+
+    if (empty($wp_meta_boxes['dashboard']['normal']['core']['rmt_admin_quick_summary'])) {
+        return;
+    }
+
+    $summary_widget = array('rmt_admin_quick_summary' => $wp_meta_boxes['dashboard']['normal']['core']['rmt_admin_quick_summary']);
+    unset($wp_meta_boxes['dashboard']['normal']['core']['rmt_admin_quick_summary']);
+
+    $wp_meta_boxes['dashboard']['normal']['core'] = $summary_widget + $wp_meta_boxes['dashboard']['normal']['core'];
+}
+add_action('wp_dashboard_setup', 'rmt_admin_dashboard_add_summary_widget');
+
+function bkkroomie_google_analytics_tag() {
+    if ( is_admin() || current_user_can( 'manage_options' ) ) {
+        return;
+    }
+    ?>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-X9DJTW8GVX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-X9DJTW8GVX');
+      gtag('config', 'G-T322N5J5QT');
+    </script>
+    <?php
+}
+add_action( 'wp_head', 'bkkroomie_google_analytics_tag' );
+
+add_filter('user_row_actions', function ($actions, $user) {
+    if ((int) $user->ID === 1) {
+        unset($actions['delete']);
+    }
+    return $actions;
+}, 10, 2);
+
+add_action('delete_user', function ($user_id) {
+    if ((int) $user_id === 1) {
+        wp_die('This administrator account is protected.');
+    }
+}, 1);
+
+add_action('admin_init', function () {
+
+    if (!current_user_can('delete_users')) {
+        return;
+    }
+
+    if (isset($_GET['action'], $_GET['user']) &&
+        $_GET['action'] === 'delete' &&
+        (int) $_GET['user'] === 1) {
+
+        wp_die('This administrator account is protected.');
+    }
+
+    if (
+        isset($_POST['action']) &&
+        $_POST['action'] === 'delete' &&
+        !empty($_POST['users'])
+    ) {
+        if (in_array(1, array_map('intval', $_POST['users']), true)) {
+            wp_die('This administrator account is protected.');
+        }
+    }
+
+});
+
+add_action('profile_update', function ($user_id, $old_user_data) {
+
+    if ((int) $user_id !== 1) {
+        return;
+    }
+
+    $user = get_userdata(1);
+
+    if (!in_array('administrator', (array) $user->roles, true)) {
+
+        $user->set_role('administrator');
+
+        wp_die('The primary administrator role cannot be changed.');
+    }
+
+}, 10, 2);

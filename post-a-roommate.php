@@ -18,6 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
         $gender   = sanitize_text_field($_POST['gender'] ?? '');
         $bio      = sanitize_textarea_field($_POST['bio'] ?? '');
         $age      = absint($_POST['age'] ?? 0);
+        $budget_min = sanitize_text_field($_POST['budget_min'] ?? '');
+        $move_in_date_raw = sanitize_text_field($_POST['move_in_date'] ?? '');
+        $move_in_date = rmt_normalize_form_date($move_in_date_raw);
+        $preferred_area = sanitize_text_field($_POST['preferred_area'] ?? '');
 
         if (empty($nickname)) {
             $errors[] = 'Nickname / name is required.';
@@ -33,6 +37,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
 
         if ($age < 18 || $age > 80) {
             $errors[] = 'Please enter a valid age between 18 and 80.';
+        }
+
+        if ($budget_min === '' || !is_numeric($budget_min) || (float) $budget_min < 0) {
+            $errors[] = 'Minimum budget is required.';
+        }
+
+        if (empty($move_in_date_raw)) {
+            $errors[] = 'Move-in date is required.';
+        } elseif ($move_in_date === '') {
+            $errors[] = 'Please select a valid move-in date.';
+        }
+
+        if (empty($preferred_area)) {
+            $errors[] = 'Preferred area is required.';
         }
 
         if (empty($errors)) {
@@ -69,14 +87,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
                     '_age'        => 'age',
                     '_gender'     => 'gender',
                     '_occupation' => 'occupation',
+                    '_line_id'    => 'line_id',
+                    '_nationality' => 'nationality',
                     '_languages'  => 'languages',
+                    '_zodiac_sign' => 'zodiac_sign',
                     '_hobbies'    => 'hobbies',
                 ] as $meta_key => $post_key) {
                     update_post_meta($post_id, $meta_key, sanitize_text_field($_POST[$post_key] ?? ''));
                 }
 
                 foreach ([
-                    '_cleanliness'    => 'cleanliness',
                     '_sleep_schedule' => 'sleep_schedule',
                     '_smoker'         => 'smoker',
                     '_has_pets'       => 'has_pets',
@@ -88,7 +108,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
                 update_post_meta($post_id, '_bio', $bio);
                 update_post_meta($post_id, '_roommate_preference', sanitize_textarea_field($_POST['roommate_preference'] ?? ''));
 
-                $budget_min = sanitize_text_field($_POST['budget_min'] ?? '');
                 $budget_max = sanitize_text_field($_POST['budget_max'] ?? '');
 
                 update_post_meta($post_id, '_budget_min', $budget_min);
@@ -98,19 +117,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
                     update_post_meta($post_id, '_budget', $budget_min);
                 }
 
-                update_post_meta($post_id, '_move_in_date', sanitize_text_field($_POST['move_in_date'] ?? ''));
+                update_post_meta($post_id, '_move_in_date', $move_in_date);
+                update_post_meta($post_id, '_lease_duration', rmt_format_min_stay_months($_POST['min_stay'] ?? ''));
 
-                $preferred_area = sanitize_text_field($_POST['preferred_area'] ?? '');
                 update_post_meta($post_id, '_preferred_area_text', $preferred_area);
                 update_post_meta($post_id, '_preferred_area', $preferred_area);
-
-                wp_set_post_terms(
-                    $post_id,
-                    !empty($_POST['lifestyle']) && is_array($_POST['lifestyle'])
-                        ? array_map('intval', $_POST['lifestyle'])
-                        : [],
-                    'lifestyle'
-                );
 
                 wp_set_post_terms(
                     $post_id,
@@ -129,11 +140,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
         }
     }
 }
-
-$lifestyle_terms = get_terms([
-    'taxonomy'   => 'lifestyle',
-    'hide_empty' => false,
-]);
 
 $location_area_terms = get_terms([
     'taxonomy'   => 'location_area',
@@ -202,7 +208,7 @@ get_header();
                                 <div class="par-photo-upload">
                                     <img
                                         id="photo-preview"
-                                        src="<?php echo esc_url(get_template_directory_uri() . '/images/default-profile.jpg'); ?>"
+                                        src="<?php echo esc_url(rmt_get_default_profile_photo_url()); ?>"
                                         alt="Profile photo preview"
                                     >
 
@@ -285,26 +291,26 @@ get_header();
 
                             <div class="par-cols-2">
                                 <div class="par-field">
-                                    <label for="languages">Languages Spoken</label>
+                                    <label for="line_id">Line ID</label>
                                     <input
                                         class="par-input"
                                         type="text"
-                                        id="languages"
-                                        name="languages"
-                                        value="<?php echo esc_attr($_POST['languages'] ?? ''); ?>"
-                                        placeholder="English, Thai, Burmese..."
+                                        id="line_id"
+                                        name="line_id"
+                                        value="<?php echo esc_attr($_POST['line_id'] ?? ''); ?>"
+                                        placeholder="Your LINE contact ID"
                                     >
                                 </div>
 
                                 <div class="par-field">
-                                    <label for="hobbies">Hobbies / Interests</label>
+                                    <label for="nationality">Nationality</label>
                                     <input
                                         class="par-input"
                                         type="text"
-                                        id="hobbies"
-                                        name="hobbies"
-                                        value="<?php echo esc_attr($_POST['hobbies'] ?? ''); ?>"
-                                        placeholder="Gym, cooking, gaming..."
+                                        id="nationality"
+                                        name="nationality"
+                                        value="<?php echo esc_attr($_POST['nationality'] ?? ''); ?>"
+                                        placeholder="Thai, Filipino, British..."
                                     >
                                 </div>
                             </div>
@@ -320,6 +326,138 @@ get_header();
                                     placeholder="Write a short introduction about yourself."
                                 ><?php echo esc_textarea($_POST['bio'] ?? ''); ?></textarea>
                             </div>
+
+                            <div class="par-cols-2">
+                                <div class="par-field">
+                                    <label for="languages">Languages Spoken</label>
+                                    <input
+                                        class="par-input"
+                                        type="text"
+                                        id="languages"
+                                        name="languages"
+                                        value="<?php echo esc_attr($_POST['languages'] ?? ''); ?>"
+                                        placeholder="English, Thai, Burmese..."
+                                    >
+                                </div>
+
+                                <div class="par-field">
+                                    <label for="zodiac_sign">Zodiac Sign</label>
+                                    <div class="par-select-wrap">
+                                        <select class="par-select" id="zodiac_sign" name="zodiac_sign">
+                                            <option value="">— Select —</option>
+
+                                            <?php foreach (['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'] as $option) : ?>
+                                                <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['zodiac_sign'] ?? '', $option); ?>>
+                                                    <?php echo esc_html($option); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="par-card">
+                            <div class="par-card__header">
+                                <div class="par-card__icon">🏠</div>
+
+                                <div>
+                                    <h2>Room Preferences</h2>
+                                    <p>What kind of room are you looking for?</p>
+                                </div>
+                            </div>
+
+                            <div class="par-cols-2">
+                                <div class="par-field">
+                                    <label for="budget_min">Budget Min ฿ <span class="required">*</span></label>
+                                    <input
+                                        class="par-input"
+                                        type="number"
+                                        id="budget_min"
+                                        name="budget_min"
+                                        min="0"
+                                        value="<?php echo esc_attr($_POST['budget_min'] ?? ''); ?>"
+                                        required
+                                    >
+                                </div>
+
+                                <div class="par-field">
+                                    <label for="budget_max">Budget Max ฿</label>
+                                    <input
+                                        class="par-input"
+                                        type="number"
+                                        id="budget_max"
+                                        name="budget_max"
+                                        min="0"
+                                        value="<?php echo esc_attr($_POST['budget_max'] ?? ''); ?>"
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="par-cols-2">
+                                <div class="par-field">
+                                    <label for="move_in_date">Preferred Move-in Date <span class="required">*</span></label>
+                                    <input
+                                        class="par-input"
+                                        type="date"
+                                        id="move_in_date"
+                                        name="move_in_date"
+                                        value="<?php echo esc_attr($_POST['move_in_date'] ?? ''); ?>"
+                                        required
+                                    >
+                                </div>
+
+                                <div class="par-field">
+                                    <label for="min_stay">Minimum Stay</label>
+                                    <div class="par-number-unit">
+                                        <input
+                                            class="par-input"
+                                            type="number"
+                                            id="min_stay"
+                                            name="min_stay"
+                                            min="1"
+                                            step="1"
+                                            inputmode="numeric"
+                                            value="<?php echo esc_attr(rmt_min_stay_months_value($_POST['min_stay'] ?? '')); ?>"
+                                        >
+                                        <span class="par-number-unit__suffix">months</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="par-field">
+                                <label for="preferred_area">Preferred Area <span class="required">*</span></label>
+                                <input
+                                    class="par-input"
+                                    type="text"
+                                    id="preferred_area"
+                                    name="preferred_area"
+                                    value="<?php echo esc_attr($_POST['preferred_area'] ?? ''); ?>"
+                                    placeholder="Sukhumvit, On Nut, Ari..."
+                                    required
+                                >
+                            </div>
+
+                            <?php if (!empty($location_area_terms) && !is_wp_error($location_area_terms)) : ?>
+                                <div class="par-field">
+                                    <label>Location Areas</label>
+
+                                    <div class="par-checkbox-group">
+                                        <?php foreach ($location_area_terms as $term) : ?>
+                                            <label class="par-checkbox-label">
+                                                <input
+                                                    type="checkbox"
+                                                    name="location_area[]"
+                                                    value="<?php echo esc_attr($term->term_id); ?>"
+                                                    <?php checked(in_array($term->term_id, array_map('intval', (array) ($_POST['location_area'] ?? [])), true)); ?>
+                                                >
+
+                                                <span><?php echo esc_html($term->name); ?></span>
+                                            </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </section>
 
                         <section class="par-card">
@@ -334,14 +472,14 @@ get_header();
 
                             <div class="par-cols-2">
                                 <div class="par-field">
-                                    <label for="cleanliness">Cleanliness Level</label>
+                                    <label for="social_level">Social Level</label>
 
                                     <div class="par-select-wrap">
-                                        <select class="par-select" id="cleanliness" name="cleanliness">
+                                        <select class="par-select" id="social_level" name="social_level">
                                             <option value="">— Select —</option>
 
-                                            <?php foreach (['Very tidy', 'Tidy', 'Average', 'Relaxed'] as $option) : ?>
-                                                <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['cleanliness'] ?? '', $option); ?>>
+                                            <?php foreach (['Extrovert', 'Introvert', 'Ambivert'] as $option) : ?>
+                                                <option value="<?php echo esc_attr($option); ?>" <?php selected($_POST['social_level'] ?? '', $option); ?>>
                                                     <?php echo esc_html($option); ?>
                                                 </option>
                                             <?php endforeach; ?>
@@ -401,130 +539,17 @@ get_header();
                             </div>
 
                             <div class="par-field">
-                                <label for="social_level">Social Level</label>
-                                <small>1 = very private, 10 = very social</small>
-
-                                <div class="par-range-wrap par-range-wrap--spaced">
-                                    <input
-                                        class="par-range"
-                                        type="range"
-                                        id="social_level"
-                                        name="social_level"
-                                        min="1"
-                                        max="10"
-                                        value="<?php echo esc_attr($_POST['social_level'] ?? 5); ?>"
-                                        oninput="document.getElementById('sl_val').textContent=this.value"
-                                    >
-
-                                    <span class="par-range-val" id="sl_val">
-                                        <?php echo esc_html($_POST['social_level'] ?? 5); ?>
-                                    </span>
-                                </div>
+                                <label for="hobbies">Hobbies / Interests</label>
+                                <input
+                                    class="par-input"
+                                    type="text"
+                                    id="hobbies"
+                                    name="hobbies"
+                                    value="<?php echo esc_attr($_POST['hobbies'] ?? ''); ?>"
+                                    placeholder="Gym, cooking, gaming..."
+                                >
                             </div>
 
-                            <?php if (!empty($lifestyle_terms) && !is_wp_error($lifestyle_terms)) : ?>
-                                <div class="par-field">
-                                    <label>Lifestyle Tags</label>
-
-                                    <div class="par-checkbox-group">
-                                        <?php foreach ($lifestyle_terms as $term) : ?>
-                                            <label class="par-checkbox-label">
-                                                <input
-                                                    type="checkbox"
-                                                    name="lifestyle[]"
-                                                    value="<?php echo esc_attr($term->term_id); ?>"
-                                                    <?php checked(in_array($term->term_id, array_map('intval', (array) ($_POST['lifestyle'] ?? [])), true)); ?>
-                                                >
-
-                                                <span><?php echo esc_html($term->name); ?></span>
-                                            </label>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                        </section>
-
-                        <section class="par-card">
-                            <div class="par-card__header">
-                                <div class="par-card__icon">🏠</div>
-
-                                <div>
-                                    <h2>Room Preferences</h2>
-                                    <p>What kind of room are you looking for?</p>
-                                </div>
-                            </div>
-
-                            <div class="par-cols-2">
-                                <div class="par-field">
-                                    <label for="budget_min">Budget Min ฿</label>
-                                    <input
-                                        class="par-input"
-                                        type="number"
-                                        id="budget_min"
-                                        name="budget_min"
-                                        min="0"
-                                        value="<?php echo esc_attr($_POST['budget_min'] ?? ''); ?>"
-                                    >
-                                </div>
-
-                                <div class="par-field">
-                                    <label for="budget_max">Budget Max ฿</label>
-                                    <input
-                                        class="par-input"
-                                        type="number"
-                                        id="budget_max"
-                                        name="budget_max"
-                                        min="0"
-                                        value="<?php echo esc_attr($_POST['budget_max'] ?? ''); ?>"
-                                    >
-                                </div>
-                            </div>
-
-                            <div class="par-cols-2">
-                                <div class="par-field">
-                                    <label for="move_in_date">Preferred Move-in Date</label>
-                                    <input
-                                        class="par-input"
-                                        type="date"
-                                        id="move_in_date"
-                                        name="move_in_date"
-                                        value="<?php echo esc_attr($_POST['move_in_date'] ?? ''); ?>"
-                                    >
-                                </div>
-
-                                <div class="par-field">
-                                    <label for="preferred_area">Preferred Area</label>
-                                    <input
-                                        class="par-input"
-                                        type="text"
-                                        id="preferred_area"
-                                        name="preferred_area"
-                                        value="<?php echo esc_attr($_POST['preferred_area'] ?? ''); ?>"
-                                        placeholder="Sukhumvit, On Nut, Ari..."
-                                    >
-                                </div>
-                            </div>
-
-                            <?php if (!empty($location_area_terms) && !is_wp_error($location_area_terms)) : ?>
-                                <div class="par-field">
-                                    <label>Location Areas</label>
-
-                                    <div class="par-checkbox-group">
-                                        <?php foreach ($location_area_terms as $term) : ?>
-                                            <label class="par-checkbox-label">
-                                                <input
-                                                    type="checkbox"
-                                                    name="location_area[]"
-                                                    value="<?php echo esc_attr($term->term_id); ?>"
-                                                    <?php checked(in_array($term->term_id, array_map('intval', (array) ($_POST['location_area'] ?? [])), true)); ?>
-                                                >
-
-                                                <span><?php echo esc_html($term->name); ?></span>
-                                            </label>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
                         </section>
 
                         <section class="par-card">
@@ -532,7 +557,7 @@ get_header();
                                 <div class="par-card__icon">🔍</div>
 
                                 <div>
-                                    <h2>Preferred Roommate</h2>
+                                    <h2>My Ideal Roommate</h2>
                                     <p>Describe who you want to live with.</p>
                                 </div>
                             </div>
@@ -544,7 +569,7 @@ get_header();
                                     id="roommate_preference"
                                     name="roommate_preference"
                                     rows="5"
-                                    placeholder="Example: quiet, clean, respectful, okay with guests sometimes..."
+                                    placeholder="Example: quiet, respectful, okay with guests sometimes..."
                                 ><?php echo esc_textarea($_POST['roommate_preference'] ?? ''); ?></textarea>
                             </div>
                         </section>

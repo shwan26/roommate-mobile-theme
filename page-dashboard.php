@@ -14,6 +14,8 @@ if (!is_user_logged_in()) {
 $current_user    = wp_get_current_user();
 $success_message = '';
 $error_message   = '';
+$can_create_room     = bkkroomie_user_can_create_listing($current_user->ID, 'room');
+$can_create_roommate = bkkroomie_user_can_create_listing($current_user->ID, 'roommate');
 
 function rmt_dashboard_can_manage($post_id, $user_id) {
     $post = get_post($post_id);
@@ -43,6 +45,50 @@ function rmt_dashboard_edit_url($post_id) {
     return home_url('/dashboard/');
 }
 
+function rmt_dashboard_terms_text($post_id, $taxonomy) {
+    $terms = get_the_terms($post_id, $taxonomy);
+    if (empty($terms) || is_wp_error($terms)) {
+        return '';
+    }
+
+    return implode(', ', wp_list_pluck($terms, 'name'));
+}
+
+function rmt_dashboard_format_date($date) {
+    if (!$date) {
+        return '';
+    }
+
+    $timestamp = strtotime($date);
+
+    if (!$timestamp) {
+        return $date;
+    }
+
+    return date_i18n('d/m/Y', $timestamp);
+}
+
+function rmt_dashboard_request_account_deletion($user_id, $password) {
+    $user_id = absint($user_id);
+    $password = (string) $password;
+
+    if (!$user_id || user_can($user_id, 'manage_options') || (function_exists('is_super_admin') && is_super_admin($user_id))) {
+        return new WP_Error('not_allowed', 'This account cannot be deleted from the frontend dashboard.');
+    }
+
+    $user = get_userdata($user_id);
+
+    if (!$user || $password === '' || !wp_check_password($password, $user->user_pass, $user_id)) {
+        return new WP_Error('invalid_password', 'Please enter your current password to delete your account.');
+    }
+
+    if (!function_exists('rmt_schedule_account_deletion')) {
+        return new WP_Error('schedule_unavailable', 'Account deletion is unavailable right now. Please try again later.');
+    }
+
+    return rmt_schedule_account_deletion($user_id);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_dashboard_action_type'])) {
     if (!isset($_POST['rmt_dashboard_nonce']) || !wp_verify_nonce($_POST['rmt_dashboard_nonce'], 'rmt_dashboard_action')) {
         $error_message = 'Security check failed.';
@@ -50,7 +96,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_dashboard_action_
         $action  = sanitize_key($_POST['rmt_dashboard_action_type']);
         $post_id = absint($_POST['post_id'] ?? 0);
 
-        if (!$post_id || !rmt_dashboard_can_manage($post_id, $current_user->ID)) {
+        if ($action === 'delete_account') {
+            $scheduled_for = rmt_dashboard_request_account_deletion($current_user->ID, wp_unslash($_POST['rmt_delete_account_password'] ?? ''));
+
+            if (is_wp_error($scheduled_for)) {
+                $error_message = $scheduled_for->get_error_message();
+            } else {
+                wp_logout();
+                wp_safe_redirect(add_query_arg('account_deletion_scheduled', '1', home_url('/')));
+                exit;
+            }
+        } elseif (!$post_id || !rmt_dashboard_can_manage($post_id, $current_user->ID)) {
             $error_message = 'You are not allowed to manage this listing.';
         } else {
             if ($action === 'publish') {
@@ -170,8 +226,13 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
             <?php endif; ?>
 
             <div class="dashboard-summary-grid">
-                <div class="single-card">
-                    <h2>Account</h2>
+                <div class="single-card dashboard-account-card">
+                    <div class="dashboard-card-header">
+                        <h2>Account Details</h2>
+                        <a href="<?php echo esc_url(home_url('/edit-profile/')); ?>" class="dashboard-edit-link" aria-label="Edit account details">
+                            <span>Edit</span>
+                        </a>
+	                    </div>
                     <ul class="detail-list">
                         <li><strong>Name:</strong> <?php echo esc_html($current_user->display_name); ?></li>
                         <li><strong>Email:</strong> <?php echo esc_html($current_user->user_email); ?></li>
@@ -180,31 +241,79 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                     </ul>
                 </div>
 
-                <div class="single-card">
-                    <h2>Quick Actions</h2>
-                    <div class="cta-actions">
-                        <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'room')) : ?>
-                            <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="btn btn-primary">
-                                Post a Room
-                            </a>
-                        <?php else : ?>
-                            <button class="btn btn-outline" type="button" disabled>
-                                Room Limit Reached
-                            </button>
-                        <?php endif; ?>
+	                <div class="single-card dashboard-quick-card">
+	                    <h2>Quick Actions</h2>
+	                    <div class="dashboard-quick-limit-messages" aria-live="polite" hidden>
+	                        <p data-limit-message="room" hidden>delete existing room post to post a new listing</p>
+	                        <p data-limit-message="roommate" hidden>delete existing roommate post to post a new listing</p>
+	                    </div>
+	                    <div class="cta-actions dashboard-quick-actions">
+	                        <?php if ($can_create_room) : ?>
+	                            <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="btn dashboard-quick-btn">
+	                                <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/><path d="M9 20v-6h6v6"/></svg>
+	                                <span>Post a Room</span>
+	                            </a>
+	                        <?php else : ?>
+	                            <button class="btn dashboard-quick-btn dashboard-quick-btn--limited" type="button" aria-disabled="true" data-dashboard-limit-trigger="room">
+	                                <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V20h14v-9.5"/><path d="M9 20v-6h6v6"/></svg>
+	                                <span>Post a Room</span>
+	                            </button>
+	                        <?php endif; ?>
 
-                        <?php if (bkkroomie_user_can_create_listing(get_current_user_id(), 'roommate')) : ?>
-                            <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="btn btn-secondary">
-                                Post a Roommate
-                            </a>
-                        <?php else : ?>
-                            <button class="btn btn-outline" type="button" disabled>
-                                Roommate Limit Reached
-                            </button>
-                        <?php endif; ?>
-                        <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn btn-secondary">Log Out</a>
+	                        <?php if ($can_create_roommate) : ?>
+	                            <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="btn dashboard-quick-btn">
+	                                <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+	                                <span>Post a Roommate</span>
+	                            </a>
+	                        <?php else : ?>
+	                            <button class="btn dashboard-quick-btn dashboard-quick-btn--limited" type="button" aria-disabled="true" data-dashboard-limit-trigger="roommate">
+	                                <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+	                                <span>Post a Roommate</span>
+	                            </button>
+	                        <?php endif; ?>
+	                        <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>" class="btn dashboard-quick-btn dashboard-quick-btn--logout">
+	                            <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 17 15 12l-5-5"/><path d="M15 12H3"/><path d="M13 4h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/></svg>
+	                            <span>Log Out</span>
+	                        </a>
+	                        <button
+	                            class="btn dashboard-quick-btn dashboard-quick-btn--danger"
+	                            type="button"
+	                            data-delete-account-open
+	                        >
+	                            <svg class="dashboard-quick-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
+	                            <span>Delete Account</span>
+	                        </button>
+	                    </div>
+	                </div>
+            </div>
+
+            <div class="dashboard-delete-modal" id="rmt-delete-account-modal" hidden>
+                <div class="dashboard-delete-modal__overlay" data-delete-account-close></div>
+                <form method="post" class="dashboard-delete-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="rmt-delete-account-title">
+                    <button class="dashboard-delete-modal__close" type="button" aria-label="Close delete account confirmation" data-delete-account-close>&times;</button>
+                    <h2 id="rmt-delete-account-title">Please confirm deletion</h2>
+                    <p>Type your password to schedule account deletion. Your account will be deleted in 7 days.</p>
+                    <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
+                    <input type="hidden" name="rmt_dashboard_action_type" value="delete_account">
+                    <label for="rmt-delete-account-password">Current password</label>
+                    <input
+                        type="password"
+                        id="rmt-delete-account-password"
+                        name="rmt_delete_account_password"
+                        class="dashboard-delete-password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+                    <div class="dashboard-delete-modal__actions">
+                        <button class="btn btn-secondary" type="button" data-delete-account-close>
+                            Cancel
+                        </button>
+                        <button class="btn dashboard-quick-btn dashboard-quick-btn--danger" type="submit">
+                            Confirm Deletion
+                        </button>
                     </div>
-                </div>
+                </form>
             </div>
 
             <?php $rmt_conversations = function_exists('rmt_get_user_conversations') ? rmt_get_user_conversations($current_user->ID, 10) : array(); ?>
@@ -251,57 +360,62 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
     <section class="listing-section">
         <div class="container">
             <div class="section-heading">
-                <span class="section-badge">My Rooms</span>
-                <h2>Your Room Listings</h2>
-                <p>Edit, publish, unpublish, mark done, or delete room listings.</p>
+                <h2>My Room Listings</h2>
+                <p>Edit, publish, mark done, or delete room listings.</p>
             </div>
 
             <?php if ($room_posts->have_posts()) : ?>
                 <div class="listing-grid">
                     <?php while ($room_posts->have_posts()) : $room_posts->the_post(); ?>
                         <?php
-                        $post_id        = get_the_ID();
-                        $rent           = rmt_get_meta($post_id, '_rent');
-                        $available_date = rmt_get_meta($post_id, '_available_date');
-                        $address        = rmt_get_meta($post_id, '_address');
-                        $post_status    = get_post_status($post_id);
-                        $is_published   = $post_status === 'publish';
-                        $is_done        = (bool) get_post_meta($post_id, '_rmt_done', true);
+                        $post_id          = get_the_ID();
+                        $rent             = rmt_get_meta($post_id, '_rent');
+                        $available_date   = rmt_get_meta($post_id, '_available_date');
+                        $property_type    = rmt_get_meta($post_id, '_property_type');
+                        $nearby_landmark  = rmt_get_meta($post_id, '_nearby_landmark');
+                        $room_type_text   = rmt_dashboard_terms_text($post_id, 'room_type');
+                        $location_text    = rmt_dashboard_terms_text($post_id, 'location_area');
+                        $display_property = $room_type_text ? $room_type_text : $property_type;
+                        $post_status      = get_post_status($post_id);
+                        $is_published     = $post_status === 'publish';
+                        $is_done          = (bool) get_post_meta($post_id, '_rmt_done', true);
                         ?>
 
                         <article class="listing-card">
-                            <?php if (has_post_thumbnail()) : ?>
-                                <a href="<?php echo esc_url(get_permalink()); ?>" class="listing-card__image-link">
-                                    <div class="listing-card__image">
-                                        <?php the_post_thumbnail('large'); ?>
-                                    </div>
-                                </a>
-                            <?php endif; ?>
+                            <a href="<?php echo esc_url(get_permalink()); ?>" class="listing-card__image-link">
+                                <div class="listing-card__image">
+                                    <?php echo rmt_get_room_photo_html($post_id, 'large'); ?>
+                                </div>
+                            </a>
 
                             <div class="listing-card__content">
-                                <div class="listing-card__top">
-                                    <span class="listing-chip <?php echo !$is_published ? 'listing-chip--draft' : ''; ?> <?php echo $is_done ? 'listing-chip--done' : ''; ?>">
-                                        <?php echo esc_html(rmt_dashboard_status_label($post_id)); ?>
-                                    </span>
-
-                                    <?php if ($rent) : ?>
-                                        <div class="listing-card__price">
-                                            <?php echo esc_html(rmt_format_price($rent)); ?>/month
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-
                                 <h3 class="listing-card__title">
                                     <a href="<?php echo esc_url(get_permalink()); ?>"><?php the_title(); ?></a>
                                 </h3>
 
-                                <?php if ($address) : ?>
-                                    <p class="listing-card__address"><?php echo esc_html($address); ?></p>
-                                <?php endif; ?>
+                                <div class="listing-card__details">
+                                    <?php if ($display_property) : ?>
+                                        <span><?php echo esc_html($display_property); ?></span>
+                                    <?php endif; ?>
 
-                                <?php if ($available_date) : ?>
-                                    <p class="listing-card__address">Available: <?php echo esc_html($available_date); ?></p>
-                                <?php endif; ?>
+                                    <?php if ($location_text) : ?>
+                                        <span><?php echo esc_html($location_text); ?></span>
+                                    <?php endif; ?>
+
+                                    <?php if ($rent) : ?>
+                                        <span><?php echo esc_html(rmt_format_price($rent)); ?>/person</span>
+                                    <?php endif; ?>
+
+                                    <?php if ($available_date) : ?>
+                                        <span><?php echo esc_html(sprintf(__('Starting from %s', 'roommate-mobile-theme'), rmt_dashboard_format_date($available_date))); ?></span>
+                                    <?php endif; ?>
+
+                                    <?php if ($nearby_landmark) : ?>
+                                        <span><?php echo esc_html($nearby_landmark); ?></span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <p class="listing-card__post-id">#<?php echo esc_html($post_id); ?></p>
 
                                 <div class="cta-actions dashboard-card-actions">
                                     <?php if ($is_published) : ?>
@@ -320,15 +434,6 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                     <?php endif; ?>
 
                                     <?php if ($is_published) : ?>
-                                        <form method="post">
-                                            <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
-                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
-                                            <input type="hidden" name="rmt_dashboard_action_type" value="unpublish">
-                                            <button type="submit" class="btn btn-secondary" onclick="return confirm('Unpublish this listing?');">
-                                                Unpublish
-                                            </button>
-                                        </form>
-
                                         <form method="post">
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
                                             <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
@@ -366,9 +471,8 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
     <section class="listing-section">
         <div class="container">
             <div class="section-heading">
-                <span class="section-badge">My Roommates</span>
-                <h2>Your Roommate Profiles</h2>
-                <p>Edit, publish, unpublish, mark done, or delete roommate profiles.</p>
+                <h2>My Roommate Profiles</h2>
+                <p>Edit, publish, mark done, or delete roommate profiles.</p>
             </div>
 
             <?php if ($roommate_posts->have_posts()) : ?>
@@ -376,63 +480,72 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                     <?php while ($roommate_posts->have_posts()) : $roommate_posts->the_post(); ?>
                         <?php
                         $post_id        = get_the_ID();
+                        $nickname       = rmt_get_meta($post_id, '_nickname');
+                        $age            = rmt_get_meta($post_id, '_age');
+                        $gender         = rmt_get_meta($post_id, '_gender');
                         $budget_min     = rmt_get_meta($post_id, '_budget_min');
-                        $budget_max     = rmt_get_meta($post_id, '_budget_max');
                         $legacy_budget  = rmt_get_meta($post_id, '_budget');
                         $move_in_date   = rmt_get_meta($post_id, '_move_in_date');
                         $preferred_area = rmt_get_meta($post_id, '_preferred_area_text') ?: rmt_get_meta($post_id, '_preferred_area');
+                        $location_text  = rmt_dashboard_terms_text($post_id, 'location_area');
+                        $display_area   = $location_text ? $location_text : $preferred_area;
+                        $display_budget = $budget_min ? rmt_format_price($budget_min) : ($legacy_budget ? rmt_format_price($legacy_budget) : '');
+                        $display_name   = $nickname ? $nickname : get_the_title();
+                        $title_parts    = array_filter([$display_name, $age]);
+                        $gender_key     = strtolower(trim($gender));
+                        $gender_symbol  = '';
                         $post_status    = get_post_status($post_id);
                         $is_published   = $post_status === 'publish';
                         $is_done        = (bool) get_post_meta($post_id, '_rmt_done', true);
+
+                        if ($gender_key === 'male') {
+                            $gender_symbol = '♂';
+                        } elseif ($gender_key === 'female') {
+                            $gender_symbol = '♀';
+                        } elseif ($gender_key === 'non-binary') {
+                            $gender_symbol = '⚧';
+                        }
                         ?>
 
-                        <article class="listing-card">
-                            <?php if (has_post_thumbnail()) : ?>
-                                <a href="<?php echo esc_url(get_permalink()); ?>" class="listing-card__image-link">
-                                    <div class="listing-card__image">
-                                        <?php the_post_thumbnail('large'); ?>
-                                    </div>
-                                </a>
-                            <?php endif; ?>
+                        <article class="listing-card listing-card--roommate">
+                            <a href="<?php echo esc_url(get_permalink()); ?>" class="listing-card__image-link">
+                                <div class="listing-card__image">
+                                    <?php echo rmt_get_profile_photo_html(get_the_ID(), 'large'); ?>
+                                </div>
+                            </a>
 
                             <div class="listing-card__content">
-                                <div class="listing-card__top">
-                                    <span class="listing-chip <?php echo !$is_published ? 'listing-chip--draft' : ''; ?> <?php echo $is_done ? 'listing-chip--done' : ''; ?>">
-                                        <?php echo esc_html(rmt_dashboard_status_label($post_id)); ?>
-                                    </span>
-
-                                    <div class="listing-card__price">
-                                        <?php
-                                        if ($budget_min || $budget_max) {
-                                            if ($budget_min) {
-                                                echo esc_html(rmt_format_price($budget_min));
-                                            }
-
-                                            if ($budget_min && $budget_max) {
-                                                echo ' – ';
-                                            }
-
-                                            if ($budget_max) {
-                                                echo esc_html(rmt_format_price($budget_max));
-                                            }
-                                        } elseif ($legacy_budget) {
-                                            echo esc_html(rmt_format_price($legacy_budget));
-                                        }
-                                        ?>
-                                    </div>
-                                </div>
-
                                 <h3 class="listing-card__title">
-                                    <a href="<?php echo esc_url(get_permalink()); ?>"><?php the_title(); ?></a>
+                                    <a href="<?php echo esc_url(get_permalink()); ?>">
+                                        <?php echo esc_html(implode(', ', $title_parts)); ?>
+                                    </a>
                                 </h3>
 
-                                <?php if ($preferred_area) : ?>
-                                    <p class="listing-card__address">Preferred Area: <?php echo esc_html($preferred_area); ?></p>
-                                <?php endif; ?>
+                                <div class="listing-card__details">
+                                    <?php if ($move_in_date) : ?>
+                                        <span>
+                                            <?php echo esc_html(sprintf(__('Starting from %s', 'roommate-mobile-theme'), rmt_dashboard_format_date($move_in_date))); ?>
+                                        </span>
+                                    <?php endif; ?>
 
-                                <?php if ($move_in_date) : ?>
-                                    <p class="listing-card__address">Move-in: <?php echo esc_html($move_in_date); ?></p>
-                                <?php endif; ?>
+                                    <?php if ($display_budget) : ?>
+                                        <span>
+                                            <?php echo esc_html(sprintf(__('Min budget: %s', 'roommate-mobile-theme'), $display_budget)); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="listing-card__mini-meta">
+                                    <?php if ($display_area || $gender_symbol) : ?>
+                                        <span class="listing-card__area-gender">
+                                            <?php echo esc_html(implode(' ', array_filter([$display_area, $gender_symbol]))); ?>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <span class="listing-card__post-id">
+                                        <?php echo esc_html('#' . $post_id); ?>
+                                    </span>
+                                </div>
 
                                 <div class="cta-actions dashboard-card-actions">
                                     <?php if ($is_published) : ?>
@@ -451,15 +564,6 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                     <?php endif; ?>
 
                                     <?php if ($is_published) : ?>
-                                        <form method="post">
-                                            <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
-                                            <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
-                                            <input type="hidden" name="rmt_dashboard_action_type" value="unpublish">
-                                            <button type="submit" class="btn btn-secondary" onclick="return confirm('Unpublish this profile?');">
-                                                Unpublish
-                                            </button>
-                                        </form>
-
                                         <form method="post">
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
                                             <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
@@ -492,7 +596,46 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                 </div>
             <?php endif; ?>
         </div>
-    </section>
-</main>
+	    </section>
+	</main>
 
-<?php get_footer(); ?>
+	<script>
+	document.addEventListener('DOMContentLoaded', function () {
+	    var quickCard = document.querySelector('.dashboard-quick-card');
+	    var limitMessageTimer = null;
+
+	    if (!quickCard) {
+	        return;
+	    }
+
+	    quickCard.addEventListener('click', function (event) {
+	        var trigger = event.target.closest('[data-dashboard-limit-trigger]');
+
+	        if (!trigger) {
+	            return;
+	        }
+
+	        var limitType = trigger.getAttribute('data-dashboard-limit-trigger');
+	        var messageWrap = quickCard.querySelector('.dashboard-quick-limit-messages');
+
+	        if (!messageWrap) {
+	            return;
+	        }
+
+	        messageWrap.hidden = false;
+	        messageWrap.querySelectorAll('[data-limit-message]').forEach(function (message) {
+	            message.hidden = message.getAttribute('data-limit-message') !== limitType;
+	        });
+
+	        window.clearTimeout(limitMessageTimer);
+	        limitMessageTimer = window.setTimeout(function () {
+	            messageWrap.hidden = true;
+	            messageWrap.querySelectorAll('[data-limit-message]').forEach(function (message) {
+	                message.hidden = true;
+	            });
+	        }, 20000);
+	    });
+	});
+	</script>
+
+	<?php get_footer(); ?>
