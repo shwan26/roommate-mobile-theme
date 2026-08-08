@@ -505,8 +505,8 @@ get_header();
                             </div>
 
                             <div class="par-field">
-                                <label for="age">Age <span class="required">*</span></label>
-                                <input class="par-input" type="number" id="age" name="age" value="<?php echo esc_attr($v_age); ?>" min="18" max="99" required>
+                                <label for="age">Age</label>
+                                <input class="par-input" type="number" id="age" name="age" value="<?php echo esc_attr($v_age); ?>" min="18" max="99">
                             </div>
                         </div>
 

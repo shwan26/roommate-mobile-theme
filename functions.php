@@ -606,7 +606,6 @@ function rmt_get_chat_url( $author_id, $post_id ) {
 function rmt_get_required_room_current_roommate_fields() {
     return array(
         'nickname'       => __('Current roommate name is required.', 'roommate-mobile-theme'),
-        'age'            => __('Current roommate age is required.', 'roommate-mobile-theme'),
         'gender'         => __('Current roommate gender is required.', 'roommate-mobile-theme'),
         'bio'            => __('Current roommate bio is required.', 'roommate-mobile-theme'),
     );

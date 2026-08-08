@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_roommate_non
         $nickname = sanitize_text_field($_POST['nickname'] ?? '');
         $gender   = sanitize_text_field($_POST['gender'] ?? '');
         $bio      = sanitize_textarea_field($_POST['bio'] ?? '');
-        $age      = absint($_POST['age'] ?? 0);
+        $age      = sanitize_text_field($_POST['age'] ?? '');
         $budget_min = sanitize_text_field($_POST['budget_min'] ?? '');
         $move_in_date_raw = sanitize_text_field($_POST['move_in_date'] ?? '');
         $move_in_date = rmt_normalize_form_date($move_in_date_raw);
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_roommate_non
             $errors[] = 'A short bio is required.';
         }
 
-        if ($age < 18 || $age > 80) {
+        if ($age !== '' && (!is_numeric($age) || (int) $age < 18 || (int) $age > 80)) {
             $errors[] = 'Please enter a valid age between 18 and 80.';
         }
 
@@ -105,9 +105,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_roommate_non
         if (empty($errors)) {
             $hobbies_raw = sanitize_text_field($_POST['hobbies'] ?? '');
 
-            $post_title = $hobbies_raw
-                ? $nickname . ', ' . $age . ' — ' . $hobbies_raw
-                : $nickname . ', ' . $age;
+            $post_title = $age !== '' ? $nickname . ', ' . (int) $age : $nickname;
+
+            if ($hobbies_raw !== '') {
+                $post_title .= ' — ' . $hobbies_raw;
+            }
 
             if (isset($_POST['save_draft'])) {
                 $new_status = 'draft';
@@ -204,7 +206,7 @@ $v_nickname = $is_post
     : rmt_edit_roommate_get($edit_id, '_nickname');
 
 $v_age = $is_post
-    ? absint($_POST['age'] ?? 0)
+    ? sanitize_text_field($_POST['age'] ?? '')
     : rmt_edit_roommate_get($edit_id, '_age');
 
 $v_gender = $is_post
@@ -378,8 +380,8 @@ get_header();
                             </div>
 
                             <div class="par-field">
-                                <label for="age">Age <span class="required">*</span></label>
-                                <input class="par-input" type="number" id="age" name="age" value="<?php echo esc_attr($v_age); ?>" min="18" max="80" required>
+                                <label for="age">Age</label>
+                                <input class="par-input" type="number" id="age" name="age" value="<?php echo esc_attr($v_age); ?>" min="18" max="80">
                             </div>
                         </div>
 
