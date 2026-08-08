@@ -2283,6 +2283,27 @@ function bkkroomie_login_logo_title() {
 add_filter('login_headertext', 'bkkroomie_login_logo_title');
 
 /**
+ * Keep successful frontend sessions active for one week.
+ *
+ * WordPress otherwise creates a browser-session cookie when "Remember Me" is
+ * not selected. Reissuing the cookie as persistent also keeps the header's
+ * Login / Sign Up button in its logged-in Dashboard state after returning home.
+ */
+function rmt_one_week_auth_cookie_expiration($length, $user_id, $remember) {
+    return WEEK_IN_SECONDS;
+}
+add_filter('auth_cookie_expiration', 'rmt_one_week_auth_cookie_expiration', 10, 3);
+
+function rmt_persist_successful_login_for_one_week($user_login, $user) {
+    if (!($user instanceof WP_User) || headers_sent()) {
+        return;
+    }
+
+    wp_set_auth_cookie($user->ID, true, is_ssl());
+}
+add_action('wp_login', 'rmt_persist_successful_login_for_one_week', 10, 2);
+
+/**
  * Bkkroomie listing limits.
  * Subscribers can post up to 1 room and 1 roommate profile.
  * Administrators have no limit.
