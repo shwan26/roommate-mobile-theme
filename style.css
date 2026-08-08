@@ -818,11 +818,13 @@ p { margin-top: 0; color: var(--color-text-soft); }
   font-size: 0.9rem;
   line-height: 1.45;
 }
-.listing-card__details span {
+.listing-card__details > span {
   display: inline-flex;
   align-items: center;
 }
-.listing-card__details span:not(:last-child)::after {
+.card-currency { margin-left: 0.2em; }
+.card-currency--mobile { display: none; }
+.listing-card__details > span:not(:last-child)::after {
   content: "";
   width: 3px;
   height: 3px;
@@ -836,20 +838,20 @@ p { margin-top: 0; color: var(--color-text-soft); }
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
-.archive-roommate .listing-card__details span,
-.listing-card--roommate .listing-card__details span {
+.archive-roommate .listing-card__details > span,
+.listing-card--roommate .listing-card__details > span {
   display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.archive-roommate .listing-card__details span:first-child,
-.listing-card--roommate .listing-card__details span:first-child {
+.archive-roommate .listing-card__details > span:first-child,
+.listing-card--roommate .listing-card__details > span:first-child {
   grid-column: 1 / -1;
 }
-.archive-roommate .listing-card__details span:not(:last-child)::after,
-.listing-card--roommate .listing-card__details span:not(:last-child)::after {
+.archive-roommate .listing-card__details > span:not(:last-child)::after,
+.listing-card--roommate .listing-card__details > span:not(:last-child)::after {
   content: none;
 }
 .listing-card__mini-meta {
@@ -2551,8 +2553,31 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     gap: 0.25rem 0.45rem;
   }
 
-  .listing-card__details span:not(:last-child)::after {
+  .listing-card__details > span:not(:last-child)::after {
     margin-left: 0.45rem;
+  }
+
+  .listing-card .card-currency--desktop { display: none; }
+  .listing-card .card-currency--mobile { display: inline; }
+
+  .archive-roommate .listing-card__details,
+  .listing-card--roommate .listing-card__details {
+    grid-template-columns: 1fr;
+  }
+
+  .archive-roommate .listing-card__details > span,
+  .listing-card--roommate .listing-card__details > span,
+  .archive-roommate .listing-card__area-gender,
+  .listing-card--roommate .listing-card__area-gender {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .archive-roommate .listing-card__mini-meta,
+  .listing-card--roommate .listing-card__mini-meta {
+    align-items: flex-start;
   }
 
   .listing-card__post-id {

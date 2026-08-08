@@ -216,7 +216,7 @@ $room_query = new WP_Query($room_query_args);
                                     <?php if ($rent) : ?>
                                         <span>
                                             <?php echo esc_html(number_format_i18n((int) $rent)); ?>
-                                            <?php esc_html_e(' THB/person', 'roommate-mobile-theme'); ?>
+                                            <span class="card-currency card-currency--desktop">THB</span><span class="card-currency card-currency--mobile">฿</span><?php esc_html_e('/person', 'roommate-mobile-theme'); ?>
                                         </span>
                                     <?php endif; ?>
 

@@ -233,7 +233,7 @@ $latest_roommates = new WP_Query(array(
                         $location_text  = rmt_front_terms_text($post_id, 'location_area');
 
                         $display_area    = $location_text ? $location_text : $preferred_area;
-                        $display_budget  = $budget_min ? number_format_i18n((int) $budget_min) . ' THB' : '';
+                        $display_budget  = $budget_min ? number_format_i18n((int) $budget_min) : '';
                         $display_name    = $nickname ? $nickname : get_the_title();
                         $title_parts     = array_filter([$display_name, $age]);
                         $gender_key      = strtolower(trim($gender));
@@ -273,7 +273,9 @@ $latest_roommates = new WP_Query(array(
 
                                     <?php if ($display_budget) : ?>
                                         <span>
-                                            <?php echo esc_html(sprintf(__('Min budget: %s', 'roommate-mobile-theme'), $display_budget)); ?>
+                                            <?php esc_html_e('Min budget:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($display_budget); ?>
+                                            <span class="card-currency card-currency--desktop">THB</span><span class="card-currency card-currency--mobile">฿</span>
                                         </span>
                                     <?php endif; ?>
                                 </div>
@@ -368,7 +370,7 @@ $latest_roommates = new WP_Query(array(
                                     <?php if ($rent) : ?>
                                         <span>
                                             <?php echo esc_html(number_format_i18n((int) $rent)); ?>
-                                            <?php esc_html_e(' THB/person', 'roommate-mobile-theme'); ?>
+                                            <span class="card-currency card-currency--desktop">THB</span><span class="card-currency card-currency--mobile">฿</span><?php esc_html_e('/person', 'roommate-mobile-theme'); ?>
                                         </span>
                                     <?php endif; ?>
 
