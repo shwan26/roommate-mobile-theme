@@ -2062,19 +2062,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .edit-profile-summary-card .detail-list {
   text-align: left;
 }
-.edit-profile-avatar {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-.edit-profile-avatar__image {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  border: 3px solid rgba(88,204,2,0.24);
-  box-shadow: var(--shadow-sm);
-}
-
 .listing-chip--draft { background: rgba(255,193,7,0.12); border-color: rgba(255,193,7,0.35); color: #92400e; }
 .listing-chip--done  { background: rgba(108,117,125,0.12); border-color: rgba(108,117,125,0.30); color: #555; }
 
