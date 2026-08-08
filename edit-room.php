@@ -351,8 +351,8 @@ get_header();
                             </div>
 
                             <div class="par-field">
-                                <label for="map_url">Google Map URL <span class="required">*</span></label>
-                                <input class="par-input" type="url" id="map_url" name="map_url" value="<?php echo esc_attr($v_map_url); ?>" required>
+                                <label for="map_url">Google Map URL</label>
+                                <input class="par-input" type="url" id="map_url" name="map_url" value="<?php echo esc_attr($v_map_url); ?>">
                             </div>
                         </div>
 

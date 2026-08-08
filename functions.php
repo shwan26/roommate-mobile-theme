@@ -625,9 +625,7 @@ function rmt_validate_required_room_fields($posted) {
         $errors[] = __('Room address is required.', 'roommate-mobile-theme');
     }
 
-    if ($map_url === '') {
-        $errors[] = __('Google Map URL is required.', 'roommate-mobile-theme');
-    } elseif (!preg_match('#^https?://#i', $map_url)) {
+    if ($map_url !== '' && !preg_match('#^https?://#i', $map_url)) {
         $errors[] = __('Please enter a valid Google Map URL.', 'roommate-mobile-theme');
     }
 

@@ -645,12 +645,6 @@ get_header();
                                 Publish / Update
                             </button>
 
-                            <?php if (get_post_status($edit_id) === 'publish') : ?>
-                                <a href="<?php echo esc_url(get_permalink($edit_id)); ?>" class="btn btn-secondary">
-                                    View Profile
-                                </a>
-                            <?php endif; ?>
-
                             <a href="<?php echo esc_url(home_url('/dashboard/')); ?>" class="btn btn-secondary">
                                 Cancel
                             </a>
