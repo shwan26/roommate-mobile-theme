@@ -2339,6 +2339,28 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   .filter-form, .rmt-dashboard-messages, .rmt-chat-panel {
     border-radius: 20px; padding: 1rem;
   }
+  .front-page .quick-search-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+  .front-page .quick-search-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 150px;
+    padding: 0.85rem 0.7rem;
+    border-radius: 16px;
+  }
+  .front-page .quick-search-card h3 {
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+  .front-page .quick-search-card p {
+    margin-bottom: 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
   .par-card { margin-bottom: 0.9rem; }
   .par-card__header { gap: 0.7rem; margin-bottom: 0.9rem; padding-bottom: 0.8rem; }
   .par-card__icon { width: 36px; height: 36px; border-radius: 10px; font-size: 0.95rem; }

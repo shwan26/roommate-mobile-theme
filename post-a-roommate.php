@@ -598,7 +598,7 @@ get_header();
 
                         <div class="par-tip-card">
                             <h3>💡 Tips</h3>
-
+                            
                             <ul class="par-tip-list">
                                 <li>Use a clear profile photo.</li>
                                 <li>Be honest about lifestyle and schedule.</li>

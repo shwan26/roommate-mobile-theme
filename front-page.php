@@ -337,13 +337,9 @@ $latest_roommates = new WP_Query(array(
 
                         $rent             = rmt_front_get_meta($post_id, '_rent');
                         $available_date   = rmt_front_get_meta($post_id, '_available_date');
-                        $property_type    = rmt_front_get_meta($post_id, '_property_type');
                         $nearby_landmark  = rmt_front_get_meta($post_id, '_nearby_landmark');
 
                         $location_text    = rmt_front_terms_text($post_id, 'location_area');
-                        $room_type_text   = rmt_front_terms_text($post_id, 'room_type');
-
-                        $display_property = $room_type_text ? $room_type_text : $property_type;
                         ?>
 
                         <article <?php post_class('listing-card'); ?>>
@@ -363,12 +359,6 @@ $latest_roommates = new WP_Query(array(
                                 </h2>
 
                                 <div class="listing-card__details">
-                                    <?php if ($display_property) : ?>
-                                        <span>
-                                            <?php echo esc_html($display_property); ?>
-                                        </span>
-                                    <?php endif; ?>
-
                                     <?php if ($location_text) : ?>
                                         <span>
                                             <?php echo esc_html($location_text); ?>

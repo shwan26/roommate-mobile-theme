@@ -638,7 +638,7 @@ get_header();
 
                         <div class="par-tip-card">
                             <h3>💡 Tips</h3>
-                            <ul>
+                            <ul class="par-tip-list">
                                 <li>Add a clear room photo.</li>
                                 <li>Be specific about BTS/MRT location.</li>
                                 <li>Mention rules clearly.</li>

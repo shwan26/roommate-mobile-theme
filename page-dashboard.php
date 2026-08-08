@@ -371,11 +371,8 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                         $post_id          = get_the_ID();
                         $rent             = rmt_get_meta($post_id, '_rent');
                         $available_date   = rmt_get_meta($post_id, '_available_date');
-                        $property_type    = rmt_get_meta($post_id, '_property_type');
                         $nearby_landmark  = rmt_get_meta($post_id, '_nearby_landmark');
-                        $room_type_text   = rmt_dashboard_terms_text($post_id, 'room_type');
                         $location_text    = rmt_dashboard_terms_text($post_id, 'location_area');
-                        $display_property = $room_type_text ? $room_type_text : $property_type;
                         $post_status      = get_post_status($post_id);
                         $is_published     = $post_status === 'publish';
                         $is_done          = (bool) get_post_meta($post_id, '_rmt_done', true);
@@ -394,10 +391,6 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                 </h3>
 
                                 <div class="listing-card__details">
-                                    <?php if ($display_property) : ?>
-                                        <span><?php echo esc_html($display_property); ?></span>
-                                    <?php endif; ?>
-
                                     <?php if ($location_text) : ?>
                                         <span><?php echo esc_html($location_text); ?></span>
                                     <?php endif; ?>
