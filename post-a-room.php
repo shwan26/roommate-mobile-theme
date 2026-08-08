@@ -285,8 +285,8 @@ get_header();
                                 </div>
 
                                 <div class="par-field">
-                                    <label for="map_url">Google Map URL <span class="required">*</span></label>
-                                    <input class="par-input" type="url" id="map_url" name="map_url" value="<?php echo esc_attr($_POST['map_url'] ?? ''); ?>" placeholder="https://maps.google.com/..." required>
+                                    <label for="map_url">Google Map URL</label>
+                                    <input class="par-input" type="url" id="map_url" name="map_url" value="<?php echo esc_attr($_POST['map_url'] ?? ''); ?>" placeholder="https://maps.google.com/...">
                                 </div>
                             </div>
 
@@ -481,8 +481,8 @@ get_header();
                                 </div>
 
                                 <div class="par-field">
-                                    <label for="age">Age <span class="required">*</span></label>
-                                    <input class="par-input" type="number" id="age" name="age" value="<?php echo esc_attr($_POST['age'] ?? ''); ?>" min="18" max="99" required>
+                                    <label for="age">Age</label>
+                                    <input class="par-input" type="number" id="age" name="age" value="<?php echo esc_attr($_POST['age'] ?? ''); ?>" min="18" max="99">
                                 </div>
                             </div>
 
@@ -638,7 +638,7 @@ get_header();
 
                         <div class="par-tip-card">
                             <h3>💡 Tips</h3>
-                            <ul>
+                            <ul class="par-tip-list">
                                 <li>Add a clear room photo.</li>
                                 <li>Be specific about BTS/MRT location.</li>
                                 <li>Mention rules clearly.</li>

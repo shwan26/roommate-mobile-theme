@@ -9,6 +9,8 @@ $request_path        = function_exists('rmt_get_frontend_request_path') ? rmt_ge
 $is_room_active      = is_post_type_archive('room') || is_singular('room') || is_page(array('post-a-room', 'edit-room')) || $request_path === 'post-a-room';
 $is_roommate_active  = is_post_type_archive('roommate') || is_singular('roommate') || is_page(array('post-a-roommate', 'edit-roommate')) || $request_path === 'post-a-roommate';
 $is_dashboard_active = is_page(array('dashboard', 'edit-profile', 'messages'));
+$is_browse_active    = is_post_type_archive(array('room', 'roommate')) || is_singular(array('room', 'roommate'));
+$is_post_active      = is_page(array('post-a-room', 'post-a-roommate', 'edit-room', 'edit-roommate')) || in_array($request_path, array('post-a-room', 'post-a-roommate'), true);
 
 $custom_logo_id = get_theme_mod('custom_logo');
 $theme_logo_url = get_template_directory_uri() . '/assets/images/bkkroomie-logo.png';
@@ -64,26 +66,31 @@ $theme_logo_path = get_template_directory() . '/assets/images/bkkroomie-logo.png
                 </a>
             </div>
 
-            <nav class="site-nav desktop-nav" aria-label="<?php esc_attr_e('Primary Menu', 'roommate-mobile-theme'); ?>">
-                <?php
-                if (has_nav_menu('primary')) {
-                    wp_nav_menu(array(
-                        'theme_location' => 'primary',
-                        'container'      => false,
-                        'menu_class'     => 'menu primary-menu',
-                    ));
-                }
-                ?>
-            </nav>
-
             <div class="site-header__actions">
-                <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn <?php echo $is_roommate_active ? 'btn-primary' : 'btn-secondary'; ?> header-btn">
-                    Browse Roommates
-                </a>
-
-                <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn <?php echo $is_room_active ? 'btn-primary' : 'btn-secondary'; ?> header-btn">
-                    Browse Rooms
-                </a>
+                <nav class="header-nav desktop-nav" aria-label="<?php esc_attr_e('Primary Menu', 'roommate-mobile-theme'); ?>">
+                    <ul class="header-nav__list">
+                        <li class="header-dropdown <?php echo $is_browse_active ? 'is-active' : ''; ?>" data-header-dropdown>
+                            <button class="header-dropdown__toggle" type="button" aria-expanded="false" aria-controls="browse-dropdown">
+                                <span>Browse</span>
+                                <span class="header-dropdown__chevron" aria-hidden="true"></span>
+                            </button>
+                            <ul id="browse-dropdown" class="header-dropdown__menu" hidden>
+                                <li><a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>">Browse Roommates</a></li>
+                                <li><a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>">Browse Rooms</a></li>
+                            </ul>
+                        </li>
+                        <li class="header-dropdown <?php echo $is_post_active ? 'is-active' : ''; ?>" data-header-dropdown>
+                            <button class="header-dropdown__toggle" type="button" aria-expanded="false" aria-controls="post-dropdown">
+                                <span>Post</span>
+                                <span class="header-dropdown__chevron" aria-hidden="true"></span>
+                            </button>
+                            <ul id="post-dropdown" class="header-dropdown__menu" hidden>
+                                <li><a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>">Post a Roommate</a></li>
+                                <li><a href="<?php echo esc_url(home_url('/post-a-room/')); ?>">Post a Room</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
 
                 <?php if (is_user_logged_in()) : ?>
                     <a href="<?php echo esc_url(home_url('/dashboard/')); ?>" class="btn <?php echo $is_dashboard_active ? 'btn-primary' : 'btn-outline'; ?> header-btn">
@@ -91,7 +98,7 @@ $theme_logo_path = get_template_directory() . '/assets/images/bkkroomie-logo.png
                     </a>
                 <?php else : ?>
                     <a href="<?php echo esc_url(wp_login_url()); ?>" class="btn btn-outline header-btn">
-                        Login / Sign Up
+                        Login / Signup
                     </a>
                 <?php endif; ?>
 
@@ -126,24 +133,28 @@ $theme_logo_path = get_template_directory() . '/assets/images/bkkroomie-logo.png
             </div>
 
             <nav class="mobile-nav" aria-label="<?php esc_attr_e('Mobile Menu', 'roommate-mobile-theme'); ?>">
-                <?php
-                if (has_nav_menu('primary')) {
-                    wp_nav_menu(array(
-                        'theme_location' => 'primary',
-                        'container'      => false,
-                        'menu_class'     => 'menu mobile-menu-list',
-                    ));
-                }
-                ?>
-
                 <div class="mobile-menu-actions">
-                    <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="btn <?php echo $is_room_active ? 'btn-primary' : 'btn-secondary'; ?> mobile-menu-btn">
-                        Browse Rooms
-                    </a>
+                    <div class="mobile-header-dropdown" data-header-dropdown>
+                        <button class="mobile-menu-btn mobile-dropdown-toggle" type="button" aria-expanded="false" aria-controls="mobile-browse-dropdown">
+                            <span>Browse</span>
+                            <span class="header-dropdown__chevron" aria-hidden="true"></span>
+                        </button>
+                        <div id="mobile-browse-dropdown" class="mobile-dropdown-menu" hidden>
+                            <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>">Browse Roommates</a>
+                            <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>">Browse Rooms</a>
+                        </div>
+                    </div>
 
-                    <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="btn <?php echo $is_roommate_active ? 'btn-primary' : 'btn-secondary'; ?> mobile-menu-btn">
-                        Browse Roommates
-                    </a>
+                    <div class="mobile-header-dropdown" data-header-dropdown>
+                        <button class="mobile-menu-btn mobile-dropdown-toggle" type="button" aria-expanded="false" aria-controls="mobile-post-dropdown">
+                            <span>Post</span>
+                            <span class="header-dropdown__chevron" aria-hidden="true"></span>
+                        </button>
+                        <div id="mobile-post-dropdown" class="mobile-dropdown-menu" hidden>
+                            <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>">Post a Roommate</a>
+                            <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>">Post a Room</a>
+                        </div>
+                    </div>
 
                     <?php if (is_user_logged_in()) : ?>
                         <a href="<?php echo esc_url(home_url('/dashboard/')); ?>" class="btn <?php echo $is_dashboard_active ? 'btn-primary' : 'btn-outline'; ?> mobile-menu-btn">
@@ -151,7 +162,7 @@ $theme_logo_path = get_template_directory() . '/assets/images/bkkroomie-logo.png
                         </a>
                     <?php else : ?>
                         <a href="<?php echo esc_url(wp_login_url()); ?>" class="btn btn-outline mobile-menu-btn">
-                            Login / Sign Up
+                            Login / Signup
                         </a>
                     <?php endif; ?>
                 </div>

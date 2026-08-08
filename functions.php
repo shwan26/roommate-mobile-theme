@@ -606,7 +606,6 @@ function rmt_get_chat_url( $author_id, $post_id ) {
 function rmt_get_required_room_current_roommate_fields() {
     return array(
         'nickname'       => __('Current roommate name is required.', 'roommate-mobile-theme'),
-        'age'            => __('Current roommate age is required.', 'roommate-mobile-theme'),
         'gender'         => __('Current roommate gender is required.', 'roommate-mobile-theme'),
         'bio'            => __('Current roommate bio is required.', 'roommate-mobile-theme'),
     );
@@ -626,9 +625,7 @@ function rmt_validate_required_room_fields($posted) {
         $errors[] = __('Room address is required.', 'roommate-mobile-theme');
     }
 
-    if ($map_url === '') {
-        $errors[] = __('Google Map URL is required.', 'roommate-mobile-theme');
-    } elseif (!preg_match('#^https?://#i', $map_url)) {
+    if ($map_url !== '' && !preg_match('#^https?://#i', $map_url)) {
         $errors[] = __('Please enter a valid Google Map URL.', 'roommate-mobile-theme');
     }
 
@@ -2284,6 +2281,27 @@ function bkkroomie_login_logo_title() {
     return get_bloginfo('name');
 }
 add_filter('login_headertext', 'bkkroomie_login_logo_title');
+
+/**
+ * Keep successful frontend sessions active for one week.
+ *
+ * WordPress otherwise creates a browser-session cookie when "Remember Me" is
+ * not selected. Reissuing the cookie as persistent also keeps the header's
+ * Login / Sign Up button in its logged-in Dashboard state after returning home.
+ */
+function rmt_one_week_auth_cookie_expiration($length, $user_id, $remember) {
+    return WEEK_IN_SECONDS;
+}
+add_filter('auth_cookie_expiration', 'rmt_one_week_auth_cookie_expiration', 10, 3);
+
+function rmt_persist_successful_login_for_one_week($user_login, $user) {
+    if (!($user instanceof WP_User) || headers_sent()) {
+        return;
+    }
+
+    wp_set_auth_cookie($user->ID, true, is_ssl());
+}
+add_action('wp_login', 'rmt_persist_successful_login_for_one_week', 10, 2);
 
 /**
  * Bkkroomie listing limits.

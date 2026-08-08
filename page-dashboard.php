@@ -371,11 +371,8 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                         $post_id          = get_the_ID();
                         $rent             = rmt_get_meta($post_id, '_rent');
                         $available_date   = rmt_get_meta($post_id, '_available_date');
-                        $property_type    = rmt_get_meta($post_id, '_property_type');
                         $nearby_landmark  = rmt_get_meta($post_id, '_nearby_landmark');
-                        $room_type_text   = rmt_dashboard_terms_text($post_id, 'room_type');
                         $location_text    = rmt_dashboard_terms_text($post_id, 'location_area');
-                        $display_property = $room_type_text ? $room_type_text : $property_type;
                         $post_status      = get_post_status($post_id);
                         $is_published     = $post_status === 'publish';
                         $is_done          = (bool) get_post_meta($post_id, '_rmt_done', true);
@@ -394,16 +391,15 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                 </h3>
 
                                 <div class="listing-card__details">
-                                    <?php if ($display_property) : ?>
-                                        <span><?php echo esc_html($display_property); ?></span>
-                                    <?php endif; ?>
-
                                     <?php if ($location_text) : ?>
                                         <span><?php echo esc_html($location_text); ?></span>
                                     <?php endif; ?>
 
                                     <?php if ($rent) : ?>
-                                        <span><?php echo esc_html(rmt_format_price($rent)); ?>/person</span>
+                                        <span>
+                                            <?php echo esc_html(number_format_i18n((int) $rent)); ?>
+                                            <span class="card-currency card-currency--desktop">THB</span><span class="card-currency card-currency--mobile">฿</span>/person
+                                        </span>
                                     <?php endif; ?>
 
                                     <?php if ($available_date) : ?>
@@ -489,7 +485,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                         $preferred_area = rmt_get_meta($post_id, '_preferred_area_text') ?: rmt_get_meta($post_id, '_preferred_area');
                         $location_text  = rmt_dashboard_terms_text($post_id, 'location_area');
                         $display_area   = $location_text ? $location_text : $preferred_area;
-                        $display_budget = $budget_min ? rmt_format_price($budget_min) : ($legacy_budget ? rmt_format_price($legacy_budget) : '');
+                        $display_budget = $budget_min ? number_format_i18n((int) $budget_min) : ($legacy_budget ? number_format_i18n((int) $legacy_budget) : '');
                         $display_name   = $nickname ? $nickname : get_the_title();
                         $title_parts    = array_filter([$display_name, $age]);
                         $gender_key     = strtolower(trim($gender));
@@ -530,7 +526,9 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
 
                                     <?php if ($display_budget) : ?>
                                         <span>
-                                            <?php echo esc_html(sprintf(__('Min budget: %s', 'roommate-mobile-theme'), $display_budget)); ?>
+                                            <?php esc_html_e('Min budget:', 'roommate-mobile-theme'); ?>
+                                            <?php echo esc_html($display_budget); ?>
+                                            <span class="card-currency card-currency--desktop">THB</span><span class="card-currency card-currency--mobile">฿</span>
                                         </span>
                                     <?php endif; ?>
                                 </div>

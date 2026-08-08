@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
         $nickname = sanitize_text_field($_POST['nickname'] ?? '');
         $gender   = sanitize_text_field($_POST['gender'] ?? '');
         $bio      = sanitize_textarea_field($_POST['bio'] ?? '');
-        $age      = absint($_POST['age'] ?? 0);
+        $age      = sanitize_text_field($_POST['age'] ?? '');
         $budget_min = sanitize_text_field($_POST['budget_min'] ?? '');
         $move_in_date_raw = sanitize_text_field($_POST['move_in_date'] ?? '');
         $move_in_date = rmt_normalize_form_date($move_in_date_raw);
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
             $errors[] = 'A short bio is required.';
         }
 
-        if ($age < 18 || $age > 80) {
+        if ($age !== '' && (!is_numeric($age) || (int) $age < 18 || (int) $age > 80)) {
             $errors[] = 'Please enter a valid age between 18 and 80.';
         }
 
@@ -56,9 +56,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
         if (empty($errors)) {
             $hobbies_raw = sanitize_text_field($_POST['hobbies'] ?? '');
 
-            $post_title = $hobbies_raw
-                ? $nickname . ', ' . $age . ' — ' . $hobbies_raw
-                : $nickname . ', ' . $age;
+            $post_title = $age !== '' ? $nickname . ', ' . (int) $age : $nickname;
+
+            if ($hobbies_raw !== '') {
+                $post_title .= ' — ' . $hobbies_raw;
+            }
 
             $post_status = isset($_POST['save_draft']) ? 'draft' : 'publish';
 
@@ -245,7 +247,7 @@ get_header();
                                 </div>
 
                                 <div class="par-field">
-                                    <label for="age">Age <span class="required">*</span></label>
+                                    <label for="age">Age</label>
                                     <input
                                         class="par-input"
                                         type="number"
@@ -254,7 +256,6 @@ get_header();
                                         value="<?php echo esc_attr($_POST['age'] ?? ''); ?>"
                                         min="18"
                                         max="80"
-                                        required
                                     >
                                 </div>
                             </div>
@@ -597,7 +598,7 @@ get_header();
 
                         <div class="par-tip-card">
                             <h3>💡 Tips</h3>
-
+                            
                             <ul class="par-tip-list">
                                 <li>Use a clear profile photo.</li>
                                 <li>Be honest about lifestyle and schedule.</li>

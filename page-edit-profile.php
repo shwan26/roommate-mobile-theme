@@ -24,9 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_profile_nonc
         $last_name    = sanitize_text_field(wp_unslash($_POST['last_name'] ?? ''));
         $nickname     = sanitize_text_field(wp_unslash($_POST['nickname'] ?? ''));
         $email        = sanitize_email(wp_unslash($_POST['user_email'] ?? ''));
-        $description  = sanitize_textarea_field(wp_unslash($_POST['description'] ?? ''));
-        $line_id      = sanitize_text_field(wp_unslash($_POST['line_id'] ?? ''));
-        $user_url     = esc_url_raw(wp_unslash($_POST['user_url'] ?? ''));
         $password     = (string) wp_unslash($_POST['current_password'] ?? '');
 
         if ($display_name === '') {
@@ -59,14 +56,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_edit_profile_nonc
                 'first_name'   => $first_name,
                 'last_name'    => $last_name,
                 'user_email'   => $email,
-                'description'  => $description,
-                'user_url'     => $user_url,
+                'description'  => '',
+                'user_url'     => '',
             ]);
 
             if (is_wp_error($updated)) {
                 $errors[] = $updated->get_error_message();
             } else {
-                update_user_meta($current_user->ID, 'line_id', $line_id);
+                delete_user_meta($current_user->ID, 'description');
+                delete_user_meta($current_user->ID, 'line_id');
 
                 wp_safe_redirect(add_query_arg('profile_updated', '1', home_url('/edit-profile/')));
                 exit;
@@ -87,10 +85,6 @@ $v_first_name   = $is_post ? sanitize_text_field(wp_unslash($_POST['first_name']
 $v_last_name    = $is_post ? sanitize_text_field(wp_unslash($_POST['last_name'] ?? '')) : get_user_meta($current_user->ID, 'last_name', true);
 $v_nickname     = $is_post ? sanitize_text_field(wp_unslash($_POST['nickname'] ?? '')) : get_user_meta($current_user->ID, 'nickname', true);
 $v_email        = $is_post ? sanitize_email(wp_unslash($_POST['user_email'] ?? '')) : $current_user->user_email;
-$v_description  = $is_post ? sanitize_textarea_field(wp_unslash($_POST['description'] ?? '')) : get_user_meta($current_user->ID, 'description', true);
-$v_line_id      = $is_post ? sanitize_text_field(wp_unslash($_POST['line_id'] ?? '')) : get_user_meta($current_user->ID, 'line_id', true);
-$v_user_url     = $is_post ? esc_url_raw(wp_unslash($_POST['user_url'] ?? '')) : $current_user->user_url;
-
 if ($v_nickname === '') {
     $v_nickname = $current_user->user_login;
 }
@@ -100,12 +94,17 @@ get_header();
 
 <main id="primary" class="site-main edit-profile-page">
     <div class="container">
-        <header class="par-page-header">
-            <span class="par-eyebrow">
-                <span class="par-eyebrow-dot"></span>
-                Account Settings
-            </span>
+        <p class="u-mb-4">
+            <a
+                href="<?php echo esc_url(home_url('/dashboard/')); ?>"
+                class="btn btn-secondary single-listing__back"
+                aria-label="<?php esc_attr_e('Back to dashboard', 'roommate-mobile-theme'); ?>"
+            >
+                ← Back to Dashboard
+            </a>
+        </p>
 
+        <header class="par-page-header">
             <h1>Edit Profile</h1>
             <p>Update the account details shown across your dashboard and listings.</p>
         </header>
@@ -162,15 +161,6 @@ get_header();
                             <input class="par-input" type="text" id="nickname" name="nickname" value="<?php echo esc_attr($v_nickname); ?>" required>
                         </div>
 
-                        <div class="par-field">
-                            <label for="description">About You</label>
-                            <textarea class="par-textarea" id="description" name="description" rows="5" placeholder="A short note about yourself."><?php echo esc_textarea($v_description); ?></textarea>
-                        </div>
-
-                        <div class="par-field">
-                            <label for="line_id">Line ID</label>
-                            <input class="par-input" type="text" id="line_id" name="line_id" value="<?php echo esc_attr($v_line_id); ?>" placeholder="Your LINE contact ID">
-                        </div>
                     </section>
 
                     <section class="par-card">
@@ -189,11 +179,6 @@ get_header();
                         </div>
 
                         <div class="par-field">
-                            <label for="user_url">Website or Social Link</label>
-                            <input class="par-input" type="url" id="user_url" name="user_url" value="<?php echo esc_attr($v_user_url); ?>" placeholder="https://">
-                        </div>
-
-                        <div class="par-field">
                             <label for="current_password">Current Password</label>
                             <input class="par-input" type="password" id="current_password" name="current_password" autocomplete="current-password">
                             <small>Only required when changing your email address.</small>
@@ -203,10 +188,6 @@ get_header();
 
                 <aside class="par-sidebar">
                     <div class="par-card par-sticky edit-profile-summary-card">
-                        <div class="edit-profile-avatar">
-                            <?php echo get_avatar($current_user->ID, 96, rmt_get_default_profile_photo_url(), $current_user->display_name, ['class' => 'edit-profile-avatar__image']); ?>
-                        </div>
-
                         <h2><?php echo esc_html($current_user->display_name); ?></h2>
                         <ul class="detail-list">
                             <li><strong>Username:</strong> <?php echo esc_html($current_user->user_login); ?></li>
@@ -215,7 +196,6 @@ get_header();
 
                         <div class="cta-actions u-mt-4">
                             <button type="submit" class="btn btn-primary">Save Profile</button>
-                            <a href="<?php echo esc_url(home_url('/dashboard/')); ?>" class="btn btn-secondary">Back to Dashboard</a>
                             <a href="<?php echo esc_url(wp_lostpassword_url(home_url('/edit-profile/'))); ?>" class="btn btn-outline">Change Password</a>
                         </div>
                     </div>
