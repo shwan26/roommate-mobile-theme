@@ -264,7 +264,7 @@ p { margin-top: 0; color: var(--color-text-soft); }
 
 .footer-brand img { max-height: 40px; width: auto; }
 
-.desktop-nav { display: none; flex: 1; justify-content: center; }
+.desktop-nav { display: none; }
 .menu { list-style: none; padding: 0; margin: 0; }
 .primary-menu, .footer-menu { display: flex; align-items: center; gap: 0.15rem; }
 
@@ -327,7 +327,104 @@ p { margin-top: 0; color: var(--color-text-soft); }
   transform: scaleX(0);
 }
 
-.site-header__actions { display: flex; align-items: center; gap: 0.5rem; }
+.site-header__actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; margin-left: auto; }
+.header-nav__list {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.header-dropdown { position: relative; }
+.header-dropdown__toggle {
+  position: relative;
+  z-index: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 42px;
+  padding: 0.55rem 0.95rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  overflow: hidden;
+  transition: color 0.18s ease, background 0.18s ease;
+}
+.header-dropdown__toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.24s ease;
+}
+.header-dropdown__toggle:hover,
+.header-dropdown__toggle[aria-expanded="true"] {
+  color: var(--charcoal);
+  background: transparent;
+}
+.header-dropdown__toggle:hover::before,
+.header-dropdown__toggle[aria-expanded="true"]::before {
+  transform: scaleX(1);
+}
+.header-dropdown.is-active .header-dropdown__toggle {
+  color: #fff;
+  background: var(--charcoal);
+}
+.header-dropdown.is-active .header-dropdown__toggle::before {
+  transform: scaleX(0);
+}
+.header-dropdown__chevron {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.18s ease;
+}
+[aria-expanded="true"] > .header-dropdown__chevron {
+  transform: translateY(2px) rotate(225deg);
+}
+.header-dropdown__menu {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  z-index: 20;
+  min-width: 210px;
+  margin: 0;
+  padding: 0.45rem;
+  list-style: none;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--shadow-lg);
+}
+.header-dropdown__menu[hidden],
+.mobile-dropdown-menu[hidden] { display: none; }
+.header-dropdown__menu a {
+  display: block;
+  padding: 0.7rem 0.8rem;
+  border-radius: 11px;
+  color: var(--charcoal);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.header-dropdown__menu a:hover {
+  color: var(--green-dark);
+  background: var(--color-surface-alt);
+}
 .header-btn { display: none; }
 .site-header .header-btn.btn-primary,
 .site-header .header-btn.btn-secondary,
@@ -486,6 +583,41 @@ p { margin-top: 0; color: var(--color-text-soft); }
 .mobile-menu-close:hover { box-shadow: var(--shadow-sm); }
 
 .mobile-nav { padding: 0 0 1.5rem; }
+
+.mobile-menu-actions {
+  display: grid;
+  gap: 0.5rem;
+}
+.mobile-header-dropdown { display: grid; gap: 0.35rem; }
+.mobile-menu .mobile-menu-btn {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+  padding: 0.7rem 1rem;
+  overflow: hidden;
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+}
+.mobile-dropdown-toggle { font: inherit; cursor: pointer; }
+.mobile-dropdown-menu {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.25rem 0 0.25rem 0.7rem;
+}
+.mobile-dropdown-menu a {
+  display: block;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.mobile-dropdown-menu a:hover { background: rgba(255,255,255,0.16); }
 
 .mobile-menu-list {
   display: grid; gap: 0.1rem;

@@ -1,4 +1,59 @@
 document.addEventListener("DOMContentLoaded", function () {
+  const headerDropdowns = document.querySelectorAll("[data-header-dropdown]");
+
+  const closeHeaderDropdown = function (dropdown) {
+    const toggle = dropdown.querySelector('[aria-expanded]');
+    const menu = toggle
+      ? document.getElementById(toggle.getAttribute("aria-controls"))
+      : null;
+
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", "false");
+    }
+
+    if (menu) {
+      menu.hidden = true;
+    }
+  };
+
+  headerDropdowns.forEach(function (dropdown) {
+    const toggle = dropdown.querySelector('[aria-expanded]');
+    const menu = toggle
+      ? document.getElementById(toggle.getAttribute("aria-controls"))
+      : null;
+
+    if (!toggle || !menu) {
+      return;
+    }
+
+    toggle.addEventListener("click", function () {
+      const shouldOpen = toggle.getAttribute("aria-expanded") !== "true";
+
+      headerDropdowns.forEach(function (otherDropdown) {
+        if (otherDropdown !== dropdown) {
+          closeHeaderDropdown(otherDropdown);
+        }
+      });
+
+      toggle.setAttribute("aria-expanded", String(shouldOpen));
+      menu.hidden = !shouldOpen;
+    });
+  });
+
+  document.addEventListener("click", function (event) {
+    headerDropdowns.forEach(function (dropdown) {
+      if (!dropdown.contains(event.target)) {
+        closeHeaderDropdown(dropdown);
+      }
+    });
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      headerDropdowns.forEach(closeHeaderDropdown);
+    }
+  });
+
   const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
   const mobileMenu = document.getElementById("mobile-menu");
   const mobileMenuClose = document.querySelector(".mobile-menu-close");
@@ -14,6 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         mobileMenu.hidden = true;
         mobileMenu.classList.remove("is-open");
+        headerDropdowns.forEach(closeHeaderDropdown);
       }
     };
 
