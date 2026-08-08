@@ -118,6 +118,9 @@ if (have_posts()) :
                         <div class="single-listing__header-text">
 
                             <h1><?php the_title(); ?></h1>
+                            <p class="single-listing__post-id">
+                                <?php echo esc_html(sprintf(__('#%d', 'roommate-mobile-theme'), $post_id)); ?>
+                            </p>
                         </div>
                     </header>
 

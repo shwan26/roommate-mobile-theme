@@ -810,6 +810,12 @@ p { margin-top: 0; color: var(--color-text-soft); }
   font-size: clamp(2rem, 5vw, 3rem);
   margin: 0.75rem 0; font-weight: 800; letter-spacing: -0.02em;
 }
+.single-listing__post-id {
+  margin: -0.4rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
 .single-listing__price { font-size: 1.2rem; font-weight: 700; color: var(--green); }
 
 .single-listing__media { overflow: hidden; border-radius: var(--radius-xl); margin: 0 auto 1.1rem; box-shadow: var(--shadow-md); }
