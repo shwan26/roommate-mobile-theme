@@ -356,10 +356,29 @@ function rmt_render_reports_admin_page() {
     $types  = rmt_get_report_types();
     $filter = (isset($_GET['status']) && in_array($_GET['status'], ['new', 'reviewed', 'dismissed'], true)) ? $_GET['status'] : 'all';
 
-    $where = $filter === 'all' ? '' : $wpdb->prepare('WHERE status = %s', $filter);
-    $rows  = $wpdb->get_results("SELECT * FROM {$table} {$where} ORDER BY created_at DESC LIMIT 200");
+    $type_filter = (isset($_GET['listing_type']) && in_array($_GET['listing_type'], ['room', 'roommate'], true)) ? $_GET['listing_type'] : 'all';
+
+    $conditions = [];
+    if ($filter !== 'all') {
+        $conditions[] = $wpdb->prepare('r.status = %s', $filter);
+    }
+    if ($type_filter !== 'all') {
+        $conditions[] = $wpdb->prepare('p.post_type = %s', $type_filter);
+    }
+    $where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
+
+    // LEFT JOIN so reports for permanently deleted listings still show under "All".
+    $rows = $wpdb->get_results(
+        "SELECT r.* FROM {$table} r LEFT JOIN {$wpdb->posts} p ON p.ID = r.listing_id {$where} ORDER BY r.created_at DESC LIMIT 200"
+    );
 
     $base_url = admin_url('admin.php?page=rmt-listing-reports');
+
+    // Rooms / Roommates tabs (keep the status filter).
+    $type_counts = [];
+    foreach ($wpdb->get_results("SELECT p.post_type AS t, COUNT(*) AS c FROM {$table} r INNER JOIN {$wpdb->posts} p ON p.ID = r.listing_id WHERE r.status = 'new' GROUP BY p.post_type") as $tc) {
+        $type_counts[$tc->t] = (int) $tc->c;
+    }
 
     echo '<div class="wrap"><h1>Listing Reports</h1>';
 
@@ -368,9 +387,26 @@ function rmt_render_reports_admin_page() {
         echo '<div class="notice notice-' . ($is_error ? 'error' : 'success') . ' is-dismissible"><p>' . esc_html(wp_unslash($_GET['rmt_notice'])) . '</p></div>';
     }
 
+    echo '<h2 class="nav-tab-wrapper" style="margin-bottom:12px;">';
+    foreach (['all' => 'All posts', 'room' => 'Room posts', 'roommate' => 'Roommate posts'] as $key => $label) {
+        $url = $base_url;
+        if ($key !== 'all') {
+            $url = add_query_arg('listing_type', $key, $url);
+        }
+        if ($filter !== 'all') {
+            $url = add_query_arg('status', $filter, $url);
+        }
+        $badge = ($key !== 'all' && !empty($type_counts[$key])) ? ' <span class="awaiting-mod">' . (int) $type_counts[$key] . '</span>' : '';
+        echo '<a href="' . esc_url($url) . '" class="nav-tab' . ($type_filter === $key ? ' nav-tab-active' : '') . '">' . esc_html($label) . $badge . '</a>';
+    }
+    echo '</h2>';
+
     echo '<ul class="subsubsub">';
     foreach (['all' => 'All', 'new' => 'New', 'reviewed' => 'Reviewed', 'dismissed' => 'Dismissed'] as $key => $label) {
-        $url   = $key === 'all' ? $base_url : add_query_arg('status', $key, $base_url);
+        $url = $key === 'all' ? $base_url : add_query_arg('status', $key, $base_url);
+        if ($type_filter !== 'all') {
+            $url = add_query_arg('listing_type', $type_filter, $url);
+        }
         $class = $filter === $key ? ' class="current"' : '';
         echo '<li><a href="' . esc_url($url) . '"' . $class . '>' . esc_html($label) . '</a>' . ($key !== 'dismissed' ? ' |' : '') . ' </li>';
     }

@@ -135,6 +135,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
 
                 wp_redirect(add_query_arg([
                     'listing_submitted' => '1',
+                        'listing_id'        => $post_id,
+                        'listing_type'      => 'roommate',
                     'listing_status'    => $post_status,
                 ], home_url('/dashboard/')));
                 exit;

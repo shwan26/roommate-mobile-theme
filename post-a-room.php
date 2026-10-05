@@ -159,6 +159,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
                 if (empty($errors)) {
                     wp_redirect(add_query_arg([
                         'listing_submitted' => '1',
+                        'listing_id'        => $post_id,
+                        'listing_type'      => 'room',
                         'listing_status'    => $post_status,
                     ], home_url('/dashboard/')));
                     exit;

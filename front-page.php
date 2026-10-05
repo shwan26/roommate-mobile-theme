@@ -92,6 +92,7 @@ $member_count = $total_users['total_users'] ?? 0;
 $latest_rooms = new WP_Query(array(
     'post_type'           => 'room',
     'post_status'         => 'publish',
+    'meta_query'          => array(array('key' => '_rmt_done', 'compare' => 'NOT EXISTS')),
     'posts_per_page'      => 6,
     'ignore_sticky_posts' => true,
     'orderby'             => 'date',
@@ -101,6 +102,7 @@ $latest_rooms = new WP_Query(array(
 $latest_roommates = new WP_Query(array(
     'post_type'           => 'roommate',
     'post_status'         => 'publish',
+    'meta_query'          => array(array('key' => '_rmt_done', 'compare' => 'NOT EXISTS')),
     'posts_per_page'      => 6,
     'ignore_sticky_posts' => true,
     'orderby'             => 'date',

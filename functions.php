@@ -10,6 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 require_once get_template_directory() . '/inc/reports.php';
+require_once get_template_directory() . '/inc/feedback.php';
 
 /**
  * ------------------------------------------------------------
@@ -954,8 +955,35 @@ function rmt_get_default_profile_photo_url($size = 'thumbnail') {
     return get_template_directory_uri() . '/images/default-profile-v2.png';
 }
 
+/**
+ * Done listings stay published but are shown as closed.
+ */
+function rmt_is_listing_done($post_id) {
+    return (bool) get_post_meta((int) $post_id, '_rmt_done', true);
+}
+
+function rmt_get_closed_listing_photo_html($attr = []) {
+    $attr = array_merge([
+        'src'      => get_template_directory_uri() . '/images/listing-closed.png',
+        'alt'      => __('Closed - roommate found', 'roommate-mobile-theme'),
+        'loading'  => 'lazy',
+        'decoding' => 'async',
+    ], $attr);
+
+    $html = '<img';
+    foreach ($attr as $name => $value) {
+        $html .= ' ' . esc_attr($name) . '="' . esc_attr($value) . '"';
+    }
+
+    return $html . '>';
+}
+
 function rmt_get_profile_photo_html($post_id = null, $size = 'large', $attr = []) {
     $post_id = $post_id ? absint($post_id) : get_the_ID();
+
+    if (rmt_is_listing_done($post_id)) {
+        return rmt_get_closed_listing_photo_html($attr);
+    }
     $thumbnail_id = get_post_thumbnail_id($post_id);
 
     if ($thumbnail_id && !rmt_is_default_profile_photo_id($thumbnail_id)) {
@@ -1050,6 +1078,10 @@ function rmt_is_default_room_photo_id($attachment_id) {
 
 function rmt_get_room_photo_html($post_id = null, $size = 'large', $attr = []) {
     $post_id = $post_id ? absint($post_id) : get_the_ID();
+
+    if (rmt_is_listing_done($post_id)) {
+        return rmt_get_closed_listing_photo_html($attr);
+    }
     $thumbnail_id = get_post_thumbnail_id($post_id);
 
     if ($thumbnail_id && !rmt_is_default_room_photo_id($thumbnail_id)) {
@@ -1256,16 +1288,39 @@ function rmt_ajax_mark_closed() {
         wp_send_json_error('Permission denied.');
     }
  
-    wp_update_post([
-        'ID'          => $post_id,
-        'post_status' => 'draft',
-    ]);
-
+    // Done listings stay published so they still show (as closed) on the browse pages.
     update_post_meta($post_id, '_rmt_done', 1);
     delete_post_meta($post_id, '_listing_closed');
     wp_send_json_success('Marked as done.');
 }
  
+/**
+ * One-time: listings marked Done used to be saved as drafts. Done listings are
+ * now published (and shown as closed), so republish the old ones.
+ */
+function rmt_migrate_done_listings_to_published() {
+    if ((int) get_option('rmt_done_listings_migrated', 0) >= 1) {
+        return;
+    }
+
+    $ids = get_posts([
+        'post_type'      => ['room', 'roommate'],
+        'post_status'    => 'draft',
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+        'meta_key'       => '_rmt_done',
+        'meta_value'     => '1',
+    ]);
+
+    foreach ($ids as $id) {
+        wp_update_post(['ID' => $id, 'post_status' => 'publish']);
+    }
+
+    update_option('rmt_done_listings_migrated', 1);
+}
+add_action('init', 'rmt_migrate_done_listings_to_published', 20);
+
+
 /* ================================================================
    2. UNPUBLISH (move to draft)
 ================================================================ */

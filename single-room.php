@@ -43,6 +43,7 @@ if (have_posts()) :
         $current_user_id = get_current_user_id();
         $is_author       = is_user_logged_in() && ($current_user_id === $post_author_id);
         $is_visitor      = !$is_author;
+        $is_done         = rmt_is_listing_done($post_id);
 
         /*
          * Room meta
@@ -186,6 +187,9 @@ if (have_posts()) :
                                 <span class="listing-action-text"><?php esc_html_e('Share', 'roommate-mobile-theme'); ?></span>
                             </button>
 
+                            <?php if ($is_done) : ?>
+                                <p class="listing-closed-note"><?php esc_html_e('This listing is closed.', 'roommate-mobile-theme'); ?></p>
+                            <?php else : ?>
                             <?php if (is_user_logged_in()) : ?>
                                 <a
                                     href="<?php echo esc_url(rmt_get_chat_url($post_author_id, $post_id)); ?>"
@@ -202,6 +206,7 @@ if (have_posts()) :
                                     <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>
                                     <span class="listing-action-text"><?php esc_html_e('Send Message', 'roommate-mobile-theme'); ?></span>
                                 </a>
+                            <?php endif; ?>
                             <?php endif; ?>
 
                             <button
@@ -587,7 +592,7 @@ if (have_posts()) :
                     );
 
                     if (data.success) {
-                        window.location.href = '<?php echo esc_js(home_url('/dashboard/')); ?>';
+                        window.location.href = '<?php echo esc_js(add_query_arg('feedback', 'done', home_url('/dashboard/'))); ?>';
                     } else {
                         alert(data.data || 'Something went wrong.');
                         button.disabled = false;
