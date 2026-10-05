@@ -55,6 +55,7 @@ if (have_posts()) :
         $current_user_id = get_current_user_id();
         $is_author       = is_user_logged_in() && ($current_user_id === $post_author_id);
         $is_visitor      = !$is_author;
+        $is_done         = rmt_is_listing_done($post_id);
 
         /*
          * Roommate meta
@@ -128,6 +129,12 @@ if (have_posts()) :
                             <p class="single-listing__post-id">
                                 <?php echo esc_html(sprintf(__('#%d', 'roommate-mobile-theme'), $post_id)); ?>
                             </p>
+                            <p class="single-listing__posted">
+                                <?php echo esc_html(sprintf(__('Posted %s', 'roommate-mobile-theme'), get_the_date('M j, Y'))); ?>
+                                <?php if ($is_author && get_post_modified_time('U', true) > get_post_time('U', true)) : ?>
+                                    &middot; <?php echo esc_html(sprintf(__('Last modified %s', 'roommate-mobile-theme'), get_the_modified_date('M j, Y'))); ?>
+                                <?php endif; ?>
+                            </p>
 
                         </div>
                     </header>
@@ -188,13 +195,16 @@ if (have_posts()) :
                                 <span class="listing-action-text"><?php esc_html_e('Share', 'roommate-mobile-theme'); ?></span>
                             </button>
 
+                            <?php if ($is_done) : ?>
+                                <p class="listing-closed-note"><?php esc_html_e('This listing is closed.', 'roommate-mobile-theme'); ?></p>
+                            <?php else : ?>
                             <?php if (is_user_logged_in()) : ?>
                                 <a
                                     href="<?php echo esc_url(rmt_get_chat_url($post_author_id, $post_id)); ?>"
                                     class="btn btn-primary btn--chat"
                                 >
                                     <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>
-                                    <span class="listing-action-text"><?php esc_html_e('Chat with roommate', 'roommate-mobile-theme'); ?></span>
+                                    <span class="listing-action-text"><?php esc_html_e('Send Message', 'roommate-mobile-theme'); ?></span>
                                 </a>
                             <?php else : ?>
                                 <a
@@ -202,13 +212,15 @@ if (have_posts()) :
                                     class="btn btn-primary btn--chat"
                                 >
                                     <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>
-                                    <span class="listing-action-text"><?php esc_html_e('Login to message', 'roommate-mobile-theme'); ?></span>
+                                    <span class="listing-action-text"><?php esc_html_e('Send Message', 'roommate-mobile-theme'); ?></span>
                                 </a>
+                            <?php endif; ?>
                             <?php endif; ?>
 
                             <button
                                 type="button"
                                 class="btn btn-outline btn--report js-report-spam"
+                                data-footer-modal="report"
                                 data-post-id="<?php echo esc_attr($post_id); ?>"
                                 data-nonce="<?php echo esc_attr(wp_create_nonce('rmt_report_' . $post_id)); ?>"
                             >
@@ -548,33 +560,7 @@ if (have_posts()) :
                     );
 
                     if (data.success) {
-                        window.location.href = '<?php echo esc_js(home_url('/dashboard/')); ?>';
-                    } else {
-                        alert(data.data || 'Something went wrong.');
-                        button.disabled = false;
-                    }
-                });
-            });
-
-            document.querySelectorAll('.js-report-spam').forEach(function (button) {
-                button.addEventListener('click', async function () {
-                    if (!confirm('Report this roommate profile as spam or inappropriate?')) {
-                        return;
-                    }
-
-                    button.disabled = true;
-
-                    const data = await postAction(
-                        'rmt_report_listing',
-                        button.dataset.postId,
-                        button.dataset.nonce
-                    );
-
-                    if (data.success) {
-                        const buttonText = button.querySelector('.listing-action-text');
-                        if (buttonText) {
-                            buttonText.textContent = 'Reported - thanks!';
-                        }
+                        window.location.href = '<?php echo esc_js(add_query_arg('feedback', 'done', home_url('/dashboard/'))); ?>';
                     } else {
                         alert(data.data || 'Something went wrong.');
                         button.disabled = false;
@@ -583,6 +569,8 @@ if (have_posts()) :
             });
         })();
         </script>
+
+    <?php rmt_render_report_modal($post_id); ?>
 
     <?php endwhile;
 endif;

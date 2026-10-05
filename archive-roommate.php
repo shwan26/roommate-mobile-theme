@@ -56,6 +56,10 @@ function rmt_archive_format_budget_range($min, $max) {
 }
 
 $q               = sanitize_text_field(wp_unslash($_GET['q'] ?? ''));
+$sort_q = sanitize_key($_GET['sort'] ?? 'newest');
+if (!in_array($sort_q, ['newest', 'oldest', 'az'], true)) {
+    $sort_q = 'newest';
+}
 $gender_q        = sanitize_text_field(wp_unslash($_GET['gender'] ?? ''));
 $rent_min_q      = sanitize_text_field(wp_unslash($_GET['rent_min'] ?? ($_GET['budget_min'] ?? '')));
 $move_in_month_q = sanitize_text_field(wp_unslash($_GET['move_in_month'] ?? ''));
@@ -123,6 +127,12 @@ $roommate_query_args = [
     'orderby'        => 'date',
     'order'          => 'DESC',
 ];
+
+if ($sort_q === 'oldest') {
+    $roommate_query_args['order'] = 'ASC';
+} elseif ($sort_q === 'az') {
+    $roommate_query_args['orderby'] = ['title' => 'ASC', 'date' => 'DESC'];
+}
 
 if ($q !== '') {
     $roommate_query_args['s'] = $q;
@@ -213,6 +223,18 @@ $roommate_query = new WP_Query($roommate_query_args);
                         >
                     </div>
 
+                    <div class="filter-group">
+                        <label for="sort">
+                            <?php esc_html_e('Sort by', 'roommate-mobile-theme'); ?>
+                        </label>
+
+                        <select id="sort" name="sort" onchange="this.form.submit()">
+                            <option value="newest" <?php selected($sort_q, 'newest'); ?>><?php esc_html_e('Newest first', 'roommate-mobile-theme'); ?></option>
+                            <option value="oldest" <?php selected($sort_q, 'oldest'); ?>><?php esc_html_e('Oldest first', 'roommate-mobile-theme'); ?></option>
+                            <option value="az" <?php selected($sort_q, 'az'); ?>><?php esc_html_e('A to Z', 'roommate-mobile-theme'); ?></option>
+                        </select>
+                    </div>
+
                     <div class="filter-actions">
                         <button type="submit" class="btn btn-primary">
                             <?php esc_html_e('Search', 'roommate-mobile-theme'); ?>
@@ -254,11 +276,9 @@ $roommate_query = new WP_Query($roommate_query_args);
                         $gender_symbol   = '';
 
                         if ($gender_key === 'male') {
-                            $gender_symbol = '♂';
+                            $gender_symbol = 'M';
                         } elseif ($gender_key === 'female') {
-                            $gender_symbol = '♀';
-                        } elseif ($gender_key === 'non-binary') {
-                            $gender_symbol = '⚧';
+                            $gender_symbol = 'F';
                         }
                         ?>
 
@@ -298,12 +318,15 @@ $roommate_query = new WP_Query($roommate_query_args);
                                 <div class="listing-card__mini-meta">
                                     <?php if ($display_area || $gender_symbol) : ?>
                                         <span class="listing-card__area-gender">
-                                            <?php echo esc_html(implode(' ', array_filter([$display_area, $gender_symbol]))); ?>
+                                            <?php echo esc_html(implode(', ', array_filter([$display_area, $gender_symbol]))); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <span class="listing-card__post-id">
                                         <?php echo esc_html('#' . $post_id); ?>
+                                        <span class="listing-card__posted">
+                                            &middot; <?php echo esc_html(sprintf(__('Posted %s', 'roommate-mobile-theme'), get_the_date('M j, Y'))); ?>
+                                        </span>
                                     </span>
                                 </div>
 
@@ -317,16 +340,20 @@ $roommate_query = new WP_Query($roommate_query_args);
 
                 </div>
 
-                <div class="pagination-wrap">
-                    <?php
-                    echo paginate_links([
-                        'total'     => $roommate_query->max_num_pages,
-                        'current'   => $paged,
-                        'prev_text' => esc_html__('Previous', 'roommate-mobile-theme'),
-                        'next_text' => esc_html__('Next', 'roommate-mobile-theme'),
-                    ]);
-                    ?>
-                </div>
+                <?php if ($roommate_query->max_num_pages > 1) : ?>
+                    <nav class="pagination-wrap" aria-label="<?php esc_attr_e('Pagination', 'roommate-mobile-theme'); ?>">
+                        <?php
+                        echo paginate_links([
+                            'total'     => $roommate_query->max_num_pages,
+                            'current'   => $paged,
+                            'end_size'  => 1,
+                            'mid_size'  => 1,
+                            'prev_text' => '&lsaquo; ' . esc_html__('Previous', 'roommate-mobile-theme'),
+                            'next_text' => esc_html__('Next', 'roommate-mobile-theme') . ' &rsaquo;',
+                        ]);
+                        ?>
+                    </nav>
+                <?php endif; ?>
 
                 <?php wp_reset_postdata(); ?>
 

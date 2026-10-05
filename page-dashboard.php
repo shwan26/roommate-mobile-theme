@@ -89,6 +89,9 @@ function rmt_dashboard_request_account_deletion($user_id, $password) {
     return rmt_schedule_account_deletion($user_id);
 }
 
+$feedback_event      = '';
+$feedback_listing_id = 0;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_dashboard_action_type'])) {
     if (!isset($_POST['rmt_dashboard_nonce']) || !wp_verify_nonce($_POST['rmt_dashboard_nonce'], 'rmt_dashboard_action')) {
         $error_message = 'Security check failed.';
@@ -132,24 +135,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_dashboard_action_
             }
 
             if ($action === 'done') {
-                wp_update_post([
-                    'ID'          => $post_id,
-                    'post_status' => 'draft',
-                ]);
-
                 update_post_meta($post_id, '_rmt_done', 1);
 
-                $success_message = 'Listing marked as done and hidden from public listings.';
+                $success_message = 'Listing marked as done. It now shows as closed in the listings.';
+                $feedback_event  = 'done';
+                $feedback_listing_id = $post_id;
             }
 
             if ($action === 'delete') {
                 $status = get_post_status($post_id);
 
-                if ($status === 'publish') {
+                if ($status === 'publish' && !get_post_meta($post_id, '_rmt_done', true)) {
                     $error_message = 'Unpublish the listing before deleting it.';
                 } else {
                     wp_trash_post($post_id);
                     $success_message = 'Listing moved to trash.';
+                    $feedback_event  = 'deleted';
+                    $feedback_listing_id = $post_id;
                 }
             }
         }
@@ -336,7 +338,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                             ?>
                             <a class="rmt-conversation-item" href="<?php echo esc_url($chat_url); ?>">
                                 <div>
-                                    <strong><?php echo esc_html($other_user ? $other_user->display_name : 'User'); ?></strong>
+                                    <strong><?php echo esc_html(rmt_get_public_user_name($other_user)); ?></strong>
                                     <span><?php echo esc_html(get_the_title($listing_id)); ?></span>
                                     <p><?php echo esc_html(wp_trim_words($conversation->last_message, 16)); ?></p>
                                 </div>
@@ -425,11 +427,11 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
                                             <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
                                             <input type="hidden" name="rmt_dashboard_action_type" value="publish">
-                                            <button type="submit" class="btn btn-primary">Publish</button>
+                                            <button type="submit" class="btn btn-primary"><?php echo $is_done ? 'Reopen' : 'Publish'; ?></button>
                                         </form>
                                     <?php endif; ?>
 
-                                    <?php if ($is_published) : ?>
+                                    <?php if ($is_published && !$is_done) : ?>
                                         <form method="post">
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
                                             <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
@@ -495,11 +497,9 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                         $is_done        = (bool) get_post_meta($post_id, '_rmt_done', true);
 
                         if ($gender_key === 'male') {
-                            $gender_symbol = '♂';
+                            $gender_symbol = 'M';
                         } elseif ($gender_key === 'female') {
-                            $gender_symbol = '♀';
-                        } elseif ($gender_key === 'non-binary') {
-                            $gender_symbol = '⚧';
+                            $gender_symbol = 'F';
                         }
                         ?>
 
@@ -536,7 +536,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                 <div class="listing-card__mini-meta">
                                     <?php if ($display_area || $gender_symbol) : ?>
                                         <span class="listing-card__area-gender">
-                                            <?php echo esc_html(implode(' ', array_filter([$display_area, $gender_symbol]))); ?>
+                                            <?php echo esc_html(implode(', ', array_filter([$display_area, $gender_symbol]))); ?>
                                         </span>
                                     <?php endif; ?>
 
@@ -557,11 +557,11 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
                                             <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
                                             <input type="hidden" name="rmt_dashboard_action_type" value="publish">
-                                            <button type="submit" class="btn btn-primary">Publish</button>
+                                            <button type="submit" class="btn btn-primary"><?php echo $is_done ? 'Reopen' : 'Publish'; ?></button>
                                         </form>
                                     <?php endif; ?>
 
-                                    <?php if ($is_published) : ?>
+                                    <?php if ($is_published && !$is_done) : ?>
                                         <form method="post">
                                             <?php wp_nonce_field('rmt_dashboard_action', 'rmt_dashboard_nonce'); ?>
                                             <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id); ?>">
@@ -636,4 +636,20 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
 	});
 	</script>
 
-	<?php get_footer(); ?>
+	<?php
+// Feedback: after posting (redirected here), marking done on a listing page, or the dashboard actions above.
+if (!$feedback_event) {
+    if (isset($_GET['listing_submitted'])) {
+        $feedback_event      = 'posted';
+        $feedback_listing_id = absint($_GET['listing_id'] ?? 0);
+    } elseif (isset($_GET['feedback']) && $_GET['feedback'] === 'done') {
+        $feedback_event = 'done';
+    }
+}
+
+if ($feedback_event) {
+    $feedback_listing_type = $feedback_listing_id ? get_post_type($feedback_listing_id) : '';
+    rmt_render_feedback_modal($feedback_event, $feedback_listing_id, (string) $feedback_listing_type);
+}
+?>
+<?php get_footer(); ?>

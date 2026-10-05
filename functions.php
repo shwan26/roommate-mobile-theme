@@ -9,6 +9,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once get_template_directory() . '/inc/reports.php';
+require_once get_template_directory() . '/inc/feedback.php';
+
 /**
  * ------------------------------------------------------------
  * 1. THEME CONSTANTS
@@ -870,12 +873,12 @@ add_action('widgets_init', 'rmt_register_sidebars');
 /**
  * Get default profile photo attachment ID.
  * Source file:
- * /wp-content/themes/roommate-mobile-theme/images/default-profile-scaled.png
+ * /wp-content/themes/roommate-mobile-theme/images/default-profile-v2.png
  */
 function rmt_get_default_profile_photo_id() {
     $existing_id = absint(get_option('rmt_default_profile_photo_id'));
-    $source_file = 'default-profile-scaled.png';
-    $upload_file = 'rmt-default-profile-scaled.png';
+    $source_file = 'default-profile-v2.png';
+    $upload_file = 'rmt-default-profile-v2.png';
 
     if ($existing_id && get_post($existing_id) && basename((string) get_attached_file($existing_id)) === $upload_file) {
         return $existing_id;
@@ -949,11 +952,38 @@ function rmt_get_default_profile_photo_url($size = 'thumbnail') {
         }
     }
 
-    return get_template_directory_uri() . '/images/default-profile-scaled.png';
+    return get_template_directory_uri() . '/images/default-profile-v2.png';
+}
+
+/**
+ * Done listings stay published but are shown as closed.
+ */
+function rmt_is_listing_done($post_id) {
+    return (bool) get_post_meta((int) $post_id, '_rmt_done', true);
+}
+
+function rmt_get_closed_listing_photo_html($attr = []) {
+    $attr = array_merge([
+        'src'      => get_template_directory_uri() . '/images/listing-closed.png',
+        'alt'      => __('Closed - roommate found', 'roommate-mobile-theme'),
+        'loading'  => 'lazy',
+        'decoding' => 'async',
+    ], $attr);
+
+    $html = '<img';
+    foreach ($attr as $name => $value) {
+        $html .= ' ' . esc_attr($name) . '="' . esc_attr($value) . '"';
+    }
+
+    return $html . '>';
 }
 
 function rmt_get_profile_photo_html($post_id = null, $size = 'large', $attr = []) {
     $post_id = $post_id ? absint($post_id) : get_the_ID();
+
+    if (rmt_is_listing_done($post_id)) {
+        return rmt_get_closed_listing_photo_html($attr);
+    }
     $thumbnail_id = get_post_thumbnail_id($post_id);
 
     if ($thumbnail_id && !rmt_is_default_profile_photo_id($thumbnail_id)) {
@@ -970,7 +1000,7 @@ function rmt_get_profile_photo_html($post_id = null, $size = 'large', $attr = []
 
     return sprintf(
         '<img src="%s" alt="%s">',
-        esc_url(get_template_directory_uri() . '/images/default-profile-scaled.png'),
+        esc_url(get_template_directory_uri() . '/images/default-profile-v2.png'),
         esc_attr__('Default profile photo', 'roommate-mobile-theme')
     );
 }
@@ -1048,6 +1078,10 @@ function rmt_is_default_room_photo_id($attachment_id) {
 
 function rmt_get_room_photo_html($post_id = null, $size = 'large', $attr = []) {
     $post_id = $post_id ? absint($post_id) : get_the_ID();
+
+    if (rmt_is_listing_done($post_id)) {
+        return rmt_get_closed_listing_photo_html($attr);
+    }
     $thumbnail_id = get_post_thumbnail_id($post_id);
 
     if ($thumbnail_id && !rmt_is_default_room_photo_id($thumbnail_id)) {
@@ -1254,16 +1288,39 @@ function rmt_ajax_mark_closed() {
         wp_send_json_error('Permission denied.');
     }
  
-    wp_update_post([
-        'ID'          => $post_id,
-        'post_status' => 'draft',
-    ]);
-
+    // Done listings stay published so they still show (as closed) on the browse pages.
     update_post_meta($post_id, '_rmt_done', 1);
     delete_post_meta($post_id, '_listing_closed');
     wp_send_json_success('Marked as done.');
 }
  
+/**
+ * One-time: listings marked Done used to be saved as drafts. Done listings are
+ * now published (and shown as closed), so republish the old ones.
+ */
+function rmt_migrate_done_listings_to_published() {
+    if ((int) get_option('rmt_done_listings_migrated', 0) >= 1) {
+        return;
+    }
+
+    $ids = get_posts([
+        'post_type'      => ['room', 'roommate'],
+        'post_status'    => 'draft',
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+        'meta_key'       => '_rmt_done',
+        'meta_value'     => '1',
+    ]);
+
+    foreach ($ids as $id) {
+        wp_update_post(['ID' => $id, 'post_status' => 'publish']);
+    }
+
+    update_option('rmt_done_listings_migrated', 1);
+}
+add_action('init', 'rmt_migrate_done_listings_to_published', 20);
+
+
 /* ================================================================
    2. UNPUBLISH (move to draft)
 ================================================================ */
@@ -1294,46 +1351,6 @@ function rmt_ajax_unpublish() {
     wp_send_json_success('Listing unpublished.');
 }
  
-/* ================================================================
-   3. REPORT LISTING
-   Increments a report counter; you can review these in WP Admin.
-================================================================ */
-add_action('wp_ajax_rmt_report_listing',        'rmt_ajax_report_listing');
-add_action('wp_ajax_nopriv_rmt_report_listing', 'rmt_ajax_report_listing');
- 
-function rmt_ajax_report_listing() {
-    $post_id = absint($_POST['post_id'] ?? 0);
-    $nonce   = sanitize_text_field($_POST['nonce'] ?? '');
- 
-    if (!wp_verify_nonce($nonce, 'rmt_report_' . $post_id)) {
-        wp_send_json_error('Invalid request.');
-    }
- 
-    // Prevent the author from reporting their own listing
-    $author_id = (int) get_post_field('post_author', $post_id);
-    if (is_user_logged_in() && get_current_user_id() === $author_id) {
-        wp_send_json_error('You cannot report your own listing.');
-    }
- 
-    // Bump report count
-    $count = (int) get_post_meta($post_id, '_report_count', true);
-    update_post_meta($post_id, '_report_count', $count + 1);
- 
-    // Optional: log reporter user ID (deduplicate reports per user)
-    if (is_user_logged_in()) {
-        $reporters   = get_post_meta($post_id, '_reporters', true) ?: [];
-        $reporters[] = get_current_user_id();
-        update_post_meta($post_id, '_reporters', array_unique($reporters));
-    }
- 
-    // Optional: auto-flag for admin review after N reports
-    $threshold = 5;
-    if (($count + 1) >= $threshold) {
-        update_post_meta($post_id, '_flagged_for_review', 1);
-    }
- 
-    wp_send_json_success('Reported.');
-}
  
 
 add_action( 'admin_menu', function () {
@@ -1742,107 +1759,6 @@ function rmt_remove_frontend_backend_edit_link_for_users($link, $post_id, $text)
 }
 
 /**
- * Admin Reports Page
- */
-add_action('admin_menu', 'rmt_add_reports_admin_page');
-
-function rmt_add_reports_admin_page() {
-    add_menu_page(
-        'Listing Reports',
-        'Reports',
-        'manage_options',
-        'rmt-listing-reports',
-        'rmt_render_reports_admin_page',
-        'dashicons-flag',
-        26
-    );
-}
-
-function rmt_render_reports_admin_page() {
-    if (!current_user_can('manage_options')) {
-        return;
-    }
-
-    $reported_posts = new WP_Query([
-        'post_type'      => ['room', 'roommate'],
-        'post_status'    => ['publish', 'draft', 'pending'],
-        'posts_per_page' => -1,
-        'meta_query'     => [
-            'relation' => 'OR',
-            [
-                'key'     => '_report_count',
-                'value'   => 0,
-                'compare' => '>',
-                'type'    => 'NUMERIC',
-            ],
-            [
-                'key'     => '_spam_report_count',
-                'value'   => 0,
-                'compare' => '>',
-                'type'    => 'NUMERIC',
-            ],
-            [
-                'key'     => '_flagged_for_review',
-                'value'   => 1,
-                'compare' => '=',
-            ],
-        ],
-    ]);
-
-    echo '<div class="wrap">';
-    echo '<h1>Listing Reports</h1>';
-
-    if (!$reported_posts->have_posts()) {
-        echo '<p>No reported listings yet.</p>';
-        echo '</div>';
-        return;
-    }
-
-    echo '<table class="widefat striped">';
-    echo '<thead>';
-    echo '<tr>';
-    echo '<th>Title</th>';
-    echo '<th>Type</th>';
-    echo '<th>Status</th>';
-    echo '<th>Report Count</th>';
-    echo '<th>Flagged</th>';
-    echo '<th>Actions</th>';
-    echo '</tr>';
-    echo '</thead>';
-    echo '<tbody>';
-
-    while ($reported_posts->have_posts()) {
-        $reported_posts->the_post();
-
-        $post_id = get_the_ID();
-
-        $report_count = (int) get_post_meta($post_id, '_report_count', true);
-        $spam_count   = (int) get_post_meta($post_id, '_spam_report_count', true);
-        $total_count  = max($report_count, $spam_count);
-
-        $flagged = get_post_meta($post_id, '_flagged_for_review', true) ? 'Yes' : 'No';
-
-        echo '<tr>';
-        echo '<td><strong>' . esc_html(get_the_title()) . '</strong></td>';
-        echo '<td>' . esc_html(get_post_type($post_id)) . '</td>';
-        echo '<td>' . esc_html(get_post_status($post_id)) . '</td>';
-        echo '<td>' . esc_html($total_count) . '</td>';
-        echo '<td>' . esc_html($flagged) . '</td>';
-        echo '<td>';
-        echo '<a class="button button-small" href="' . esc_url(get_edit_post_link($post_id)) . '">Review</a> ';
-        echo '<a class="button button-small" href="' . esc_url(get_permalink($post_id)) . '" target="_blank">View</a>';
-        echo '</td>';
-        echo '</tr>';
-    }
-
-    wp_reset_postdata();
-
-    echo '</tbody>';
-    echo '</table>';
-    echo '</div>';
-}
-
-/**
  * ------------------------------------------------------------
  * FRONTEND SUBSCRIBER CHAT
  * Creates a simple text-only private messaging table for users.
@@ -1933,6 +1849,33 @@ function rmt_delete_expired_chat_messages() {
     );
 }
 add_action(RMT_CHAT_CLEANUP_HOOK, 'rmt_delete_expired_chat_messages');
+
+/**
+ * Name shown to other users in messaging.
+ * Falls back to "User #ID" when display_name is empty or is just the account
+ * login/email (the WordPress default), so account details aren't exposed.
+ */
+function rmt_get_public_user_name($user) {
+    if (is_numeric($user)) {
+        $user = get_userdata((int) $user);
+    }
+
+    if (!($user instanceof WP_User)) {
+        return 'User';
+    }
+
+    $name = trim((string) $user->display_name);
+
+    if (
+        $name === ''
+        || strcasecmp($name, (string) $user->user_login) === 0
+        || strcasecmp($name, (string) $user->user_email) === 0
+    ) {
+        return 'User #' . $user->ID;
+    }
+
+    return $name;
+}
 
 function rmt_user_can_chat_about_listing($user_id, $other_user_id, $listing_id) {
     $user_id       = absint($user_id);

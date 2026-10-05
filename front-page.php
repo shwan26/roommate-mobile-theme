@@ -92,6 +92,7 @@ $member_count = $total_users['total_users'] ?? 0;
 $latest_rooms = new WP_Query(array(
     'post_type'           => 'room',
     'post_status'         => 'publish',
+    'meta_query'          => array(array('key' => '_rmt_done', 'compare' => 'NOT EXISTS')),
     'posts_per_page'      => 6,
     'ignore_sticky_posts' => true,
     'orderby'             => 'date',
@@ -101,6 +102,7 @@ $latest_rooms = new WP_Query(array(
 $latest_roommates = new WP_Query(array(
     'post_type'           => 'roommate',
     'post_status'         => 'publish',
+    'meta_query'          => array(array('key' => '_rmt_done', 'compare' => 'NOT EXISTS')),
     'posts_per_page'      => 6,
     'ignore_sticky_posts' => true,
     'orderby'             => 'date',
@@ -175,44 +177,11 @@ $latest_roommates = new WP_Query(array(
         </div>
     </section>
 
-    <section class="quick-search-section">
-        <div class="container">
-
-            <div class="section-heading">
-                <h2><?php esc_html_e('What are you looking for?', 'roommate-mobile-theme'); ?></h2>
-                <p><?php esc_html_e('Choose the path that matches your situation.', 'roommate-mobile-theme'); ?></p>
-            </div>
-
-            <div class="quick-search-grid">
-                <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="quick-search-card">
-                    <h3><?php esc_html_e('I need a room', 'roommate-mobile-theme'); ?></h3>
-                    <p><?php esc_html_e('Browse available rooms and shared apartments.', 'roommate-mobile-theme'); ?></p>
-                </a>
-
-                <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="quick-search-card">
-                    <h3><?php esc_html_e('I need a roommate', 'roommate-mobile-theme'); ?></h3>
-                    <p><?php esc_html_e('Find people looking for rooms and flatmates.', 'roommate-mobile-theme'); ?></p>
-                </a>
-
-                <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="quick-search-card">
-                    <h3><?php esc_html_e('Post a room', 'roommate-mobile-theme'); ?></h3>
-                    <p><?php esc_html_e('List your available room and find a matching roommate.', 'roommate-mobile-theme'); ?></p>
-                </a>
-
-                <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="quick-search-card">
-                    <h3><?php esc_html_e('Post roommate profile', 'roommate-mobile-theme'); ?></h3>
-                    <p><?php esc_html_e('Share your profile and what you are looking for.', 'roommate-mobile-theme'); ?></p>
-                </a>
-            </div>
-
-        </div>
-    </section>
-
     <section class="listing-section listing-section--roommates">
         <div class="container">
 
             <div class="section-heading">
-                <h2><?php esc_html_e('Recently posted Roommates', 'roommate-mobile-theme'); ?></h2>
+                <h1><?php esc_html_e('Recently posted Roommates', 'roommate-mobile-theme'); ?></h1>
                 <p><?php esc_html_e('The newest roommate profiles using the same card design as the roommate archive.', 'roommate-mobile-theme'); ?></p>
             </div>
 
@@ -240,11 +209,9 @@ $latest_roommates = new WP_Query(array(
                         $gender_symbol   = '';
 
                         if ($gender_key === 'male') {
-                            $gender_symbol = '♂';
+                            $gender_symbol = 'M';
                         } elseif ($gender_key === 'female') {
-                            $gender_symbol = '♀';
-                        } elseif ($gender_key === 'non-binary') {
-                            $gender_symbol = '⚧';
+                            $gender_symbol = 'F';
                         }
                         ?>
 
@@ -283,12 +250,15 @@ $latest_roommates = new WP_Query(array(
                                 <div class="listing-card__mini-meta">
                                     <?php if ($display_area || $gender_symbol) : ?>
                                         <span class="listing-card__area-gender">
-                                            <?php echo esc_html(implode(' ', array_filter([$display_area, $gender_symbol]))); ?>
+                                            <?php echo esc_html(implode(', ', array_filter([$display_area, $gender_symbol]))); ?>
                                         </span>
                                     <?php endif; ?>
 
                                     <span class="listing-card__post-id">
                                         <?php echo esc_html('#' . $post_id); ?>
+                                        <span class="listing-card__posted">
+                                            &middot; <?php echo esc_html(sprintf(__('Posted %s', 'roommate-mobile-theme'), get_the_date('M j, Y'))); ?>
+                                        </span>
                                     </span>
                                 </div>
 
@@ -326,7 +296,7 @@ $latest_roommates = new WP_Query(array(
         <div class="container">
 
             <div class="section-heading">
-                <h2><?php esc_html_e('Recently posted Rooms', 'roommate-mobile-theme'); ?></h2>
+                <h1><?php esc_html_e('Recently posted Rooms', 'roommate-mobile-theme'); ?></h1>
                 <p><?php esc_html_e('The newest room listings using the same card design as the room archive.', 'roommate-mobile-theme'); ?></p>
             </div>
 
@@ -387,7 +357,12 @@ $latest_roommates = new WP_Query(array(
                                     <?php endif; ?>
                                 </div>
 
-                                <p class="listing-card__post-id">#<?php echo esc_html($post_id); ?></p>
+                                <p class="listing-card__post-id">
+                                    #<?php echo esc_html($post_id); ?>
+                                    <span class="listing-card__posted">
+                                        &middot; <?php echo esc_html(sprintf(__('Posted %s', 'roommate-mobile-theme'), get_the_date('M j, Y'))); ?>
+                                    </span>
+                                </p>
 
                                 <a href="<?php the_permalink(); ?>" class="btn btn-secondary">
                                     <?php esc_html_e('View Room', 'roommate-mobile-theme'); ?>

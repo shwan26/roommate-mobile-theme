@@ -159,6 +159,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_room_nonce']
                 if (empty($errors)) {
                     wp_redirect(add_query_arg([
                         'listing_submitted' => '1',
+                        'listing_id'        => $post_id,
+                        'listing_type'      => 'room',
                         'listing_status'    => $post_status,
                     ], home_url('/dashboard/')));
                     exit;
@@ -178,11 +180,6 @@ get_header();
 <main id="primary" class="site-main post-a-room">
     <div class="container">
         <header class="par-page-header">
-            <span class="par-eyebrow">
-                <span class="par-eyebrow-dot"></span>
-                New Room Listing
-            </span>
-
             <h1>Post a Room</h1>
             <p>Save your listing as draft or publish it when you are ready.</p>
         </header>

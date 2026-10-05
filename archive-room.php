@@ -37,6 +37,10 @@ function rmt_archive_format_date($date) {
 }
 
 $q               = sanitize_text_field(wp_unslash($_GET['q'] ?? ''));
+$sort_q = sanitize_key($_GET['sort'] ?? 'newest');
+if (!in_array($sort_q, ['newest', 'oldest', 'az'], true)) {
+    $sort_q = 'newest';
+}
 $rent_min_q      = sanitize_text_field(wp_unslash($_GET['rent_min'] ?? ''));
 $available_q     = sanitize_text_field(wp_unslash($_GET['available_from'] ?? ''));
 $move_in_month_q = sanitize_text_field(wp_unslash($_GET['move_in_month'] ?? ''));
@@ -84,6 +88,12 @@ $room_query_args = [
     'orderby'        => 'date',
     'order'          => 'DESC',
 ];
+
+if ($sort_q === 'oldest') {
+    $room_query_args['order'] = 'ASC';
+} elseif ($sort_q === 'az') {
+    $room_query_args['orderby'] = ['title' => 'ASC', 'date' => 'DESC'];
+}
 
 if ($q !== '') {
     $room_query_args['s'] = $q;
@@ -157,6 +167,18 @@ $room_query = new WP_Query($room_query_args);
                             name="move_in_month"
                             value="<?php echo esc_attr($move_in_month_q); ?>"
                         >
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sort">
+                            <?php esc_html_e('Sort by', 'roommate-mobile-theme'); ?>
+                        </label>
+
+                        <select id="sort" name="sort" onchange="this.form.submit()">
+                            <option value="newest" <?php selected($sort_q, 'newest'); ?>><?php esc_html_e('Newest first', 'roommate-mobile-theme'); ?></option>
+                            <option value="oldest" <?php selected($sort_q, 'oldest'); ?>><?php esc_html_e('Oldest first', 'roommate-mobile-theme'); ?></option>
+                            <option value="az" <?php selected($sort_q, 'az'); ?>><?php esc_html_e('A to Z', 'roommate-mobile-theme'); ?></option>
+                        </select>
                     </div>
 
                     <div class="filter-actions">
@@ -233,7 +255,12 @@ $room_query = new WP_Query($room_query_args);
                                     <?php endif; ?>
                                 </div>
 
-                                <p class="listing-card__post-id">#<?php echo esc_html($post_id); ?></p>
+                                <p class="listing-card__post-id">
+                                    #<?php echo esc_html($post_id); ?>
+                                    <span class="listing-card__posted">
+                                        &middot; <?php echo esc_html(sprintf(__('Posted %s', 'roommate-mobile-theme'), get_the_date('M j, Y'))); ?>
+                                    </span>
+                                </p>
 
                                 <a href="<?php the_permalink(); ?>" class="btn btn-secondary">
                                     <?php esc_html_e('View Room', 'roommate-mobile-theme'); ?>
@@ -246,16 +273,20 @@ $room_query = new WP_Query($room_query_args);
 
                 </div>
 
-                <div class="pagination-wrap">
-                    <?php
-                    echo paginate_links([
-                        'total'     => $room_query->max_num_pages,
-                        'current'   => $paged,
-                        'prev_text' => esc_html__('Previous', 'roommate-mobile-theme'),
-                        'next_text' => esc_html__('Next', 'roommate-mobile-theme'),
-                    ]);
-                    ?>
-                </div>
+                <?php if ($room_query->max_num_pages > 1) : ?>
+                    <nav class="pagination-wrap" aria-label="<?php esc_attr_e('Pagination', 'roommate-mobile-theme'); ?>">
+                        <?php
+                        echo paginate_links([
+                            'total'     => $room_query->max_num_pages,
+                            'current'   => $paged,
+                            'end_size'  => 1,
+                            'mid_size'  => 1,
+                            'prev_text' => '&lsaquo; ' . esc_html__('Previous', 'roommate-mobile-theme'),
+                            'next_text' => esc_html__('Next', 'roommate-mobile-theme') . ' &rsaquo;',
+                        ]);
+                        ?>
+                    </nav>
+                <?php endif; ?>
 
                 <?php wp_reset_postdata(); ?>
 

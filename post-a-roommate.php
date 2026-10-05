@@ -135,6 +135,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rmt_post_roommate_non
 
                 wp_redirect(add_query_arg([
                     'listing_submitted' => '1',
+                        'listing_id'        => $post_id,
+                        'listing_type'      => 'roommate',
                     'listing_status'    => $post_status,
                 ], home_url('/dashboard/')));
                 exit;
@@ -154,11 +156,6 @@ get_header();
 <main id="primary" class="site-main single-page post-a-roommate">
     <div class="container">
         <div class="par-page-header">
-            <div class="par-eyebrow">
-                <span class="par-eyebrow-dot"></span>
-                New Roommate Profile
-            </div>
-
             <h1>Post a Roommate Profile</h1>
             <p>Save your profile as draft or publish it when you are ready.</p>
         </div>
