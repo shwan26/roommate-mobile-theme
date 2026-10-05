@@ -2599,9 +2599,19 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     overflow-wrap: anywhere;
   }
 
+  /* Stack: area/gender on top, then ID + posted date below */
+  .listing-card__mini-meta,
   .archive-roommate .listing-card__mini-meta,
   .listing-card--roommate .listing-card__mini-meta {
+    flex-direction: column;
     align-items: flex-start;
+    justify-content: flex-start;
+    gap: 0.15rem;
+  }
+  .listing-card__mini-meta .listing-card__area-gender {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
   }
 
   .listing-card__post-id {

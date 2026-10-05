@@ -37,6 +37,10 @@ function rmt_archive_format_date($date) {
 }
 
 $q               = sanitize_text_field(wp_unslash($_GET['q'] ?? ''));
+$sort_q = sanitize_key($_GET['sort'] ?? 'newest');
+if (!in_array($sort_q, ['newest', 'oldest', 'az'], true)) {
+    $sort_q = 'newest';
+}
 $rent_min_q      = sanitize_text_field(wp_unslash($_GET['rent_min'] ?? ''));
 $available_q     = sanitize_text_field(wp_unslash($_GET['available_from'] ?? ''));
 $move_in_month_q = sanitize_text_field(wp_unslash($_GET['move_in_month'] ?? ''));
@@ -84,6 +88,12 @@ $room_query_args = [
     'orderby'        => 'date',
     'order'          => 'DESC',
 ];
+
+if ($sort_q === 'oldest') {
+    $room_query_args['order'] = 'ASC';
+} elseif ($sort_q === 'az') {
+    $room_query_args['orderby'] = ['title' => 'ASC', 'date' => 'DESC'];
+}
 
 if ($q !== '') {
     $room_query_args['s'] = $q;
@@ -157,6 +167,18 @@ $room_query = new WP_Query($room_query_args);
                             name="move_in_month"
                             value="<?php echo esc_attr($move_in_month_q); ?>"
                         >
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sort">
+                            <?php esc_html_e('Sort by', 'roommate-mobile-theme'); ?>
+                        </label>
+
+                        <select id="sort" name="sort" onchange="this.form.submit()">
+                            <option value="newest" <?php selected($sort_q, 'newest'); ?>><?php esc_html_e('Newest first', 'roommate-mobile-theme'); ?></option>
+                            <option value="oldest" <?php selected($sort_q, 'oldest'); ?>><?php esc_html_e('Oldest first', 'roommate-mobile-theme'); ?></option>
+                            <option value="az" <?php selected($sort_q, 'az'); ?>><?php esc_html_e('A to Z', 'roommate-mobile-theme'); ?></option>
+                        </select>
                     </div>
 
                     <div class="filter-actions">

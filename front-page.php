@@ -250,7 +250,7 @@ $latest_roommates = new WP_Query(array(
                                 <div class="listing-card__mini-meta">
                                     <?php if ($display_area || $gender_symbol) : ?>
                                         <span class="listing-card__area-gender">
-                                            <?php echo esc_html(implode(' ', array_filter([$display_area, $gender_symbol]))); ?>
+                                            <?php echo esc_html(implode(', ', array_filter([$display_area, $gender_symbol]))); ?>
                                         </span>
                                     <?php endif; ?>
 
