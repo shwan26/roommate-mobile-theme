@@ -233,7 +233,12 @@ $room_query = new WP_Query($room_query_args);
                                     <?php endif; ?>
                                 </div>
 
-                                <p class="listing-card__post-id">#<?php echo esc_html($post_id); ?></p>
+                                <p class="listing-card__post-id">
+                                    #<?php echo esc_html($post_id); ?>
+                                    <span class="listing-card__posted">
+                                        &middot; <?php echo esc_html(sprintf(__('Posted %s', 'roommate-mobile-theme'), get_the_date('M j, Y'))); ?>
+                                    </span>
+                                </p>
 
                                 <a href="<?php the_permalink(); ?>" class="btn btn-secondary">
                                     <?php esc_html_e('View Room', 'roommate-mobile-theme'); ?>

@@ -881,6 +881,9 @@ p { margin-top: 0; color: var(--color-text-soft); }
   flex: 0 0 auto;
   margin: 0;
 }
+.listing-card__posted {
+  white-space: nowrap;
+}
 
 .listing-card__chips, .single-listing__chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 

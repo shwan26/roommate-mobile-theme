@@ -175,39 +175,6 @@ $latest_roommates = new WP_Query(array(
         </div>
     </section>
 
-    <section class="quick-search-section">
-        <div class="container">
-
-            <div class="section-heading">
-                <h2><?php esc_html_e('What are you looking for?', 'roommate-mobile-theme'); ?></h2>
-                <p><?php esc_html_e('Choose the path that matches your situation.', 'roommate-mobile-theme'); ?></p>
-            </div>
-
-            <div class="quick-search-grid">
-                <a href="<?php echo esc_url(get_post_type_archive_link('room')); ?>" class="quick-search-card">
-                    <h3><?php esc_html_e('I need a room', 'roommate-mobile-theme'); ?></h3>
-                    <p><?php esc_html_e('Browse available rooms and shared apartments.', 'roommate-mobile-theme'); ?></p>
-                </a>
-
-                <a href="<?php echo esc_url(get_post_type_archive_link('roommate')); ?>" class="quick-search-card">
-                    <h3><?php esc_html_e('I need a roommate', 'roommate-mobile-theme'); ?></h3>
-                    <p><?php esc_html_e('Find people looking for rooms and flatmates.', 'roommate-mobile-theme'); ?></p>
-                </a>
-
-                <a href="<?php echo esc_url(home_url('/post-a-room/')); ?>" class="quick-search-card">
-                    <h3><?php esc_html_e('Post a room', 'roommate-mobile-theme'); ?></h3>
-                    <p><?php esc_html_e('List your available room and find a matching roommate.', 'roommate-mobile-theme'); ?></p>
-                </a>
-
-                <a href="<?php echo esc_url(home_url('/post-a-roommate/')); ?>" class="quick-search-card">
-                    <h3><?php esc_html_e('Post roommate profile', 'roommate-mobile-theme'); ?></h3>
-                    <p><?php esc_html_e('Share your profile and what you are looking for.', 'roommate-mobile-theme'); ?></p>
-                </a>
-            </div>
-
-        </div>
-    </section>
-
     <section class="listing-section listing-section--roommates">
         <div class="container">
 

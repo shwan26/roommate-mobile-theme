@@ -304,6 +304,9 @@ $roommate_query = new WP_Query($roommate_query_args);
 
                                     <span class="listing-card__post-id">
                                         <?php echo esc_html('#' . $post_id); ?>
+                                        <span class="listing-card__posted">
+                                            &middot; <?php echo esc_html(sprintf(__('Posted %s', 'roommate-mobile-theme'), get_the_date('M j, Y'))); ?>
+                                        </span>
                                     </span>
                                 </div>
 
