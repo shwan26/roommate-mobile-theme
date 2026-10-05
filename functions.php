@@ -9,6 +9,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once get_template_directory() . '/inc/reports.php';
+
 /**
  * ------------------------------------------------------------
  * 1. THEME CONSTANTS
@@ -1294,46 +1296,6 @@ function rmt_ajax_unpublish() {
     wp_send_json_success('Listing unpublished.');
 }
  
-/* ================================================================
-   3. REPORT LISTING
-   Increments a report counter; you can review these in WP Admin.
-================================================================ */
-add_action('wp_ajax_rmt_report_listing',        'rmt_ajax_report_listing');
-add_action('wp_ajax_nopriv_rmt_report_listing', 'rmt_ajax_report_listing');
- 
-function rmt_ajax_report_listing() {
-    $post_id = absint($_POST['post_id'] ?? 0);
-    $nonce   = sanitize_text_field($_POST['nonce'] ?? '');
- 
-    if (!wp_verify_nonce($nonce, 'rmt_report_' . $post_id)) {
-        wp_send_json_error('Invalid request.');
-    }
- 
-    // Prevent the author from reporting their own listing
-    $author_id = (int) get_post_field('post_author', $post_id);
-    if (is_user_logged_in() && get_current_user_id() === $author_id) {
-        wp_send_json_error('You cannot report your own listing.');
-    }
- 
-    // Bump report count
-    $count = (int) get_post_meta($post_id, '_report_count', true);
-    update_post_meta($post_id, '_report_count', $count + 1);
- 
-    // Optional: log reporter user ID (deduplicate reports per user)
-    if (is_user_logged_in()) {
-        $reporters   = get_post_meta($post_id, '_reporters', true) ?: [];
-        $reporters[] = get_current_user_id();
-        update_post_meta($post_id, '_reporters', array_unique($reporters));
-    }
- 
-    // Optional: auto-flag for admin review after N reports
-    $threshold = 5;
-    if (($count + 1) >= $threshold) {
-        update_post_meta($post_id, '_flagged_for_review', 1);
-    }
- 
-    wp_send_json_success('Reported.');
-}
  
 
 add_action( 'admin_menu', function () {
@@ -1739,107 +1701,6 @@ function rmt_remove_frontend_backend_edit_link_for_users($link, $post_id, $text)
     }
 
     return '';
-}
-
-/**
- * Admin Reports Page
- */
-add_action('admin_menu', 'rmt_add_reports_admin_page');
-
-function rmt_add_reports_admin_page() {
-    add_menu_page(
-        'Listing Reports',
-        'Reports',
-        'manage_options',
-        'rmt-listing-reports',
-        'rmt_render_reports_admin_page',
-        'dashicons-flag',
-        26
-    );
-}
-
-function rmt_render_reports_admin_page() {
-    if (!current_user_can('manage_options')) {
-        return;
-    }
-
-    $reported_posts = new WP_Query([
-        'post_type'      => ['room', 'roommate'],
-        'post_status'    => ['publish', 'draft', 'pending'],
-        'posts_per_page' => -1,
-        'meta_query'     => [
-            'relation' => 'OR',
-            [
-                'key'     => '_report_count',
-                'value'   => 0,
-                'compare' => '>',
-                'type'    => 'NUMERIC',
-            ],
-            [
-                'key'     => '_spam_report_count',
-                'value'   => 0,
-                'compare' => '>',
-                'type'    => 'NUMERIC',
-            ],
-            [
-                'key'     => '_flagged_for_review',
-                'value'   => 1,
-                'compare' => '=',
-            ],
-        ],
-    ]);
-
-    echo '<div class="wrap">';
-    echo '<h1>Listing Reports</h1>';
-
-    if (!$reported_posts->have_posts()) {
-        echo '<p>No reported listings yet.</p>';
-        echo '</div>';
-        return;
-    }
-
-    echo '<table class="widefat striped">';
-    echo '<thead>';
-    echo '<tr>';
-    echo '<th>Title</th>';
-    echo '<th>Type</th>';
-    echo '<th>Status</th>';
-    echo '<th>Report Count</th>';
-    echo '<th>Flagged</th>';
-    echo '<th>Actions</th>';
-    echo '</tr>';
-    echo '</thead>';
-    echo '<tbody>';
-
-    while ($reported_posts->have_posts()) {
-        $reported_posts->the_post();
-
-        $post_id = get_the_ID();
-
-        $report_count = (int) get_post_meta($post_id, '_report_count', true);
-        $spam_count   = (int) get_post_meta($post_id, '_spam_report_count', true);
-        $total_count  = max($report_count, $spam_count);
-
-        $flagged = get_post_meta($post_id, '_flagged_for_review', true) ? 'Yes' : 'No';
-
-        echo '<tr>';
-        echo '<td><strong>' . esc_html(get_the_title()) . '</strong></td>';
-        echo '<td>' . esc_html(get_post_type($post_id)) . '</td>';
-        echo '<td>' . esc_html(get_post_status($post_id)) . '</td>';
-        echo '<td>' . esc_html($total_count) . '</td>';
-        echo '<td>' . esc_html($flagged) . '</td>';
-        echo '<td>';
-        echo '<a class="button button-small" href="' . esc_url(get_edit_post_link($post_id)) . '">Review</a> ';
-        echo '<a class="button button-small" href="' . esc_url(get_permalink($post_id)) . '" target="_blank">View</a>';
-        echo '</td>';
-        echo '</tr>';
-    }
-
-    wp_reset_postdata();
-
-    echo '</tbody>';
-    echo '</table>';
-    echo '</div>';
 }
 
 /**

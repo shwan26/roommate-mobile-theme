@@ -215,6 +215,7 @@ if (have_posts()) :
                             <button
                                 type="button"
                                 class="btn btn-outline btn--report js-report-spam"
+                                data-footer-modal="report"
                                 data-post-id="<?php echo esc_attr($post_id); ?>"
                                 data-nonce="<?php echo esc_attr(wp_create_nonce('rmt_report_' . $post_id)); ?>"
                             >
@@ -561,34 +562,10 @@ if (have_posts()) :
                     }
                 });
             });
-
-            document.querySelectorAll('.js-report-spam').forEach(function (button) {
-                button.addEventListener('click', async function () {
-                    if (!confirm('Report this roommate profile as spam or inappropriate?')) {
-                        return;
-                    }
-
-                    button.disabled = true;
-
-                    const data = await postAction(
-                        'rmt_report_listing',
-                        button.dataset.postId,
-                        button.dataset.nonce
-                    );
-
-                    if (data.success) {
-                        const buttonText = button.querySelector('.listing-action-text');
-                        if (buttonText) {
-                            buttonText.textContent = 'Reported - thanks!';
-                        }
-                    } else {
-                        alert(data.data || 'Something went wrong.');
-                        button.disabled = false;
-                    }
-                });
-            });
         })();
         </script>
+
+    <?php rmt_render_report_modal($post_id); ?>
 
     <?php endwhile;
 endif;

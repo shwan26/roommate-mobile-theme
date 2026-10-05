@@ -251,16 +251,20 @@ $room_query = new WP_Query($room_query_args);
 
                 </div>
 
-                <div class="pagination-wrap">
-                    <?php
-                    echo paginate_links([
-                        'total'     => $room_query->max_num_pages,
-                        'current'   => $paged,
-                        'prev_text' => esc_html__('Previous', 'roommate-mobile-theme'),
-                        'next_text' => esc_html__('Next', 'roommate-mobile-theme'),
-                    ]);
-                    ?>
-                </div>
+                <?php if ($room_query->max_num_pages > 1) : ?>
+                    <nav class="pagination-wrap" aria-label="<?php esc_attr_e('Pagination', 'roommate-mobile-theme'); ?>">
+                        <?php
+                        echo paginate_links([
+                            'total'     => $room_query->max_num_pages,
+                            'current'   => $paged,
+                            'end_size'  => 1,
+                            'mid_size'  => 1,
+                            'prev_text' => '&lsaquo; ' . esc_html__('Previous', 'roommate-mobile-theme'),
+                            'next_text' => esc_html__('Next', 'roommate-mobile-theme') . ' &rsaquo;',
+                        ]);
+                        ?>
+                    </nav>
+                <?php endif; ?>
 
                 <?php wp_reset_postdata(); ?>
 

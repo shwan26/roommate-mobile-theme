@@ -1315,7 +1315,10 @@ main.site-main,
 /* =========================================================
    13. PAGINATION
    ========================================================= */
-.pagination-wrap { margin-top: 2rem; }
+.pagination-wrap {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: 0.4rem; margin-top: 2rem;
+}
 .pagination, .nav-links { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
 .page-numbers {
@@ -1329,6 +1332,16 @@ main.site-main,
 }
 .page-numbers.current, .page-numbers:hover {
   background: var(--green); color: #fff; border-color: var(--green);
+}
+.page-numbers.dots,
+.page-numbers.dots:hover {
+  background: none; border-color: transparent; color: var(--color-text-muted); min-width: 0; padding-inline: 0.2rem;
+}
+.page-numbers.prev, .page-numbers.next { padding-inline: 1rem; }
+@media (max-width: 480px) {
+  .pagination-wrap { gap: 0.25rem; }
+  .page-numbers { min-width: 36px; min-height: 36px; padding: 0.3rem 0.5rem; font-size: 0.8rem; }
+  .page-numbers.prev, .page-numbers.next { padding-inline: 0.7rem; }
 }
 
 /* =========================================================
@@ -2947,3 +2960,31 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 .error-404__title { margin: 0.5rem 0 0.75rem; font-size: 1.6rem; }
 .error-404__text { margin-bottom: 1.75rem; }
+
+/* =========================================================
+   REPORT LISTING FORM (inside .footer-modal)
+   ========================================================= */
+.rmt-report-form { display: flex; flex-direction: column; gap: 0.9rem; }
+.rmt-report-form__types { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.rmt-report-form__types legend { font-weight: 700; margin-bottom: 0.5rem; padding: 0; }
+.rmt-report-form__option {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.6rem 0.8rem; cursor: pointer;
+  border: 1.5px solid var(--color-border); border-radius: var(--radius-sm);
+}
+.rmt-report-form__option:has(input:checked) { border-color: var(--green); background: rgba(88,204,2,0.08); }
+.rmt-report-form__option input { accent-color: var(--green); margin: 0; }
+.rmt-report-form__label { font-weight: 700; }
+.rmt-report-form textarea {
+  width: 100%; resize: vertical; font: inherit;
+  padding: 0.65rem 0.8rem;
+  border: 1.5px solid var(--color-border); border-radius: var(--radius-sm);
+}
+.rmt-report-form textarea:focus { outline: none; border-color: var(--green); }
+.rmt-report-form__message { margin: 0; font-weight: 600; }
+.rmt-report-form__message.is-error { color: #b32d2e; }
+.rmt-report-form__message.is-success { color: var(--green); }
+.rmt-report-form__actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+@media (max-width: 480px) {
+  .rmt-report-form__actions .btn { flex: 1; justify-content: center; }
+}
