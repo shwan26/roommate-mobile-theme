@@ -142,18 +142,18 @@ get_header();
                                 $chat_listing_id = (int) $conversation->listing_id;
                                 $chat_url = rmt_get_chat_url((int) $conversation->other_user_id, $chat_listing_id);
                                 $listing_title = get_the_title($chat_listing_id);
-                                $search_text = trim(($other_user ? $other_user->display_name : 'User') . ' ' . $listing_title . ' ' . $conversation->last_message);
+                                $search_text = trim(rmt_get_public_user_name($other_user) . ' ' . $listing_title . ' ' . $conversation->last_message);
                                 ?>
                                 <div class="rmt-conversation-row" data-search="<?php echo esc_attr(strtolower($search_text)); ?>">
                                     <a class="rmt-conversation-item" href="<?php echo esc_url($chat_url); ?>">
                                         <?php
                                         $initials = $other_user
-                                            ? strtoupper(substr($other_user->display_name, 0, 1))
+                                            ? strtoupper(substr(rmt_get_public_user_name($other_user), 0, 1))
                                             : '?';
                                         ?>
                                         <div class="rmt-conv-avatar" aria-hidden="true"><?php echo esc_html($initials); ?></div>
                                         <div class="rmt-conv-body">
-                                            <strong><?php echo esc_html($other_user ? $other_user->display_name : 'User'); ?></strong>
+                                            <strong><?php echo esc_html(rmt_get_public_user_name($other_user)); ?></strong>
                                             <span class="rmt-conv-listing"><?php echo esc_html($listing_title ?: 'Listing'); ?></span>
                                             <p><?php echo esc_html(wp_trim_words($conversation->last_message, 14)); ?></p>
                                         </div>
@@ -201,7 +201,7 @@ get_header();
                         <div class="rmt-chat-panel">
                             <div class="rmt-chat-header">
                                 <div>
-                                    <h2><?php echo esc_html($recipient ? $recipient->display_name : 'User'); ?></h2>
+                                    <h2><?php echo esc_html(rmt_get_public_user_name($recipient)); ?></h2>
                                     <?php if ($listing) : ?>
                                         <p>
                                             About:

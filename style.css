@@ -788,9 +788,13 @@ p { margin-top: 0; color: var(--color-text-soft); }
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
-.listing-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.listing-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--green);
+  box-shadow: 0 14px 34px rgba(88,204,2,0.28), 0 4px 12px rgba(88,204,2,0.18);
+}
 
 .listing-card__image-link { display: block; }
 .listing-card__image { aspect-ratio: 16/10; overflow: hidden; background: var(--color-surface-alt); }
@@ -952,6 +956,11 @@ p { margin-top: 0; color: var(--color-text-soft); }
   color: var(--color-text-muted);
   font-size: 0.8rem;
   font-weight: 600;
+}
+.single-listing__posted {
+  margin: 0.15rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
 }
 .single-listing__price { font-size: 1.2rem; font-weight: 700; color: var(--green); }
 
@@ -1399,7 +1408,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 
 .rmt-hero__headline {
-  font-size: clamp(2.6rem,6vw,4.4rem);
+  font-size: clamp(2.1rem,5vw,3.4rem);
   line-height: 1.05; color: var(--color-text);
   width: 100%; max-width: none; margin: 0 auto 1.1rem;
   letter-spacing: -0.02em; font-weight: 400;
@@ -1444,7 +1453,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 @media (max-width: 767px) {
   .rmt-hero__headline {
-    font-size: clamp(1.85rem, 8vw, 3rem);
+    font-size: clamp(1.5rem, 6.5vw, 2.4rem);
     line-height: 1.12;
   }
   .rmt-hero__highlight--roommate {
@@ -1457,12 +1466,20 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 @media (max-width: 420px) {
   .rmt-hero__headline {
-    font-size: clamp(1.55rem, 7.2vw, 1.95rem);
+    font-size: clamp(1.25rem, 6vw, 1.55rem);
   }
 }
 
 .rmt-hero__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; margin-bottom: 1.5rem; }
-@media (max-width: 640px) { .rmt-hero__grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+  .rmt-hero__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
+  .rmt-hero__grid .rmt-card { gap: 0.55rem; padding: 0.85rem 0.8rem; border-radius: var(--radius-lg); }
+  .rmt-hero__grid .rmt-card__head { flex-direction: row; align-items: center; gap: 0.5rem; }
+  .rmt-hero__grid .rmt-card__icon { width: 34px; height: 34px; border-radius: 10px; font-size: 1.05rem; }
+  .rmt-hero__grid .rmt-card__label { font-size: 0.6rem; letter-spacing: 0.08em; }
+  .rmt-hero__grid .rmt-card__title { font-size: 1rem; overflow-wrap: anywhere; }
+  .rmt-hero__grid .rmt-card__desc { font-size: 0.72rem; line-height: 1.45; }
+}
 
 .rmt-card {
   display: flex; flex-direction: column; gap: 1rem;
@@ -1575,6 +1592,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   .rmt-card__title {
     font-size: clamp(1.08rem, 6vw, 1.3rem);
   }
+
+  .rmt-hero__grid .rmt-card__head { gap: 0.5rem; }
+  .rmt-hero__grid .rmt-card__title { font-size: 0.95rem; }
 }
 
 /* =========================================================
@@ -1620,8 +1640,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 .par-eyebrow-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; flex-shrink: 0; }
 
-.par-page-header h1 { font-size: clamp(1.9rem,5vw,2.9rem); letter-spacing: -0.02em; margin: 0 0 0.5rem; font-weight: 800; }
-.par-page-header > p { font-size: 1.02rem; color: var(--color-text-soft); margin: 0; }
+.par-page-header h1 { font-size: 2em; line-height: 1.2; margin: 0 0 0.5rem; font-weight: 700; }
+.par-page-header > p { font-size: 1rem; color: var(--color-text-soft); margin: 0; }
 
 .par-layout { display: grid; gap: 1.5rem; align-items: start; }
 @media (min-width: 992px) { .par-layout { grid-template-columns: minmax(0,2fr) minmax(260px,0.85fr); } }
@@ -2303,7 +2323,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
    18. MOBILE POLISH
    ========================================================= */
 @media (max-width: 767px) {
-  html { font-size: 16px; }
+  html { font-size: 14px; }
   body { overflow-x: hidden; }
   .container { width: min(100% - 1.25rem, var(--container)); }
 
@@ -2319,8 +2339,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
   .par-page-header { margin-bottom: 1.15rem; }
   .par-eyebrow, .archive-badge, .section-badge, .hero-badge { font-size: 0.72rem; }
-  .par-page-header h1, .single-listing__header h1 { font-size: clamp(1.85rem,9vw,2.5rem); line-height: 1.05; }
-  .par-page-header > p { font-size: 0.96rem; }
+  .par-page-header h1 { font-size: clamp(1.5rem, 7vw, 2rem); line-height: 1.08; }
+  .single-listing__header h1 { font-size: clamp(1.85rem,9vw,2.5rem); line-height: 1.05; }
+  .par-page-header > p { font-size: 0.8rem; line-height: 1.42; }
   .single-listing__media { margin-bottom: 0.9rem; border-radius: 18px; }
   .single-listing__media img { max-height: 190px; }
   .single-room .single-listing__media { max-width: 100%; }
@@ -2624,7 +2645,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   .site-branding { width: 172px; max-width: 172px; }
   .site-logo-img, .site-branding img, .custom-logo-link img { max-width: 172px; max-height: 44px; }
   .par-card, .single-card, .filter-form, .rmt-dashboard-messages, .rmt-chat-panel { padding: 0.85rem; }
-  .par-page-header h1, .single-listing__header h1 { font-size: 1.8rem; }
+  .single-listing__header h1 { font-size: 1.8rem; }
 }
 
 /* =========================================================
@@ -2906,3 +2927,23 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     font-size: 0.72rem;
   }
 }
+
+/* Dashboard: <main> already has top padding, so don't stack the hero's on top */
+.dashboard-page .archive-hero {
+  padding-top: 0 !important;
+}
+
+/* =========================================================
+   404 PAGE
+   ========================================================= */
+.error-404-page { display: flex; align-items: center; padding: var(--sp-16) 0; }
+.error-404 { max-width: 480px; margin: 0 auto; text-align: center; }
+.error-404__code {
+  margin: 0;
+  font-size: clamp(4rem, 18vw, 7rem);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--green);
+}
+.error-404__title { margin: 0.5rem 0 0.75rem; font-size: 1.6rem; }
+.error-404__text { margin-bottom: 1.75rem; }

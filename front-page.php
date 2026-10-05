@@ -179,7 +179,7 @@ $latest_roommates = new WP_Query(array(
         <div class="container">
 
             <div class="section-heading">
-                <h2><?php esc_html_e('Recently posted Roommates', 'roommate-mobile-theme'); ?></h2>
+                <h1><?php esc_html_e('Recently posted Roommates', 'roommate-mobile-theme'); ?></h1>
                 <p><?php esc_html_e('The newest roommate profiles using the same card design as the roommate archive.', 'roommate-mobile-theme'); ?></p>
             </div>
 
@@ -254,6 +254,9 @@ $latest_roommates = new WP_Query(array(
 
                                     <span class="listing-card__post-id">
                                         <?php echo esc_html('#' . $post_id); ?>
+                                        <span class="listing-card__posted">
+                                            &middot; <?php echo esc_html(sprintf(__('Posted %s', 'roommate-mobile-theme'), get_the_date('M j, Y'))); ?>
+                                        </span>
                                     </span>
                                 </div>
 
@@ -291,7 +294,7 @@ $latest_roommates = new WP_Query(array(
         <div class="container">
 
             <div class="section-heading">
-                <h2><?php esc_html_e('Recently posted Rooms', 'roommate-mobile-theme'); ?></h2>
+                <h1><?php esc_html_e('Recently posted Rooms', 'roommate-mobile-theme'); ?></h1>
                 <p><?php esc_html_e('The newest room listings using the same card design as the room archive.', 'roommate-mobile-theme'); ?></p>
             </div>
 
@@ -352,7 +355,12 @@ $latest_roommates = new WP_Query(array(
                                     <?php endif; ?>
                                 </div>
 
-                                <p class="listing-card__post-id">#<?php echo esc_html($post_id); ?></p>
+                                <p class="listing-card__post-id">
+                                    #<?php echo esc_html($post_id); ?>
+                                    <span class="listing-card__posted">
+                                        &middot; <?php echo esc_html(sprintf(__('Posted %s', 'roommate-mobile-theme'), get_the_date('M j, Y'))); ?>
+                                    </span>
+                                </p>
 
                                 <a href="<?php the_permalink(); ?>" class="btn btn-secondary">
                                     <?php esc_html_e('View Room', 'roommate-mobile-theme'); ?>

@@ -336,7 +336,7 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                             ?>
                             <a class="rmt-conversation-item" href="<?php echo esc_url($chat_url); ?>">
                                 <div>
-                                    <strong><?php echo esc_html($other_user ? $other_user->display_name : 'User'); ?></strong>
+                                    <strong><?php echo esc_html(rmt_get_public_user_name($other_user)); ?></strong>
                                     <span><?php echo esc_html(get_the_title($listing_id)); ?></span>
                                     <p><?php echo esc_html(wp_trim_words($conversation->last_message, 16)); ?></p>
                                 </div>

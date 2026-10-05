@@ -154,11 +154,6 @@ get_header();
 <main id="primary" class="site-main single-page post-a-roommate">
     <div class="container">
         <div class="par-page-header">
-            <div class="par-eyebrow">
-                <span class="par-eyebrow-dot"></span>
-                New Roommate Profile
-            </div>
-
             <h1>Post a Roommate Profile</h1>
             <p>Save your profile as draft or publish it when you are ready.</p>
         </div>

@@ -1934,6 +1934,33 @@ function rmt_delete_expired_chat_messages() {
 }
 add_action(RMT_CHAT_CLEANUP_HOOK, 'rmt_delete_expired_chat_messages');
 
+/**
+ * Name shown to other users in messaging.
+ * Falls back to "User #ID" when display_name is empty or is just the account
+ * login/email (the WordPress default), so account details aren't exposed.
+ */
+function rmt_get_public_user_name($user) {
+    if (is_numeric($user)) {
+        $user = get_userdata((int) $user);
+    }
+
+    if (!($user instanceof WP_User)) {
+        return 'User';
+    }
+
+    $name = trim((string) $user->display_name);
+
+    if (
+        $name === ''
+        || strcasecmp($name, (string) $user->user_login) === 0
+        || strcasecmp($name, (string) $user->user_email) === 0
+    ) {
+        return 'User #' . $user->ID;
+    }
+
+    return $name;
+}
+
 function rmt_user_can_chat_about_listing($user_id, $other_user_id, $listing_id) {
     $user_id       = absint($user_id);
     $other_user_id = absint($other_user_id);

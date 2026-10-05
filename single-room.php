@@ -121,6 +121,12 @@ if (have_posts()) :
                             <p class="single-listing__post-id">
                                 <?php echo esc_html(sprintf(__('#%d', 'roommate-mobile-theme'), $post_id)); ?>
                             </p>
+                            <p class="single-listing__posted">
+                                <?php echo esc_html(sprintf(__('Posted %s', 'roommate-mobile-theme'), get_the_date('M j, Y'))); ?>
+                                <?php if ($is_author && get_post_modified_time('U', true) > get_post_time('U', true)) : ?>
+                                    &middot; <?php echo esc_html(sprintf(__('Last modified %s', 'roommate-mobile-theme'), get_the_modified_date('M j, Y'))); ?>
+                                <?php endif; ?>
+                            </p>
                         </div>
                     </header>
 

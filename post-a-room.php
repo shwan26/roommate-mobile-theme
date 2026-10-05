@@ -178,11 +178,6 @@ get_header();
 <main id="primary" class="site-main post-a-room">
     <div class="container">
         <header class="par-page-header">
-            <span class="par-eyebrow">
-                <span class="par-eyebrow-dot"></span>
-                New Room Listing
-            </span>
-
             <h1>Post a Room</h1>
             <p>Save your listing as draft or publish it when you are ready.</p>
         </header>
