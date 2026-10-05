@@ -96,6 +96,8 @@ defined('ABSPATH') || exit;
             <p>
                 Whether you’re offering a room or searching for one, Bkkroomie is here to help you find your match.
             </p>
+
+            <p><small>Developed by Shwan Myat Nay Chi</small></p>
         </div>
     </div>
 </div>

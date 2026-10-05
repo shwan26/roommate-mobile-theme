@@ -495,11 +495,9 @@ if ($listing_limit === 'room' || $listing_limit === 'roommate') :
                         $is_done        = (bool) get_post_meta($post_id, '_rmt_done', true);
 
                         if ($gender_key === 'male') {
-                            $gender_symbol = '♂';
+                            $gender_symbol = 'M';
                         } elseif ($gender_key === 'female') {
-                            $gender_symbol = '♀';
-                        } elseif ($gender_key === 'non-binary') {
-                            $gender_symbol = '⚧';
+                            $gender_symbol = 'F';
                         }
                         ?>
 

@@ -870,12 +870,12 @@ add_action('widgets_init', 'rmt_register_sidebars');
 /**
  * Get default profile photo attachment ID.
  * Source file:
- * /wp-content/themes/roommate-mobile-theme/images/default-profile-scaled.png
+ * /wp-content/themes/roommate-mobile-theme/images/default-profile-v2.png
  */
 function rmt_get_default_profile_photo_id() {
     $existing_id = absint(get_option('rmt_default_profile_photo_id'));
-    $source_file = 'default-profile-scaled.png';
-    $upload_file = 'rmt-default-profile-scaled.png';
+    $source_file = 'default-profile-v2.png';
+    $upload_file = 'rmt-default-profile-v2.png';
 
     if ($existing_id && get_post($existing_id) && basename((string) get_attached_file($existing_id)) === $upload_file) {
         return $existing_id;
@@ -949,7 +949,7 @@ function rmt_get_default_profile_photo_url($size = 'thumbnail') {
         }
     }
 
-    return get_template_directory_uri() . '/images/default-profile-scaled.png';
+    return get_template_directory_uri() . '/images/default-profile-v2.png';
 }
 
 function rmt_get_profile_photo_html($post_id = null, $size = 'large', $attr = []) {
@@ -970,7 +970,7 @@ function rmt_get_profile_photo_html($post_id = null, $size = 'large', $attr = []
 
     return sprintf(
         '<img src="%s" alt="%s">',
-        esc_url(get_template_directory_uri() . '/images/default-profile-scaled.png'),
+        esc_url(get_template_directory_uri() . '/images/default-profile-v2.png'),
         esc_attr__('Default profile photo', 'roommate-mobile-theme')
     );
 }

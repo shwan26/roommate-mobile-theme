@@ -186,7 +186,7 @@ if (have_posts()) :
                                     class="btn btn-primary btn--chat"
                                 >
                                     <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>
-                                    <span class="listing-action-text"><?php esc_html_e('Chat with roommate', 'roommate-mobile-theme'); ?></span>
+                                    <span class="listing-action-text"><?php esc_html_e('Send Message', 'roommate-mobile-theme'); ?></span>
                                 </a>
                             <?php else : ?>
                                 <a
@@ -194,7 +194,7 @@ if (have_posts()) :
                                     class="btn btn-primary btn--chat"
                                 >
                                     <svg class="listing-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/></svg>
-                                    <span class="listing-action-text"><?php esc_html_e('Login to message', 'roommate-mobile-theme'); ?></span>
+                                    <span class="listing-action-text"><?php esc_html_e('Send Message', 'roommate-mobile-theme'); ?></span>
                                 </a>
                             <?php endif; ?>
 

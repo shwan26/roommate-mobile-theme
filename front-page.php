@@ -207,11 +207,9 @@ $latest_roommates = new WP_Query(array(
                         $gender_symbol   = '';
 
                         if ($gender_key === 'male') {
-                            $gender_symbol = '♂';
+                            $gender_symbol = 'M';
                         } elseif ($gender_key === 'female') {
-                            $gender_symbol = '♀';
-                        } elseif ($gender_key === 'non-binary') {
-                            $gender_symbol = '⚧';
+                            $gender_symbol = 'F';
                         }
                         ?>
 
