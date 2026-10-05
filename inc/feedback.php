@@ -164,8 +164,8 @@ function rmt_render_feedback_modal($event, $listing_id = 0, $listing_type = '') 
                     <label class="rmt-report-form__label" for="rmt-feedback-liked"><?php esc_html_e("What's good or useful?", 'roommate-mobile-theme'); ?></label>
                     <textarea id="rmt-feedback-liked" name="liked" rows="3" maxlength="1000" placeholder="<?php esc_attr_e('Tell us what you like about the features', 'roommate-mobile-theme'); ?>"></textarea>
 
-                    <label class="rmt-report-form__label" for="rmt-feedback-disliked"><?php esc_html_e("What's bad or missing?", 'roommate-mobile-theme'); ?></label>
-                    <textarea id="rmt-feedback-disliked" name="disliked" rows="3" maxlength="1000" placeholder="<?php esc_attr_e('Tell us what could be better', 'roommate-mobile-theme'); ?>"></textarea>
+                    <label class="rmt-report-form__label" for="rmt-feedback-disliked"><?php esc_html_e('What needs to improve, and how can we improve it?', 'roommate-mobile-theme'); ?></label>
+                    <textarea id="rmt-feedback-disliked" name="disliked" rows="3" maxlength="1000" placeholder="<?php esc_attr_e('Tell us what needs to improve and your ideas for how we can make it better', 'roommate-mobile-theme'); ?>"></textarea>
 
                     <p class="rmt-report-form__message" id="rmt-feedback-message" role="alert" hidden></p>
 
@@ -324,7 +324,7 @@ function rmt_render_feedback_summary($show_link = false) {
                 echo '<em>Good:</em> ' . esc_html(wp_trim_words($row->liked, 25)) . '<br>';
             }
             if ($row->disliked !== '') {
-                echo '<em>Bad:</em> ' . esc_html(wp_trim_words($row->disliked, 25));
+                echo '<em>Improve:</em> ' . esc_html(wp_trim_words($row->disliked, 25));
             }
             echo '</blockquote>';
         }
@@ -433,7 +433,7 @@ function rmt_render_feedback_admin_page() {
         echo '<p>No feedback found.</p></div>';
     } else {
         echo '<table class="widefat striped"><thead><tr>';
-        foreach (['Date', 'User', 'Event', 'Listing', 'Rating', 'Good', 'Bad'] as $heading) {
+        foreach (['Date', 'User', 'Event', 'Listing', 'Rating', 'Good', 'Needs improvement'] as $heading) {
             echo '<th>' . esc_html($heading) . '</th>';
         }
         echo '</tr></thead><tbody>';
